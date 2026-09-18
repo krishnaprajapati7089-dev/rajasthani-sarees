@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Bill — Rajastani Saree</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--maroon:#5E1620;--maroon-dark:#3E0E15;--gold:#C9A24A;--gold-light:#E7D6A2;--cream:#FBF8F2;--ink:#2B1210;--ink-soft:#6B5C56;--line:#E9DFCD;--header-h:72px}
+*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink)}
+.site-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(94,22,32,.04)}
+.header-inner{max-width:1280px;margin:auto;height:100%;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--maroon);flex-shrink:0}.brand-text{display:flex;flex-direction:column;line-height:1}
+.brand-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;letter-spacing:.5px;color:var(--maroon);white-space:nowrap}.brand-sub{font-size:10.5px;letter-spacing:1.4px;color:var(--gold);margin-top:3px;font-weight:500}
+.primary-nav{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}.nav-link{display:flex;align-items:center;padding:10px 16px;font-size:14.5px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-radius:8px;white-space:nowrap}.nav-link:hover,.nav-link.is-active{color:var(--maroon);background:#FBF3E4}
+.header-actions{display:flex;align-items:center;gap:10px}.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--maroon);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}.btn-primary:hover{background:var(--maroon-dark)}.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.btn-ghost{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--maroon-dark)}
+.menu-toggle{display:none;width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer}.menu-toggle span{display:block;width:18px;height:2px;background:var(--maroon);margin:auto;position:relative}.menu-toggle span:before,.menu-toggle span:after{content:"";position:absolute;width:18px;height:2px;background:var(--maroon);left:0}.menu-toggle span:before{top:-6px}.menu-toggle span:after{top:6px}
+.mobile-panel{display:none}.page-inner{max-width:1280px;margin:auto;padding:40px 24px}.page-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:25px}.page-header h1{font-family:'Playfair Display',serif;color:var(--maroon);font-size:34px;margin:4px 0}.section-label{font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--ink-soft);margin:0 0 8px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}.panel h2{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 18px;font-size:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form-group{display:flex;flex-direction:column;gap:7px}.form-group label{font-size:13px;font-weight:600;color:var(--ink-soft)}input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--ink)}input:focus,select:focus{outline:2px solid var(--gold-light);border-color:var(--gold)}
+.table-wrapper{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line);font-size:13.5px}th{font-size:12px;color:var(--ink-soft);font-weight:600}td strong{color:var(--maroon)}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.kpi-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px}.kpi-value{font-family:'Playfair Display',serif;font-weight:700;font-size:26px;color:var(--maroon);margin-bottom:6px}.kpi-label{font-size:13px;color:var(--ink-soft)}
+.mobile-divider{height:1px;background:var(--line);margin:10px 4px}.mobile-actions{padding:6px 4px}.mobile-actions .btn-primary{width:100%;justify-content:center}
+@media(max-width:980px){.primary-nav,.header-actions .hide-xs{display:none}.menu-toggle{display:block}.mobile-panel{position:fixed;top:var(--header-h);left:0;right:0;bottom:0;background:rgba(43,18,16,.35);z-index:999;padding:12px 16px}.mobile-panel.open{display:block}.mobile-sheet{background:#fff;padding:10px 16px 25px;border-radius:0 0 12px 12px}.mobile-sheet .nav-link{width:100%;margin:3px 0}}
+@media(max-width:700px){.kpi-row{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}.page-inner{padding:28px 16px}.brand-sub{display:none}}
+@media(max-width:480px){.kpi-row{grid-template-columns:1fr}.page-header{align-items:flex-start;flex-direction:column}.btn-primary .label{display:none}}
+
+.product-results{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:#fff;display:none;overflow:hidden;max-height:320px;overflow-y:auto}
+.product-result{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:#fff;text-align:left;cursor:pointer;font:inherit;color:var(--ink)}
+.product-result:last-child{border-bottom:0}
+.product-result:hover{background:#FBF3E4}
+.product-result-name{font-weight:600}
+.product-result-meta{font-size:12px;color:var(--ink-soft)}
+.product-result-meta .out{color:#B23A2E;font-weight:600}
+.form-message{margin-top:10px;font-size:13px;color:var(--ink-soft)}
+.form-message.error{color:#B23A2E}
+.form-message.success{color:#1E7A4C}
+.save-status{margin-top:12px;font-size:13px;font-weight:600}
+.save-status.success{color:#1E7A4C}
+.save-status.error{color:#B23A2E}
+
+.selected-preview{display:none;margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:#FBF8F2}
+.selected-preview.show{display:block}
+.selected-name{font-weight:700;color:var(--maroon);margin-bottom:8px}
+.selected-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.selected-field label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+.selected-field input{padding:9px 10px}
+.selected-field .readonly-value{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#F1EEE7;color:var(--ink-soft);font-weight:600}
+
+.price-cell input{width:100px;padding:8px 9px;font-size:13px}
+.mrp-cell{color:var(--ink-soft);font-size:12.5px}
+.mrp-cell .strike{text-decoration:line-through}
+.price-note{font-size:11px;color:var(--ink-soft);margin-top:3px}
+.price-note.discount{color:#1E7A4C}
+.price-note.markup{color:#B23A2E}
+@media(max-width:700px){.selected-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="dashboard.html" class="brand" aria-label="Rajastani Saree home">
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3" stroke="#C9A24A" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="17" cy="19" r="6.5" fill="#C9A24A" fill-opacity="0.12" stroke="#C9A24A" stroke-width="1.6"/>
+        <circle cx="17" cy="19" r="2.3" fill="#C9A24A"/>
+      </svg>
+      <span class="brand-text">
+        <span class="brand-name">Rajastani&nbsp;Saree</span>
+        <span class="brand-sub">BILLING &amp; INVENTORY</span>
+      </span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="billing.html" class="nav-link is-active">New Bill</a>
+      <a href="inventory.html" class="nav-link">Inventory</a>
+      <a href="purchase.html" class="nav-link">Purchase Bill</a>
+      <a href="reports.html" class="nav-link">Reports</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn hide-xs" aria-label="Search" title="Search">⌕</button>
+      <button class="icon-btn hide-xs" aria-label="Notifications" title="Notifications">♢</button>
+      <a class="btn-primary" href="billing.html">＋ <span class="label">New Bill</span></a>
+      <div class="avatar" title="Store Manager">SM</div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-panel" id="mobilePanel">
+  <div class="mobile-sheet">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="billing.html" class="nav-link is-active">New Bill</a>
+    <a href="inventory.html" class="nav-link">Inventory</a>
+    <a href="reports.html" class="nav-link">Reports</a>
+    <div class="mobile-divider"></div>
+    <div class="mobile-actions">
+      <a class="btn-primary" href="billing.html">＋ New Bill</a>
+    </div>
+  </div>
+</div>
+<main><div class="page-inner">
+<div class="page-header"><div><p class="section-label">SALES</p><h1>New Bill</h1></div><div>Invoice <strong id="invoicePreview">Generated on save</strong></div></div>
+<section class="panel">
+<h2>Customer</h2>
+<div class="form-row">
+  <div class="form-group"><label>Customer Name</label><input id="customerName" placeholder="Walk-in Customer"></div>
+  <div class="form-group"><label>Mobile Number</label><input id="customerPhone" placeholder="Optional"></div>
+</div>
+<div class="form-row" style="margin-top:16px">
+  <div class="form-group"><label>Customer State (optional)</label><input id="customerState" placeholder="e.g. Madhya Pradesh"></div>
+  <div class="form-group"><label>Payment Mode</label>
+    <select id="paymentMode">
+      <option value="Cash">Cash</option>
+      <option value="UPI">UPI</option>
+      <option value="Card">Card</option>
+      <option value="Bank Transfer">Bank Transfer</option>
+    </select>
+  </div>
+</div>
+</section>
+
+<section class="panel">
+<h2>Add Product</h2>
+<div style="display:flex;gap:10px">
+  <input id="productSearch" placeholder="Search saree by name or barcode/code..." autocomplete="off">
+</div>
+<div id="productResults" class="product-results"></div>
+<div id="productMessage" class="form-message">Search your inventory to add a saree.</div>
+
+<div id="selectedPreview" class="selected-preview">
+  <div class="selected-name" id="selectedName"></div>
+  <div class="selected-grid">
+    <div class="selected-field">
+      <label>MRP (Inventory Price)</label>
+      <div class="readonly-value" id="selectedMrp">₹0</div>
+    </div>
+    <div class="selected-field">
+      <label>Selling Price (you can change this)</label>
+      <input id="selectedPrice" type="number" min="0" step="1">
+    </div>
+    <div class="selected-field">
+      <label>Quantity</label>
+      <input id="selectedQty" type="number" min="1" value="1">
+    </div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:14px">
+    <button class="btn-primary" type="button" onclick="addSelectedProduct()">Add to Bill</button>
+  </div>
+</div>
+</section>
+
+<section class="panel"><h2>Bill Items</h2><div class="table-wrapper"><table><thead><tr><th>Product</th><th>Qty</th><th>MRP</th><th>Your Price</th><th>GST</th><th>Total</th><th></th></tr></thead><tbody id="billItems"></tbody></table></div></section>
+<section class="panel" style="max-width:560px;margin-left:auto"><div style="display:flex;justify-content:space-between;padding:8px 0">MRP Total <strong id="mrpTotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0">Subtotal (your price) <strong id="subtotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0">GST <strong id="gst">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);font-size:20px">Total You'll Collect <strong id="grandTotal">₹0</strong></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn-ghost" onclick="clearBill()">Clear</button><button class="btn-primary" type="button" onclick="saveInvoice()">Save Bill</button><button class="btn-primary" type="button" onclick="window.print()">Print</button></div><div id="saveStatus" class="save-status"></div></section>
+<script>
+let items = [];
+let selectedProduct = null;
+let searchTimer = null;
+let saving = false;
+
+const productSearch = document.getElementById("productSearch");
+const productResults = document.getElementById("productResults");
+const productMessage = document.getElementById("productMessage");
+const selectedPreview = document.getElementById("selectedPreview");
+const selectedName = document.getElementById("selectedName");
+const selectedMrp = document.getElementById("selectedMrp");
+const selectedPrice = document.getElementById("selectedPrice");
+const selectedQty = document.getElementById("selectedQty");
+
+function money(value) {
+  return "₹" + Number(value || 0).toFixed(2);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+  }[ch]));
+}
+
+function showMessage(message, type = "") {
+  productMessage.textContent = message;
+  productMessage.className = "form-message " + type;
+}
+
+function hideSelectedPreview() {
+  selectedPreview.classList.remove("show");
+  selectedProduct = null;
+}
+
+async function searchProducts() {
+  const q = productSearch.value.trim();
+
+  hideSelectedPreview();
+  productResults.innerHTML = "";
+  productResults.style.display = "none";
+
+  if (!q) {
+    showMessage("Search your inventory to add a saree.");
+    return;
+  }
+
+  try {
+    // Matches by name, barcode/code, or category — same fields inventory.html saves.
+    const response = await fetch("/api/products?q=" + encodeURIComponent(q));
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Could not load products");
+    }
+
+    if (!data.length) {
+      showMessage("No matching saree found in inventory. Check the name/code, or add it from the Inventory page first.", "error");
+      return;
+    }
+
+    productResults.innerHTML = data.slice(0, 15).map(product => {
+      const outOfStock = Number(product.stock_qty || 0) <= 0;
+      return `
+        <button type="button" class="product-result" data-id="${escapeHtml(product._id)}" ${outOfStock ? "disabled style=\"opacity:.5;cursor:not-allowed\"" : ""}>
+          <span>
+            <span class="product-result-name">${escapeHtml(product.name)}</span><br>
+            <span class="product-result-meta">
+              Code: ${escapeHtml(product.barcode || "—")} ·
+              Stock: <span class="${outOfStock ? 'out' : ''}">${outOfStock ? 'Out of stock' : Number(product.stock_qty || 0)}</span> ·
+              MRP ${money(product.selling_price)}
+            </span>
+          </span>
+          <span>${Number(product.gst_rate || 0)}% GST</span>
+        </button>
+      `;
+    }).join("");
+
+    productResults.style.display = "block";
+    showMessage(`${data.length} saree${data.length === 1 ? "" : "s"} found — select one below.`);
+
+    productResults.querySelectorAll(".product-result:not([disabled])").forEach(button => {
+      button.addEventListener("click", async () => {
+        const response = await fetch("/api/products/" + encodeURIComponent(button.dataset.id));
+        const product = await response.json();
+
+        if (!response.ok) {
+          showMessage(product.error || "Could not load product.", "error");
+          return;
+        }
+
+        selectedProduct = product;
+        productSearch.value = product.name;
+        productResults.style.display = "none";
+        showMessage("Selected: " + product.name + ". Set quantity and price below, then Add to Bill.", "success");
+
+        selectedName.textContent = product.name + (product.barcode ? " (" + product.barcode + ")" : "");
+        selectedMrp.textContent = money(product.selling_price);
+        selectedPrice.value = Number(product.selling_price || 0);
+        selectedQty.value = 1;
+        selectedQty.max = Number(product.stock_qty || 1);
+        selectedPreview.classList.add("show");
+        selectedPrice.focus();
+        selectedPrice.select();
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    showMessage("Backend/product search failed: " + error.message + " (is the server running?)", "error");
+  }
+}
+
+function addSelectedProduct() {
+  if (!selectedProduct) {
+    showMessage("Please search and select a saree from inventory first.", "error");
+    productSearch.focus();
+    return;
+  }
+
+  const stock = Number(selectedProduct.stock_qty || 0);
+  if (stock <= 0) {
+    showMessage("This saree is out of stock.", "error");
+    return;
+  }
+
+  const qty = Math.max(1, Math.floor(Number(selectedQty.value) || 1));
+  const price = Math.max(0, Number(selectedPrice.value));
+
+  if (isNaN(price)) {
+    showMessage("Please enter a valid selling price.", "error");
+    return;
+  }
+
+  const existing = items.find(item => item.product_id === selectedProduct._id);
+  const alreadyInBill = existing ? existing.qty : 0;
+
+  if (alreadyInBill + qty > stock) {
+    showMessage(`Only ${stock} piece(s) of ${selectedProduct.name} available (${alreadyInBill} already in this bill).`, "error");
+    return;
+  }
+
+  if (existing) {
+    existing.qty += qty;
+    existing.price = price; // latest price entered wins for this line
+  } else {
+    items.push({
+      product_id: selectedProduct._id,
+      name: selectedProduct.name,
+      barcode: selectedProduct.barcode || "",
+      qty: qty,
+      mrp: Number(selectedProduct.selling_price || 0),
+      price: price,
+      gst: Number(selectedProduct.gst_rate || 0),
+      stock_qty: stock
+    });
+  }
+
+  productSearch.value = "";
+  productResults.innerHTML = "";
+  productResults.style.display = "none";
+  hideSelectedPreview();
+  showMessage("Added to bill.", "success");
+  renderBill();
+}
+
+function changeQty(index, delta) {
+  const item = items[index];
+  if (!item) return;
+
+  const newQty = item.qty + delta;
+
+  if (newQty <= 0) {
+    items.splice(index, 1);
+  } else if (newQty > item.stock_qty) {
+    showMessage(`Only ${item.stock_qty} piece(s) available for ${item.name}.`, "error");
+    return;
+  } else {
+    item.qty = newQty;
+  }
+
+  renderBill();
+}
+
+function updatePrice(index, value) {
+  const item = items[index];
+  if (!item) return;
+  const price = Number(value);
+  item.price = isNaN(price) || price < 0 ? 0 : price;
+  renderBill();
+}
+
+function removeItem(index) {
+  items.splice(index, 1);
+  renderBill();
+}
+
+function renderBill() {
+  const body = document.getElementById("billItems");
+
+  if (!items.length) {
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--ink-soft);padding:24px">No sarees added yet.</td></tr>';
+  } else {
+    body.innerHTML = items.map((item, index) => {
+      const lineSubtotal = item.price * item.qty;
+      const lineGst = lineSubtotal * item.gst / 100;
+      const lineTotal = lineSubtotal + lineGst;
+      const diff = item.price - item.mrp;
+      let note = "";
+      if (item.mrp > 0 && diff !== 0) {
+        note = diff < 0
+          ? `<div class="price-note discount">₹${Math.abs(diff).toFixed(0)} off MRP</div>`
+          : `<div class="price-note markup">₹${diff.toFixed(0)} above MRP</div>`;
+      }
+
+      return `
+        <tr>
+          <td>
+            <strong>${escapeHtml(item.name)}</strong>
+            <div style="font-size:11px;color:var(--ink-soft);margin-top:3px">Available: ${item.stock_qty}${item.barcode ? " · Code: " + escapeHtml(item.barcode) : ""}</div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:7px">
+              <button type="button" class="btn-ghost" style="padding:5px 9px" onclick="changeQty(${index},-1)">−</button>
+              <strong>${item.qty}</strong>
+              <button type="button" class="btn-ghost" style="padding:5px 9px" onclick="changeQty(${index},1)">+</button>
+            </div>
+          </td>
+          <td class="mrp-cell">${money(item.mrp)}</td>
+          <td class="price-cell">
+            <input type="number" min="0" step="1" value="${item.price}" onchange="updatePrice(${index}, this.value)">
+            ${note}
+          </td>
+          <td>${item.gst}%</td>
+          <td><strong>${money(lineTotal)}</strong></td>
+          <td><button type="button" style="border:0;background:none;color:#B23A2E;cursor:pointer;padding:5px 0;font-size:11px" onclick="removeItem(${index})">Remove</button></td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  const mrpTotal = items.reduce((sum, item) => sum + item.mrp * item.qty, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const gst = items.reduce((sum, item) => sum + item.price * item.qty * item.gst / 100, 0);
+  const total = subtotal + gst;
+
+  document.getElementById("mrpTotal").textContent = money(mrpTotal);
+  document.getElementById("subtotal").textContent = money(subtotal);
+  document.getElementById("gst").textContent = money(gst);
+  document.getElementById("grandTotal").textContent = money(total);
+}
+
+function clearBill() {
+  if (items.length && !confirm("Clear this bill?")) return;
+
+  items = [];
+  hideSelectedPreview();
+  productSearch.value = "";
+  productResults.innerHTML = "";
+  productResults.style.display = "none";
+  showMessage("Bill cleared.");
+  document.getElementById("invoicePreview").textContent = "Generated on save";
+  document.getElementById("saveStatus").textContent = "";
+  document.getElementById("saveStatus").className = "save-status";
+  renderBill();
+}
+
+async function saveInvoice() {
+  if (saving) return;
+
+  if (!items.length) {
+    alert("Please add at least one saree.");
+    return;
+  }
+
+  // The backend prices each line from the product's own selling_price and
+  // applies discount_percent on top of it. To let you charge a different
+  // amount than the inventory MRP, we convert your entered price into the
+  // equivalent discount (or markup, as a negative discount) per line.
+  const payload = {
+    customer_name: document.getElementById("customerName").value.trim() || "Walk-in Customer",
+    customer_phone: document.getElementById("customerPhone").value.trim(),
+    customer_state: document.getElementById("customerState").value.trim(),
+    payment_mode: document.getElementById("paymentMode").value,
+    payment_status: "Paid",
+    items: items.map(item => {
+      let discountPercent = 0;
+      if (item.mrp > 0) {
+        discountPercent = ((item.mrp - item.price) / item.mrp) * 100;
+        discountPercent = Math.round(discountPercent * 100) / 100;
+      }
+      return {
+        product_id: item.product_id,
+        qty: item.qty,
+        discount_percent: discountPercent
+      };
+    })
+  };
+
+  saving = true;
+  const saveButton = document.querySelector('button[onclick="saveInvoice()"]');
+  saveButton.disabled = true;
+  saveButton.textContent = "Saving...";
+
+  try {
+    const response = await fetch("/api/bills", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Could not save bill");
+    }
+
+    document.getElementById("invoicePreview").textContent = "#" + data.invoice_no;
+    document.getElementById("saveStatus").textContent =
+      `Bill ${data.invoice_no} saved to MongoDB successfully. Total: ${money(data.grand_total)}`;
+    document.getElementById("saveStatus").className = "save-status success";
+
+    // Stock was decremented by the backend, so clear the current bill.
+    items = [];
+    hideSelectedPreview();
+    productSearch.value = "";
+    productResults.innerHTML = "";
+    productResults.style.display = "none";
+    renderBill();
+
+    alert(`Bill ${data.invoice_no} saved successfully. Total collected: ${money(data.grand_total)}`);
+
+    // Open the backend-generated printable invoice.
+    if (data._id) {
+      window.open("/api/bills/" + encodeURIComponent(data._id) + "/invoice", "_blank");
+    }
+  } catch (error) {
+    console.error(error);
+    document.getElementById("saveStatus").textContent =
+      "Bill was NOT saved: " + error.message;
+    document.getElementById("saveStatus").className = "save-status error";
+    alert("Could not save bill.\n\n" + error.message);
+  } finally {
+    saving = false;
+    saveButton.disabled = false;
+    saveButton.textContent = "Save Bill";
+  }
+}
+
+productSearch.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(searchProducts, 250);
+});
+
+productSearch.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    searchProducts();
+  }
+});
+
+selectedQty.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    addSelectedProduct();
+  }
+});
+selectedPrice.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    addSelectedProduct();
+  }
+});
+
+document.addEventListener("click", event => {
+  if (!event.target.closest("#productSearch") && !event.target.closest("#productResults")) {
+    productResults.style.display = "none";
+  }
+});
+
+document.getElementById("menuToggle").addEventListener("click", () => {
+  const panel = document.getElementById("mobilePanel");
+  const button = document.getElementById("menuToggle");
+  panel.classList.toggle("open");
+  button.setAttribute("aria-expanded", panel.classList.contains("open") ? "true" : "false");
+});
+
+renderBill();
+</script>
+</body>
+</html>

@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajastani Saree — Billing &amp; Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --maroon:#5E1620;
+    --maroon-dark:#3E0E15;
+    --gold:#C9A24A;
+    --gold-light:#E7D6A2;
+    --cream:#FBF8F2;
+    --ink:#2B1210;
+    --ink-soft:#6B5C56;
+    --line:#E9DFCD;
+    --header-h:72px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+  }
+
+  /* ---------- Header ---------- */
+  .site-header{
+    position:sticky;
+    top:0;
+    z-index:1000;
+    height:var(--header-h);
+    background:#FFFFFF;
+    border-bottom:1px solid var(--line);
+    box-shadow:0 1px 0 rgba(94,22,32,0.04);
+  }
+
+  .header-inner{
+    max-width:1280px;
+    margin:0 auto;
+    height:100%;
+    padding:0 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    color:var(--maroon);
+    flex-shrink:0;
+  }
+
+  .brand svg{ display:block; }
+
+  .brand-text{
+    display:flex;
+    flex-direction:column;
+    line-height:1;
+  }
+
+  .brand-name{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:20px;
+    letter-spacing:0.5px;
+    color:var(--maroon);
+    white-space:nowrap;
+  }
+
+  .brand-sub{
+    font-size:10.5px;
+    letter-spacing:1.4px;
+    color:var(--gold);
+    margin-top:3px;
+    font-weight:500;
+  }
+
+  .primary-nav{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    flex:1;
+    justify-content:center;
+  }
+
+  .nav-link{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:10px 16px;
+    font-size:14.5px;
+    font-weight:500;
+    color:var(--ink-soft);
+    text-decoration:none;
+    border-radius:8px;
+    white-space:nowrap;
+    transition:color .15s ease, background .15s ease;
+  }
+
+  .nav-link:hover{
+    color:var(--maroon);
+    background:#FBF3E4;
+  }
+
+  .nav-link.is-active{
+    color:var(--maroon);
+    font-weight:600;
+  }
+
+  .nav-link.is-active::after{
+    content:"";
+    position:absolute;
+    left:16px;
+    right:16px;
+    bottom:2px;
+    height:2px;
+    background:var(--gold);
+    border-radius:2px;
+  }
+
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+
+  .icon-btn{
+    width:38px;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink-soft);
+    cursor:pointer;
+    position:relative;
+  }
+  .icon-btn:hover{ border-color:var(--gold); color:var(--maroon); }
+
+  .badge-dot{
+    position:absolute;
+    top:6px;
+    right:6px;
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#C0392B;
+    border:1.5px solid #fff;
+  }
+
+  .btn-primary{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:10px 18px;
+    background:var(--maroon);
+    color:#fff;
+    border:none;
+    border-radius:9px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    text-decoration:none;
+    transition:background .15s ease;
+  }
+  .btn-primary:hover{ background:var(--maroon-dark); }
+
+  .avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--gold-light),var(--gold));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--maroon-dark);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+
+  .menu-toggle{
+    display:none;
+    width:40px;
+    height:40px;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:9px;
+    cursor:pointer;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+
+  .menu-toggle span{
+    display:block;
+    width:18px;
+    height:2px;
+    background:var(--maroon);
+    position:relative;
+    transition:background .15s ease;
+  }
+  .menu-toggle span::before,
+  .menu-toggle span::after{
+    content:"";
+    position:absolute;
+    width:18px;
+    height:2px;
+    background:var(--maroon);
+    left:0;
+    transition:transform .2s ease, top .2s ease;
+  }
+  .menu-toggle span::before{ top:-6px; }
+  .menu-toggle span::after{ top:6px; }
+
+  .menu-toggle.open span{ background:transparent; }
+  .menu-toggle.open span::before{ top:0; transform:rotate(45deg); }
+  .menu-toggle.open span::after{ top:0; transform:rotate(-45deg); }
+
+  .mobile-panel{
+    display:none;
+    position:fixed;
+    top:var(--header-h);
+    left:0;
+    right:0;
+    bottom:0;
+    background:rgba(43,18,16,0.35);
+    z-index:999;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .mobile-panel.open{ opacity:1; pointer-events:auto; }
+
+  .mobile-sheet{
+    background:#fff;
+    max-height:100%;
+    overflow-y:auto;
+    padding:12px 16px 28px;
+    border-bottom:1px solid var(--line);
+    transform:translateY(-8px);
+    transition:transform .2s ease;
+  }
+  .mobile-panel.open .mobile-sheet{ transform:translateY(0); }
+
+  .mobile-sheet .nav-link{
+    width:100%;
+    padding:13px 12px;
+    font-size:15.5px;
+    justify-content:space-between;
+  }
+  .mobile-sheet .nav-link.is-active::after{ display:none; }
+  .mobile-sheet .nav-link.is-active{ background:#FBF3E4; border-radius:8px; }
+
+  .mobile-divider{
+    height:1px;
+    background:var(--line);
+    margin:10px 4px;
+  }
+
+  .mobile-actions{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding:6px 4px 0;
+  }
+  .mobile-actions .btn-primary{
+    width:100%;
+    justify-content:center;
+    padding:13px;
+  }
+
+  @media (max-width: 980px){
+    .primary-nav{ display:none; }
+    .menu-toggle{ display:flex; }
+    .mobile-panel{ display:block; }
+    .header-actions .nav-only-desktop{ display:none; }
+  }
+
+  @media (max-width: 560px){
+    .header-inner{ padding:0 14px; gap:12px; }
+    .brand-sub{ display:none; }
+    .icon-btn.hide-xs{ display:none; }
+    .btn-primary span.label{ display:none; }
+    .btn-primary{ padding:10px 12px; }
+  }
+
+  main{ overflow-x:hidden; background:var(--cream); }
+
+  .page-inner{
+    max-width:1280px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  .greeting-banner{
+    background:
+      radial-gradient(ellipse at 88% -20%, rgba(201,162,74,0.18), transparent 55%),
+      linear-gradient(180deg,#FFFDF9 0%, var(--cream) 100%);
+    border-bottom:1px solid var(--line);
+  }
+
+  .greeting-inner{
+    max-width:1280px;
+    margin:0 auto;
+    padding:40px 24px 32px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+
+  .greeting-date{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:0.3px;
+    color:var(--gold);
+    background:#FBF3E4;
+    padding:6px 12px;
+    border-radius:20px;
+    margin-bottom:14px;
+  }
+
+  .greeting-title{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:clamp(26px, 3vw, 36px);
+    line-height:1.15;
+    color:var(--maroon);
+    margin:0 0 6px;
+  }
+
+  .greeting-title .caret{
+    display:inline-block;
+    color:var(--gold);
+    animation:blink 1s step-end infinite;
+  }
+
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .greeting-sub{
+    font-size:15px;
+    color:var(--ink-soft);
+    margin:0;
+    max-width:520px;
+  }
+
+  .greeting-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .btn-large{ padding:13px 22px; font-size:14.5px; }
+
+  .btn-ghost{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:12px 20px;
+    background:#fff;
+    color:var(--maroon);
+    border:1px solid var(--line);
+    border-radius:9px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+    white-space:nowrap;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .btn-ghost:hover{ border-color:var(--gold); background:#FBF3E4; }
+
+  .quick-actions{
+    max-width:1280px;
+    margin:0 auto;
+    padding:0 24px;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:14px;
+    transform:translateY(-26px);
+  }
+
+  .action-tile{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 18px;
+    display:flex;
+    align-items:center;
+    gap:13px;
+    text-decoration:none;
+    box-shadow:0 10px 24px rgba(43,18,16,0.05);
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .action-tile:hover{
+    transform:translateY(-2px);
+    border-color:var(--gold);
+    box-shadow:0 14px 28px rgba(43,18,16,0.08);
+  }
+
+  .action-icon{
+    width:40px;
+    height:40px;
+    flex-shrink:0;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#FBF3E4;
+    color:var(--maroon);
+  }
+
+  .action-tile.primary{ background:var(--maroon); border-color:var(--maroon); }
+  .action-tile.primary .action-icon{ background:rgba(255,255,255,0.14); color:#fff; }
+  .action-tile.primary .action-title{ color:#fff; }
+  .action-tile.primary .action-sub{ color:rgba(255,255,255,0.72); }
+  .action-tile.primary:hover{ transform:translateY(-2px); box-shadow:0 14px 28px rgba(94,22,32,0.28); }
+
+  .action-title{
+    display:block;
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .action-sub{
+    display:block;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+
+  @media (max-width: 900px){
+    .quick-actions{ grid-template-columns:repeat(2, 1fr); }
+  }
+  @media (max-width: 540px){
+    .quick-actions{ grid-template-columns:1fr; transform:none; margin-top:20px; }
+  }
+
+  .kpi-section{ padding:38px 0 6px; }
+
+  .section-label{
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.4px;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+  }
+
+  .kpi-row{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:14px;
+  }
+
+  .kpi-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+  }
+
+  .kpi-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+
+  .kpi-icon{
+    width:32px;
+    height:32px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#FBF3E4;
+    color:var(--maroon);
+  }
+
+  .kpi-trend{
+    font-size:12px;
+    font-weight:600;
+    padding:3px 8px;
+    border-radius:20px;
+  }
+  .kpi-trend.up{ color:#1E7A4C; background:#E7F5ED; }
+  .kpi-trend.down{ color:#B23A2E; background:#FBEAE7; }
+  .kpi-trend.flat{ color:var(--ink-soft); background:#F1EEE7; }
+
+  .kpi-value{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:26px;
+    color:var(--maroon);
+    line-height:1;
+    margin-bottom:6px;
+  }
+
+  .kpi-label{ font-size:13px; color:var(--ink-soft); }
+
+  @media (max-width: 900px){
+    .kpi-row{ grid-template-columns:repeat(2, 1fr); }
+  }
+  @media (max-width: 540px){
+    .kpi-row{ grid-template-columns:1fr; }
+  }
+
+  .dashboard-grid{
+    padding:30px 0 70px;
+    display:grid;
+    grid-template-columns:1.5fr 1fr;
+    gap:18px;
+    align-items:start;
+  }
+
+  .panel{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:22px;
+  }
+
+  .panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+
+  .panel-head h2{
+    font-family:'Playfair Display',serif;
+    font-size:18px;
+    font-weight:700;
+    color:var(--maroon);
+    margin:0;
+  }
+
+  .panel-link{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--gold);
+    text-decoration:none;
+  }
+  .panel-link:hover{ text-decoration:underline; }
+
+  .chart-total{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    margin-bottom:2px;
+  }
+  .chart-total .amount{
+    font-family:'Playfair Display',serif;
+    font-size:28px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .chart-total .period{ font-size:12.5px; color:var(--ink-soft); }
+
+  .bar-chart{
+    display:flex;
+    align-items:flex-end;
+    gap:12px;
+    height:150px;
+    margin-top:24px;
+    padding:0 2px;
+  }
+
+  .bar-col{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    height:100%;
+    justify-content:flex-end;
+  }
+
+  .bar{
+    width:100%;
+    max-width:34px;
+    border-radius:6px 6px 3px 3px;
+    background:linear-gradient(180deg, var(--gold-light), var(--gold));
+    position:relative;
+  }
+  .bar-col.is-today .bar{ background:linear-gradient(180deg, #9B2C3B, var(--maroon)); }
+
+  .bar-day{ font-size:11.5px; color:var(--ink-soft); }
+  .bar-col.is-today .bar-day{ color:var(--maroon); font-weight:600; }
+
+  .bill-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .bill-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .bill-row:first-of-type{ padding-top:0; }
+
+  .bill-id{ font-size:13.5px; font-weight:600; color:var(--ink); }
+  .bill-meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .bill-amount{ font-size:14px; font-weight:600; color:var(--maroon); text-align:right; }
+  .bill-status{
+    display:block;
+    font-size:11px;
+    margin-top:2px;
+    text-align:right;
+  }
+  .bill-status.paid{ color:#1E7A4C; }
+  .bill-status.due{ color:#B23A2E; }
+
+  .stock-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .stock-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .stock-row:first-of-type{ padding-top:0; }
+
+  .stock-name{ font-size:13.5px; font-weight:600; color:var(--ink); }
+  .stock-meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+
+  .stock-count{
+    font-size:12.5px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:20px;
+    background:#FBEAE7;
+    color:#B23A2E;
+    white-space:nowrap;
+  }
+  .stock-count.ok{ background:#FBF3E4; color:var(--gold); }
+
+  .side-stack{ display:flex; flex-direction:column; gap:18px; }
+
+  @media (max-width: 980px){
+    .dashboard-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+
+    <a href="dashboard.html" class="brand" aria-label="Rajastani Saree home">
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3" stroke="#C9A24A" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="17" cy="19" r="6.5" fill="#C9A24A" fill-opacity="0.12" stroke="#C9A24A" stroke-width="1.6"/>
+        <circle cx="17" cy="19" r="2.3" fill="#C9A24A"/>
+      </svg>
+      <span class="brand-text">
+        <span class="brand-name">Rajastani&nbsp;Saree</span>
+        <span class="brand-sub">BILLING &amp; INVENTORY</span>
+      </span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      <a href="dashboard.html" class="nav-link is-active">Dashboard</a>
+      <a href="billing.html" class="nav-link">New Bill</a>
+      <a href="inventory.html" class="nav-link">Inventory</a>
+      <a href="purchase.html" class="nav-link">Purchase Bill</a>
+      <a href="reports.html" class="nav-link">Reports</a>
+    </nav>
+
+    <div class="header-actions">
+      <a href="reports.html" class="icon-btn hide-xs nav-only-desktop" aria-label="Reports" title="Reports">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </a>
+      <a href="inventory.html" class="icon-btn hide-xs" aria-label="Low stock alerts" title="Low stock alerts">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7 21a2 2 0 01-3.4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="badge-dot" id="headerAlertDot" style="display:none"></span>
+      </a>
+
+      <a href="billing.html" class="btn-primary" title="Create a new bill">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+        <span class="label">New Bill</span>
+      </a>
+
+      <div class="avatar" title="Meera Sharma, Store Manager">MS</div>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<div class="mobile-panel" id="mobilePanel">
+  <div class="mobile-sheet">
+    <a href="dashboard.html" class="nav-link is-active">Dashboard</a>
+    <a href="billing.html" class="nav-link">New Bill</a>
+    <a href="inventory.html" class="nav-link">Inventory</a>
+    <a href="purchase.html" class="nav-link">Purchase Bill</a>
+    <a href="reports.html" class="nav-link">Reports</a>
+    <div class="mobile-divider"></div>
+    <div class="mobile-actions">
+      <a href="billing.html" class="btn-primary">＋ New Bill</a>
+      <a href="purchase.html" class="btn-ghost" style="justify-content:center;margin-top:10px;">Upload Purchase Bill</a>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <section class="greeting-banner">
+    <div class="greeting-inner">
+      <div>
+        <span class="greeting-date">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="todayDate">—</span>
+        </span>
+        <h1 class="greeting-title"><span id="typedMain"></span><span class="caret">|</span></h1>
+        <p class="greeting-sub">Here's how the shop is doing today — quick actions on the right, full numbers below.</p>
+      </div>
+
+      <div class="greeting-actions">
+        <a href="billing.html" class="btn-primary btn-large">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+          New Bill
+        </a>
+        <a href="purchase.html" class="btn-ghost">Add Stock</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="quick-actions">
+    <a href="billing.html" class="action-tile primary">
+      <span class="action-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M9 2h6l1 4H8l1-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 6h12l1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L6 6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
+      <span>
+        <span class="action-title">Create Bill</span>
+        <span class="action-sub">Start a new sale</span>
+      </span>
+    </a>
+
+    <a href="purchase.html" class="action-tile">
+      <span class="action-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M21 7l-9-4-9 4 9 4 9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 11v10" stroke="currentColor" stroke-width="2"/></svg>
+      </span>
+      <span>
+        <span class="action-title">Add Stock</span>
+        <span class="action-sub">Receive new sarees</span>
+      </span>
+    </a>
+
+    <a href="reports.html" class="action-tile">
+      <span class="action-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 19V9M12 19V5M20 19v-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </span>
+      <span>
+        <span class="action-title">Sales Report</span>
+        <span class="action-sub">Today &amp; this month</span>
+      </span>
+    </a>
+
+    <a href="inventory.html" class="action-tile">
+      <span class="action-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M10.3 3.9L2.7 18a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
+      <span>
+        <span class="action-title">Low Stock</span>
+        <span class="action-sub" id="quickLowStock">0 items need reorder</span>
+      </span>
+    </a>
+  </div>
+
+  <div class="page-inner">
+
+    <section class="kpi-section">
+      <p class="section-label">TODAY AT A GLANCE</p>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 7c0-2.2-2.2-4-5-4s-5 1.8-5 4 2.2 3.4 5 4 5 1.8 5 4-2.2 4-5 4-5-1.8-5-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="kpi-trend flat" id="salesTrend">—</span>
+          </div>
+          <div class="kpi-value" id="todaySales">₹0</div>
+          <div class="kpi-label">Today's sales</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 2h6l1 4H8l1-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 6h12l1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L6 6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="kpi-trend flat" id="billsTrend">—</span>
+          </div>
+          <div class="kpi-value" id="billsToday">0</div>
+          <div class="kpi-label">Bills created today</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 7l-9-4-9 4 9 4 9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="kpi-trend flat" id="stockPiecesTrend">0 pcs</span>
+          </div>
+          <div class="kpi-value" id="stockValue">₹0</div>
+          <div class="kpi-label">Stock value on hand</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M10.3 3.9L2.7 18a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="kpi-trend flat" id="stockTrend">—</span>
+          </div>
+          <div class="kpi-value" id="lowStockCount">0</div>
+          <div class="kpi-label">Items low on stock</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Daily sales — last 7 days</h2>
+          <a href="reports.html" class="panel-link">Full report</a>
+        </div>
+
+        <div class="chart-total">
+          <span class="amount" id="weekSales">₹0</span>
+          <span class="period">total this week</span>
+        </div>
+
+        <div class="bar-chart" id="salesChart">
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col is-today"><div class="bar" style="height:0%"></div><span class="bar-day">Today</span></div>
+        </div>
+      </div>
+
+      <div class="side-stack">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Recent bills</h2>
+            <a href="reports.html" class="panel-link">View all</a>
+          </div>
+
+          <div id="recentBills">
+            <div class="bill-row">
+              <div>
+                <div class="bill-id">Loading...</div>
+                <div class="bill-meta">Loading recent bills...</div>
+              </div>
+              <div>
+                <div class="bill-amount">₹0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Low stock alerts</h2>
+            <a href="inventory.html" class="panel-link">Manage</a>
+          </div>
+
+          <div id="lowStockList">
+            <div class="stock-row">
+              <div>
+                <div class="stock-name">No low-stock items</div>
+                <div class="stock-meta">Your inventory is currently empty or above reorder level.</div>
+              </div>
+              <span class="stock-count ok">0 left</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+</main>
+<script>
+  // ================= DASHBOARD DATA =================
+  async function loadDashboard() {
+    try {
+      const response = await fetch('/api/dashboard', {
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Dashboard API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const money = (value) =>
+        `₹${Number(value || 0).toLocaleString('en-IN', {
+          maximumFractionDigits: 2
+        })}`;
+
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+
+      setText('todaySales', money(data.today_sales));
+      setText('billsToday', Number(data.bills_today || 0).toLocaleString('en-IN'));
+      setText('stockValue', money(data.stock_value));
+      setText('stockPiecesTrend',
+        `${Number(data.stock_pieces || 0).toLocaleString('en-IN')} pcs`);
+      setText('lowStockCount', Number(data.low_stock_count || 0).toLocaleString('en-IN'));
+
+      setText(
+        'quickLowStock',
+        `${Number(data.low_stock_count || 0).toLocaleString('en-IN')} items need reorder`
+      );
+
+      const headerDot = document.getElementById('headerAlertDot');
+      if (headerDot) headerDot.style.display = Number(data.low_stock_count || 0) > 0 ? 'block' : 'none';
+
+      setText('salesTrend', '—');
+      setText('billsTrend', '—');
+      setText('stockTrend', Number(data.low_stock_count || 0) > 0 ? 'Reorder' : 'OK');
+
+      const stockTrend = document.getElementById('stockTrend');
+      if (stockTrend) {
+        stockTrend.className =
+          `kpi-trend ${Number(data.low_stock_count || 0) > 0 ? 'down' : 'flat'}`;
+      }
+
+      // Recent bills
+      const billsEl = document.getElementById('recentBills');
+      const bills = Array.isArray(data.recent_bills) ? data.recent_bills : [];
+
+      if (billsEl) {
+        if (!bills.length) {
+          billsEl.innerHTML = `
+            <div class="bill-row">
+              <div>
+                <div class="bill-id">No bills yet</div>
+                <div class="bill-meta">Create your first bill to see it here.</div>
+              </div>
+              <div>
+                <div class="bill-amount">₹0</div>
+              </div>
+            </div>`;
+        } else {
+          billsEl.innerHTML = bills.map((bill) => {
+            const customer = bill.customer_name || 'Walk-in customer';
+            const invoice = bill.invoice_no || bill.invoice_number || bill._id || 'Bill';
+            const amount = Number(bill.grand_total || 0);
+            const statusRaw = String(
+              bill.payment_status || bill.paymentStatus || bill.status || 'ACTIVE'
+            ).toUpperCase();
+
+            const isPaid = statusRaw === 'PAID' || statusRaw === 'ACTIVE';
+            const statusText = statusRaw === 'PAID' ? 'Paid' :
+              statusRaw === 'DUE' || statusRaw === 'UNPAID' ? 'Due' : statusRaw;
+
+            return `
+              <div class="bill-row">
+                <div>
+                  <div class="bill-id">#${escapeHtml(invoice)}</div>
+                  <div class="bill-meta">${escapeHtml(customer)}</div>
+                </div>
+                <div>
+                  <div class="bill-amount">${money(amount)}</div>
+                  <span class="bill-status ${isPaid ? 'paid' : 'due'}">${escapeHtml(statusText)}</span>
+                </div>
+              </div>`;
+          }).join('');
+        }
+      }
+
+      // Low-stock products
+      const stockEl = document.getElementById('lowStockList');
+      const lowStock = Array.isArray(data.low_stock) ? data.low_stock : [];
+
+      if (stockEl) {
+        if (!lowStock.length) {
+          stockEl.innerHTML = `
+            <div class="stock-row">
+              <div>
+                <div class="stock-name">No low-stock items</div>
+                <div class="stock-meta">Your inventory is currently empty or above reorder level.</div>
+              </div>
+              <span class="stock-count ok">OK</span>
+            </div>`;
+        } else {
+          stockEl.innerHTML = lowStock.map((product) => `
+            <div class="stock-row">
+              <div>
+                <div class="stock-name">${escapeHtml(product.name || 'Unnamed product')}</div>
+                <div class="stock-meta">Reorder level: ${Number(product.reorder_level || 0)}</div>
+              </div>
+              <span class="stock-count">${Number(product.stock_qty || 0)} left</span>
+            </div>
+          `).join('');
+        }
+      }
+
+    } catch (error) {
+      console.error('Dashboard loading failed:', error);
+    }
+  }
+
+  // ================= 7-DAY SALES CHART =================
+  // /api/dashboard doesn't include this — it lives at /api/reports/sales-trend.
+  async function loadSalesChart() {
+    try {
+      const response = await fetch('/api/reports/sales-trend?days=7');
+      if (!response.ok) throw new Error(`sales-trend API returned ${response.status}`);
+      const days = await response.json(); // [{date, total}, ...]
+      renderSalesChart(days);
+    } catch (error) {
+      console.error('Sales trend loading failed:', error);
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderSalesChart(days) {
+    const chart = document.getElementById('salesChart');
+    if (!chart) return;
+
+    const items = Array.isArray(days) ? days : [];
+    const values = items.map(item => Number(item.total || item.sales || 0));
+
+    const max = Math.max(...values, 0);
+    const total = values.reduce((sum, value) => sum + value, 0);
+
+    const weekSales = document.getElementById('weekSales');
+    if (weekSales) weekSales.textContent =
+      `₹${total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+
+    if (!items.length) return;
+
+    chart.innerHTML = items.slice(-7).map((item, index, arr) => {
+      const value = Number(item.total || item.sales || 0);
+      const height = max > 0 ? Math.max(4, (value / max) * 96) : 0;
+      const today = index === arr.length - 1;
+      const dateObj = item.date ? new Date(item.date + 'T00:00:00') : null;
+      const label = dateObj
+        ? dateObj.toLocaleDateString('en-IN', { weekday: 'short' })
+        : (item.label || item.day || '');
+
+      return `
+        <div class="bar-col ${today ? 'is-today' : ''}">
+          <div class="bar" style="height:${height}%"></div>
+          <span class="bar-day">${today ? 'Today' : escapeHtml(label)}</span>
+        </div>`;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadDashboard();
+    loadSalesChart();
+  });
+</script>
+
+<script>
+  // Hamburger toggle
+  const menuToggle = document.getElementById('menuToggle');
+  const mobilePanel = document.getElementById('mobilePanel');
+
+  menuToggle.addEventListener('click', () => {
+    const isOpen = mobilePanel.classList.toggle('open');
+    menuToggle.classList.toggle('open', isOpen);
+    menuToggle.setAttribute('aria-expanded', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+
+  mobilePanel.addEventListener('click', (e) => {
+    if (e.target === mobilePanel) {
+      mobilePanel.classList.remove('open');
+      menuToggle.classList.remove('open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.querySelectorAll('.mobile-sheet a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobilePanel.classList.remove('open');
+      menuToggle.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 980 && mobilePanel.classList.contains('open')) {
+      mobilePanel.classList.remove('open');
+      menuToggle.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // ---------- Today's real date ----------
+  const todayDateEl = document.getElementById('todayDate');
+  if (todayDateEl) {
+    todayDateEl.textContent = new Date().toLocaleDateString('en-IN', {
+      weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+    });
+  }
+
+  // ---------- Typing animation: owner greeting ----------
+  const mainText = "Welcome to Rajasthani Saree";
+  const mainEl = document.getElementById('typedMain');
+  let mi = 0;
+
+  function typeMain(){
+    if (mi <= mainText.length){
+      mainEl.textContent = mainText.slice(0, mi);
+      mi++;
+      setTimeout(typeMain, 55);
+    }
+  }
+  typeMain();
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    mainEl.textContent = mainText;
+    document.querySelector('.greeting-title .caret').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

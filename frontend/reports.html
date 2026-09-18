@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports — Rajastani Saree</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--maroon:#5E1620;--maroon-dark:#3E0E15;--gold:#C9A24A;--gold-light:#E7D6A2;--cream:#FBF8F2;--ink:#2B1210;--ink-soft:#6B5C56;--line:#E9DFCD;--header-h:72px}
+*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink)}
+.site-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(94,22,32,.04)}
+.header-inner{max-width:1280px;margin:auto;height:100%;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--maroon);flex-shrink:0}.brand-text{display:flex;flex-direction:column;line-height:1}
+.brand-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;letter-spacing:.5px;color:var(--maroon);white-space:nowrap}.brand-sub{font-size:10.5px;letter-spacing:1.4px;color:var(--gold);margin-top:3px;font-weight:500}
+.primary-nav{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}.nav-link{display:flex;align-items:center;padding:10px 16px;font-size:14.5px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-radius:8px;white-space:nowrap}.nav-link:hover,.nav-link.is-active{color:var(--maroon);background:#FBF3E4}
+.header-actions{display:flex;align-items:center;gap:10px}.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--maroon);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}.btn-primary:hover{background:var(--maroon-dark)}.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.btn-ghost{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--maroon-dark)}
+.menu-toggle{display:none;width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer}.menu-toggle span{display:block;width:18px;height:2px;background:var(--maroon);margin:auto;position:relative}.menu-toggle span:before,.menu-toggle span:after{content:"";position:absolute;width:18px;height:2px;background:var(--maroon);left:0}.menu-toggle span:before{top:-6px}.menu-toggle span:after{top:6px}
+.mobile-panel{display:none}.page-inner{max-width:1280px;margin:auto;padding:40px 24px}.page-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:25px}.page-header h1{font-family:'Playfair Display',serif;color:var(--maroon);font-size:34px;margin:4px 0}.section-label{font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--ink-soft);margin:0 0 8px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}.panel h2{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 18px;font-size:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form-group{display:flex;flex-direction:column;gap:7px}.form-group label{font-size:13px;font-weight:600;color:var(--ink-soft)}input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--ink)}input:focus,select:focus{outline:2px solid var(--gold-light);border-color:var(--gold)}
+.table-wrapper{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line);font-size:13.5px;white-space:nowrap}th{font-size:12px;color:var(--ink-soft);font-weight:600}td strong{color:var(--maroon)}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.kpi-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px}.kpi-value{font-family:'Playfair Display',serif;font-weight:700;font-size:26px;color:var(--maroon);margin-bottom:6px}.kpi-label{font-size:13px;color:var(--ink-soft)}
+.mobile-divider{height:1px;background:var(--line);margin:10px 4px}.mobile-actions{padding:6px 4px}.mobile-actions .btn-primary{width:100%;justify-content:center}
+@media(max-width:980px){.primary-nav,.header-actions .hide-xs{display:none}.menu-toggle{display:block}.mobile-panel{position:fixed;top:var(--header-h);left:0;right:0;bottom:0;background:rgba(43,18,16,.35);z-index:999;padding:12px 16px}.mobile-panel.open{display:block}.mobile-sheet{background:#fff;padding:10px 16px 25px;border-radius:0 0 12px 12px}.mobile-sheet .nav-link{width:100%;margin:3px 0}}
+@media(max-width:700px){.kpi-row{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}.page-inner{padding:28px 16px}.brand-sub{display:none}}
+@media(max-width:480px){.kpi-row{grid-template-columns:1fr}.page-header{align-items:flex-start;flex-direction:column}.btn-primary .label{display:none}}
+
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+.filter-group{display:flex;flex-direction:column;gap:6px}
+.filter-group label{font-size:11.5px;font-weight:600;color:var(--ink-soft)}
+.filter-group input{padding:10px 12px}
+.search-input{min-width:220px;flex:1}
+.status-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.status-pill.paid{background:#E7F5ED;color:#1E7A4C}
+.status-pill.due{background:#FBEAE7;color:#B23A2E}
+.status-pill.cancelled{background:#F1EEE7;color:var(--ink-soft)}
+.row-link{cursor:pointer}
+.row-link:hover{background:#FBF3E4}
+.empty-row td{text-align:center;color:var(--ink-soft);padding:26px}
+.table-message{font-size:13px;color:var(--ink-soft);margin-bottom:10px}
+.table-message.error{color:#B23A2E}
+.gst-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.gst-cell{background:#FBF8F2;border:1px solid var(--line);border-radius:10px;padding:14px}
+.gst-cell .label{font-size:11.5px;color:var(--ink-soft);margin-bottom:4px}
+.gst-cell .value{font-family:'Playfair Display',serif;font-weight:700;color:var(--maroon);font-size:19px}
+@media(max-width:700px){.gst-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="dashboard.html" class="brand" aria-label="Rajastani Saree home">
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3" stroke="#C9A24A" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="17" cy="19" r="6.5" fill="#C9A24A" fill-opacity="0.12" stroke="#C9A24A" stroke-width="1.6"/>
+        <circle cx="17" cy="19" r="2.3" fill="#C9A24A"/>
+      </svg>
+      <span class="brand-text">
+        <span class="brand-name">Rajastani&nbsp;Saree</span>
+        <span class="brand-sub">BILLING &amp; INVENTORY</span>
+      </span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="billing.html" class="nav-link">New Bill</a>
+      <a href="inventory.html" class="nav-link">Inventory</a>
+      <a href="purchase.html" class="nav-link">Purchase Bill</a>
+      <a href="reports.html" class="nav-link is-active">Reports</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn-primary" href="billing.html">＋ <span class="label">New Bill</span></a>
+      <div class="avatar" title="Store Manager">SM</div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-panel" id="mobilePanel">
+  <div class="mobile-sheet">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="billing.html" class="nav-link">New Bill</a>
+    <a href="inventory.html" class="nav-link">Inventory</a>
+    <a href="reports.html" class="nav-link is-active">Reports</a>
+    <div class="mobile-divider"></div>
+    <div class="mobile-actions">
+      <a class="btn-primary" href="billing.html">＋ New Bill</a>
+    </div>
+  </div>
+</div>
+
+<main><div class="page-inner">
+<div class="page-header"><div><p class="section-label">BUSINESS ANALYTICS</p><h1>Reports</h1></div><button class="btn-primary" id="refreshBtn" onclick="loadReports()">Refresh</button></div>
+
+<div class="kpi-row">
+  <div class="kpi-card"><div class="kpi-value" id="kpiTotalSales">₹0</div><div class="kpi-label">Total Sales</div></div>
+  <div class="kpi-card"><div class="kpi-value" id="kpiTotalBills">0</div><div class="kpi-label">Total Bills</div></div>
+  <div class="kpi-card"><div class="kpi-value" id="kpiGst">₹0</div><div class="kpi-label">GST Collected</div></div>
+  <div class="kpi-card"><div class="kpi-value" id="kpiAvgBill">₹0</div><div class="kpi-label">Average Bill Value</div></div>
+</div>
+
+<section class="panel">
+  <h2>Sales Report</h2>
+  <div class="filter-row">
+    <div class="filter-group search-input">
+      <label>Search by customer name or invoice number</label>
+      <input id="searchQuery" placeholder="e.g. Meera Sharma or INV-2481">
+    </div>
+    <div class="filter-group">
+      <label>From</label>
+      <input type="date" id="fromDate">
+    </div>
+    <div class="filter-group">
+      <label>To</label>
+      <input type="date" id="toDate">
+    </div>
+    <button class="btn-primary" onclick="loadReports()">Generate</button>
+    <button class="btn-ghost" onclick="clearFilters()">Clear</button>
+  </div>
+
+  <div id="tableMessage" class="table-message" style="display:none"></div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Subtotal</th><th>GST</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody id="billsTable">
+        <tr class="empty-row"><td colspan="7">Loading bills…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>GST Report</h2>
+  <div class="filter-row">
+    <div class="filter-group">
+      <label>Month</label>
+      <input type="month" id="gstMonth">
+    </div>
+    <button class="btn-primary" onclick="loadGstReport()">Load GST Summary</button>
+  </div>
+  <div id="gstMessage" class="table-message" style="display:none"></div>
+  <div class="gst-grid" id="gstGrid" style="display:none">
+    <div class="gst-cell"><div class="label">Taxable Value</div><div class="value" id="gstTaxable">₹0</div></div>
+    <div class="gst-cell"><div class="label">CGST</div><div class="value" id="gstCgst">₹0</div></div>
+    <div class="gst-cell"><div class="label">SGST</div><div class="value" id="gstSgst">₹0</div></div>
+    <div class="gst-cell"><div class="label">IGST</div><div class="value" id="gstIgst">₹0</div></div>
+  </div>
+  <div class="table-wrapper" id="gstRateWrap" style="display:none">
+    <table>
+      <thead><tr><th>GST Rate</th><th>Taxable Value</th><th>CGST</th><th>SGST</th><th>IGST</th></tr></thead>
+      <tbody id="gstRateTable"></tbody>
+    </table>
+  </div>
+</section>
+
+</div></main>
+
+<script>
+let allBills = [];
+let searchTimer = null;
+
+function money(value) {
+  return "₹" + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  }[ch]));
+}
+
+function fmtDate(iso) {
+  try {
+    return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch { return '—'; }
+}
+
+function showTableMessage(message, type) {
+  const el = document.getElementById('tableMessage');
+  if (!message) { el.style.display = 'none'; return; }
+  el.textContent = message;
+  el.className = 'table-message' + (type === 'error' ? ' error' : '');
+  el.style.display = 'block';
+}
+
+async function loadReports() {
+  const from = document.getElementById('fromDate').value;
+  const to = document.getElementById('toDate').value;
+
+  showTableMessage('');
+  document.getElementById('billsTable').innerHTML = '<tr class="empty-row"><td colspan="7">Loading bills…</td></tr>';
+
+  try {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+
+    const response = await fetch('/api/bills' + (params.toString() ? '?' + params.toString() : ''));
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not load bills');
+    }
+
+    allBills = Array.isArray(data) ? data : [];
+    applyFilter();
+  } catch (error) {
+    console.error(error);
+    allBills = [];
+    renderBills([]);
+    renderKpis([]);
+    showTableMessage('Could not load bills: ' + error.message + ' (is the backend server running?)', 'error');
+  }
+}
+
+function applyFilter() {
+  const q = document.getElementById('searchQuery').value.trim().toLowerCase();
+
+  const filtered = !q ? allBills : allBills.filter(bill => {
+    const customer = (bill.customer_name || '').toLowerCase();
+    const invoice = (bill.invoice_no || '').toLowerCase();
+    return customer.includes(q) || invoice.includes(q);
+  });
+
+  renderBills(filtered);
+  renderKpis(filtered);
+
+  if (q && !filtered.length) {
+    showTableMessage(`No bills matched "${q}".`);
+  } else {
+    showTableMessage('');
+  }
+}
+
+function renderKpis(bills) {
+  const totalSales = bills.reduce((sum, b) => sum + Number(b.grand_total || 0), 0);
+  const totalGst = bills.reduce((sum, b) =>
+    sum + Number(b.cgst_amount || 0) + Number(b.sgst_amount || 0) + Number(b.igst_amount || 0), 0);
+  const totalBills = bills.length;
+  const avgBill = totalBills ? totalSales / totalBills : 0;
+
+  document.getElementById('kpiTotalSales').textContent = money(totalSales);
+  document.getElementById('kpiTotalBills').textContent = totalBills.toLocaleString('en-IN');
+  document.getElementById('kpiGst').textContent = money(totalGst);
+  document.getElementById('kpiAvgBill').textContent = money(avgBill);
+}
+
+function renderBills(bills) {
+  const body = document.getElementById('billsTable');
+
+  if (!bills.length) {
+    body.innerHTML = '<tr class="empty-row"><td colspan="7">No bills found for this range.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = bills.map(bill => {
+    const gst = Number(bill.cgst_amount || 0) + Number(bill.sgst_amount || 0) + Number(bill.igst_amount || 0);
+    const statusRaw = String(bill.status || 'ACTIVE').toUpperCase();
+    const paymentStatus = String(bill.payment_status || 'Paid');
+    let pillClass = 'paid', pillText = paymentStatus;
+    if (statusRaw === 'CANCELLED') { pillClass = 'cancelled'; pillText = 'Cancelled'; }
+    else if (/due|unpaid/i.test(paymentStatus)) { pillClass = 'due'; }
+
+    return `
+      <tr class="row-link" onclick="openInvoice('${bill._id}')">
+        <td>${fmtDate(bill.bill_date)}</td>
+        <td><strong>#${escapeHtml(bill.invoice_no)}</strong></td>
+        <td>${escapeHtml(bill.customer_name || 'Walk-in customer')}</td>
+        <td>${money(bill.subtotal)}</td>
+        <td>${money(gst)}</td>
+        <td><strong>${money(bill.grand_total)}</strong></td>
+        <td><span class="status-pill ${pillClass}">${escapeHtml(pillText)}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openInvoice(id) {
+  window.open('/api/bills/' + encodeURIComponent(id) + '/invoice', '_blank');
+}
+
+function clearFilters() {
+  document.getElementById('searchQuery').value = '';
+  document.getElementById('fromDate').value = '';
+  document.getElementById('toDate').value = '';
+  loadReports();
+}
+
+document.getElementById('searchQuery').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyFilter, 200);
+});
+
+// ================= GST REPORT =================
+async function loadGstReport() {
+  const monthInput = document.getElementById('gstMonth').value; // "YYYY-MM"
+  const gstMessage = document.getElementById('gstMessage');
+  const gstGrid = document.getElementById('gstGrid');
+  const gstRateWrap = document.getElementById('gstRateWrap');
+
+  gstMessage.style.display = 'none';
+  gstGrid.style.display = 'none';
+  gstRateWrap.style.display = 'none';
+
+  let month, year;
+  if (monthInput) {
+    const [y, m] = monthInput.split('-');
+    year = Number(y);
+    month = Number(m);
+  }
+
+  try {
+    const params = new URLSearchParams();
+    if (month) params.set('month', month);
+    if (year) params.set('year', year);
+
+    const response = await fetch('/api/reports/gst' + (params.toString() ? '?' + params.toString() : ''));
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not load GST report');
+    }
+
+    document.getElementById('gstTaxable').textContent = money(data.totals.taxable_value);
+    document.getElementById('gstCgst').textContent = money(data.totals.cgst);
+    document.getElementById('gstSgst').textContent = money(data.totals.sgst);
+    document.getElementById('gstIgst').textContent = money(data.totals.igst);
+    gstGrid.style.display = 'grid';
+
+    const rateTable = document.getElementById('gstRateTable');
+    const rates = Array.isArray(data.rateSummary) ? data.rateSummary : [];
+
+    if (!rates.length) {
+      rateTable.innerHTML = '<tr class="empty-row"><td colspan="5">No GST activity for this period.</td></tr>';
+    } else {
+      rateTable.innerHTML = rates.map(r => `
+        <tr>
+          <td>${Number(r.gst_rate || 0)}%</td>
+          <td>${money(r.taxable_value)}</td>
+          <td>${money(r.cgst)}</td>
+          <td>${money(r.sgst)}</td>
+          <td>${money(r.igst)}</td>
+        </tr>
+      `).join('');
+    }
+    gstRateWrap.style.display = 'block';
+
+    if (!data.totals.bill_count) {
+      gstMessage.textContent = `No bills found for ${data.period.month}/${data.period.year}.`;
+      gstMessage.className = 'table-message';
+      gstMessage.style.display = 'block';
+    }
+  } catch (error) {
+    console.error(error);
+    gstMessage.textContent = 'Could not load GST report: ' + error.message;
+    gstMessage.className = 'table-message error';
+    gstMessage.style.display = 'block';
+  }
+}
+
+document.getElementById('menuToggle').addEventListener('click', () => {
+  const panel = document.getElementById('mobilePanel');
+  const button = document.getElementById('menuToggle');
+  panel.classList.toggle('open');
+  button.setAttribute('aria-expanded', panel.classList.contains('open') ? 'true' : 'false');
+});
+
+// Default GST month/year = current month
+const now = new Date();
+document.getElementById('gstMonth').value =
+  now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+loadReports();
+loadGstReport();
+</script>
+</body>
+</html>

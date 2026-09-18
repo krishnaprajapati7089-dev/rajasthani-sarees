@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop Settings — Rajastani Saree</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--maroon:#5E1620;--maroon-dark:#3E0E15;--gold:#C9A24A;--gold-light:#E7D6A2;--cream:#FBF8F2;--ink:#2B1210;--ink-soft:#6B5C56;--line:#E9DFCD;--header-h:72px}
+*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink)}
+.site-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(94,22,32,.04)}
+.header-inner{max-width:1280px;margin:auto;height:100%;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--maroon);flex-shrink:0}.brand-text{display:flex;flex-direction:column;line-height:1}
+.brand-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;letter-spacing:.5px;color:var(--maroon);white-space:nowrap}.brand-sub{font-size:10.5px;letter-spacing:1.4px;color:var(--gold);margin-top:3px;font-weight:500}
+.primary-nav{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}.nav-link{display:flex;align-items:center;padding:10px 16px;font-size:14.5px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-radius:8px;white-space:nowrap}.nav-link:hover,.nav-link.is-active{color:var(--maroon);background:#FBF3E4}
+.header-actions{display:flex;align-items:center;gap:10px}.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--maroon);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}.btn-primary:hover{background:var(--maroon-dark)}.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--maroon-dark)}
+.page-inner{max-width:900px;margin:auto;padding:40px 24px}.page-header{margin-bottom:25px}.page-header h1{font-family:'Playfair Display',serif;color:var(--maroon);font-size:34px;margin:4px 0}.section-label{font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--ink-soft);margin:0 0 8px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}.panel h2{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 6px;font-size:20px}
+.panel .sub{color:var(--ink-soft);font-size:13px;margin:0 0 18px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form-group{display:flex;flex-direction:column;gap:7px}.form-group label{font-size:13px;font-weight:600;color:var(--ink-soft)}input{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--ink)}input:focus{outline:2px solid var(--gold-light);border-color:var(--gold)}
+.form-message{margin-top:14px;font-size:13px;font-weight:600}
+.form-message.success{color:#1E7A4C}
+.form-message.error{color:#B23A2E}
+.form-message.info{color:var(--ink-soft);font-weight:500}
+.actions{display:flex;justify-content:flex-end;margin-top:6px}
+@media(max-width:640px){.form-row{grid-template-columns:1fr}.page-inner{padding:25px 16px}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="dashboard.html" class="brand" aria-label="Rajastani Saree home">
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3" stroke="#C9A24A" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="17" cy="19" r="6.5" fill="#C9A24A" fill-opacity="0.12" stroke="#C9A24A" stroke-width="1.6"/>
+        <circle cx="17" cy="19" r="2.3" fill="#C9A24A"/>
+      </svg>
+      <span class="brand-text">
+        <span class="brand-name">Rajastani&nbsp;Saree</span>
+        <span class="brand-sub">BILLING &amp; INVENTORY</span>
+      </span>
+    </a>
+    <nav class="primary-nav" aria-label="Primary">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="billing.html" class="nav-link">New Bill</a>
+      <a href="inventory.html" class="nav-link">Inventory</a>
+      <a href="purchase.html" class="nav-link">Purchase Bill</a>
+      <a href="reports.html" class="nav-link">Reports</a>
+      <a href="shop.html" class="nav-link is-active">Shop Settings</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn-primary" href="billing.html">＋ New Bill</a>
+      <div class="avatar" title="Store Manager">SM</div>
+    </div>
+  </div>
+</header>
+
+<main><div class="page-inner">
+<div class="page-header">
+  <p class="section-label">SETTINGS</p>
+  <h1>Shop Details</h1>
+  <p style="color:var(--ink-soft);margin:0">These details print on every invoice — fill them in once, they'll show up on all future bills.</p>
+</div>
+
+<form id="shopForm">
+  <section class="panel">
+    <h2>Basic Details</h2>
+    <p class="sub">Shop name and invoice numbering</p>
+    <div class="form-row">
+      <div class="form-group"><label>Shop Name</label><input id="shop_name" placeholder="Rajastani Saree"></div>
+      <div class="form-group"><label>Invoice Prefix</label><input id="invoice_prefix" placeholder="INV"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Address</h2>
+    <p class="sub">Shown under your shop name on every invoice</p>
+    <div class="form-row">
+      <div class="form-group"><label>Address Line 1</label><input id="address_line1" placeholder="Shop no., street"></div>
+      <div class="form-group"><label>Address Line 2</label><input id="address_line2" placeholder="Area, landmark (optional)"></div>
+    </div>
+    <div class="form-row" style="margin-top:16px">
+      <div class="form-group"><label>City</label><input id="city" placeholder="e.g. Guna"></div>
+      <div class="form-group"><label>Pincode</label><input id="pincode" placeholder="e.g. 473001"></div>
+    </div>
+    <div class="form-row" style="margin-top:16px">
+      <div class="form-group"><label>State</label><input id="state" placeholder="e.g. Madhya Pradesh"></div>
+      <div class="form-group"><label>State Code</label><input id="state_code" placeholder="e.g. 23"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Contact &amp; Tax Details</h2>
+    <p class="sub">GSTIN is required for a valid tax invoice</p>
+    <div class="form-row">
+      <div class="form-group"><label>Phone Number</label><input id="phone" placeholder="e.g. 9876543210"></div>
+      <div class="form-group"><label>Email (optional)</label><input id="email" placeholder="shop@example.com"></div>
+    </div>
+    <div class="form-row" style="margin-top:16px">
+      <div class="form-group"><label>GSTIN</label><input id="gstin" placeholder="e.g. 23ABCDE1234F1Z5"></div>
+      <div class="form-group"><label>PAN (optional)</label><input id="pan" placeholder="e.g. ABCDE1234F"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Bank &amp; UPI Details (optional)</h2>
+    <p class="sub">Printed at the bottom of the invoice if filled in</p>
+    <div class="form-row">
+      <div class="form-group"><label>Bank Name</label><input id="bank_name" placeholder="e.g. State Bank of India"></div>
+      <div class="form-group"><label>Account Number</label><input id="bank_account_no" placeholder="Account number"></div>
+    </div>
+    <div class="form-row" style="margin-top:16px">
+      <div class="form-group"><label>IFSC Code</label><input id="bank_ifsc" placeholder="e.g. SBIN0001234"></div>
+      <div class="form-group"><label>UPI ID</label><input id="upi_id" placeholder="e.g. shop@upi"></div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="btn-primary" type="submit" id="saveBtn">Save Shop Details</button>
+  </div>
+  <div id="formMessage" class="form-message"></div>
+</form>
+
+</div></main>
+
+<script>
+const form = document.getElementById('shopForm');
+const saveBtn = document.getElementById('saveBtn');
+const formMessage = document.getElementById('formMessage');
+
+const fieldIds = [
+  'shop_name', 'invoice_prefix',
+  'address_line1', 'address_line2', 'city', 'pincode', 'state', 'state_code',
+  'phone', 'email', 'gstin', 'pan',
+  'bank_name', 'bank_account_no', 'bank_ifsc', 'upi_id'
+];
+
+function showMessage(text, type) {
+  formMessage.textContent = text;
+  formMessage.className = 'form-message ' + (type || '');
+}
+
+async function loadShop() {
+  showMessage('Loading shop details…', 'info');
+  try {
+    const response = await fetch('/api/shop');
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not load shop details');
+    }
+
+    fieldIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = data[id] || '';
+    });
+
+    showMessage('');
+  } catch (error) {
+    console.error(error);
+    showMessage('Could not load shop details: ' + error.message + ' (is the backend server running?)', 'error');
+  }
+}
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const payload = {};
+  fieldIds.forEach(id => {
+    payload[id] = document.getElementById(id).value.trim();
+  });
+
+  if (!payload.gstin) {
+    const proceed = confirm('You haven\'t entered a GSTIN. Invoices will print without one — continue saving anyway?');
+    if (!proceed) return;
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+
+  try {
+    const response = await fetch('/api/shop', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not save shop details');
+    }
+
+    showMessage('Shop details saved. New invoices will now show this information.', 'success');
+  } catch (error) {
+    console.error(error);
+    showMessage('Could not save shop details: ' + error.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Shop Details';
+  }
+});
+
+loadShop();
+</script>
+</body>
+</html>

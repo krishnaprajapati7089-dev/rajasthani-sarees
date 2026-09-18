@@ -911,10 +911,14 @@
   </div>
 </main>
 <script>
+  // ================= API CONFIG =================
+  // Live Node/Express backend on Render
+  const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
+
   // ================= DASHBOARD DATA =================
   async function loadDashboard() {
     try {
-      const response = await fetch('/api/dashboard', {
+      const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
         headers: { 'Accept': 'application/json' }
       });
 
@@ -1039,7 +1043,7 @@
   // /api/dashboard doesn't include this — it lives at /api/reports/sales-trend.
   async function loadSalesChart() {
     try {
-      const response = await fetch('/api/reports/sales-trend?days=7');
+      const response = await fetch(`${API_BASE_URL}/api/reports/sales-trend?days=7`);
       if (!response.ok) throw new Error(`sales-trend API returned ${response.status}`);
       const days = await response.json(); // [{date, total}, ...]
       renderSalesChart(days);

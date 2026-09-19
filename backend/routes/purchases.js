@@ -1,176 +1,459 @@
-// routes/purchases.js — powers purchase.html: recording a supplier bill and
-// adding the purchased stock into inventory.
 const express = require('express');
 const Product = require('../models/Product');
 const Purchase = require('../models/Purchase');
-const { generateUniqueBarcode } = require('../utils/barcode');
 
 const router = express.Router();
 
-// Generates the next sequential purchase number: K-1, K-2, K-3, ...
-// Looks at the highest existing K-number rather than just counting
-// documents, so numbering stays correct even if an old bill was deleted.
-async function nextPurchaseNo() {
-  const existing = await Purchase.find({ purchase_no: { $regex: /^K-\d+$/ } })
-    .select('purchase_no');
 
-  let maxSeq = 0;
-  for (const p of existing) {
-    const n = parseInt(String(p.purchase_no).replace('K-', ''), 10);
-    if (!Number.isNaN(n) && n > maxSeq) maxSeq = n;
-  }
+// ============================================================
+// GET ALL PURCHASES
+// ============================================================
 
-  return `K-${maxSeq + 1}`;
-}
-
-// GET /api/purchases?q=search-term
-// Searches by K-number (e.g. "K-5" or just "5"), supplier name, or invoice number.
 router.get('/', async (req, res) => {
   try {
-    const { q } = req.query;
-    const filter = {};
 
-    if (q) {
-      const term = q.trim();
-      const orConditions = [
-        { supplier: { $regex: term, $options: 'i' } },
-        { invoice_number: { $regex: term, $options: 'i' } },
-        { purchase_no: { $regex: term, $options: 'i' } }
-      ];
+    const purchases = await Purchase
+      .find()
+      .sort({ createdAt: -1 });
 
-      // Typing a plain number ("5") should also match "K-5" exactly.
-      const numericOnly = term.replace(/^k-?/i, '');
-      if (/^\d+$/.test(numericOnly)) {
-        orConditions.push({ purchase_no: `K-${numericOnly}` });
-      }
-
-      filter.$or = orConditions;
-    }
-
-    const purchases = await Purchase.find(filter).sort({ createdAt: -1 });
     res.json(purchases);
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
-// GET /api/purchases/:id
-router.get('/:id', async (req, res) => {
-  try {
-    const purchase = await Purchase.findById(req.params.id);
-    if (!purchase) return res.status(404).json({ error: 'Purchase not found' });
-    res.json(purchase);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/**
- * POST /api/purchases
- * Body: {
- *   supplier, supplier_gstin, invoice_number, invoice_date, supplier_state, reference,
- *   items: [{ item_code, description, hsn_code, qty, rate, gst_rate, product_id? }]
- * }
- * Every saved purchase bill gets its own sequential purchase_no (K-1, K-2, ...).
- * For each item: if product_id is given, adds qty to that product's stock and
- * updates its purchase_price. Otherwise tries to match by barcode == item_code;
- * if still not found, creates a new product automatically — and if no item
- * code/barcode was given on the bill, a unique one is generated so a label
- * can be printed and stuck on the saree.
- *
- * The response includes a `products` array (id, name, barcode, price) for
- * every item on the bill, so the frontend can immediately print barcode/QR
- * labels for anything new without a second round of API calls.
- */
-router.post('/', async (req, res) => {
-  try {
-    const { supplier, supplier_gstin, invoice_number, invoice_date, supplier_state, reference, items } = req.body;
-
-    if (!supplier || !invoice_number) {
-      return res.status(400).json({ error: 'Supplier and invoice number are required' });
-    }
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'At least one item is required' });
-    }
-
-    const purchaseItems = [];
-    const touchedProductIds = [];
-    let taxableTotal = 0, gstTotal = 0;
-
-    for (const line of items) {
-      const qty = Number(line.qty) || 0;
-      const rate = Number(line.rate) || 0;
-      const gstRate = Number(line.gst_rate) || 0;
-      const base = qty * rate;
-      const gst = base * gstRate / 100;
-      const amount = base + gst;
-
-      let product = null;
-      if (line.product_id) {
-        product = await Product.findById(line.product_id);
-      } else if (line.item_code) {
-        product = await Product.findOne({ barcode: line.item_code });
-      }
-
-      if (product) {
-        product.stock_qty += qty;
-        product.purchase_price = rate;
-        await product.save();
-      } else {
-        const barcodeValue = line.item_code && String(line.item_code).trim()
-          ? String(line.item_code).trim()
-          : await generateUniqueBarcode(Product);
-
-        product = await Product.create({
-          name: line.description || 'Unnamed item',
-          barcode: barcodeValue,
-          hsn_code: line.hsn_code || '',
-          purchase_price: rate,
-          selling_price: rate, // owner should adjust the margin in Inventory afterwards
-          gst_rate: gstRate,
-          stock_qty: qty,
-          reorder_level: 5
-        });
-      }
-
-      touchedProductIds.push(product._id);
-
-      purchaseItems.push({
-        item_code: line.item_code || '',
-        description: line.description,
-        hsn_code: line.hsn_code || '',
-        qty, rate, gst_rate: gstRate, amount,
-        product_id: product._id
-      });
-
-      taxableTotal += base;
-      gstTotal += gst;
-    }
-
-    const purchase = await Purchase.create({
-      purchase_no: await nextPurchaseNo(),
-      supplier,
-      supplier_gstin: supplier_gstin || '',
-      invoice_number,
-      invoice_date: invoice_date ? new Date(invoice_date) : new Date(),
-      supplier_state: supplier_state || '',
-      reference: reference || '',
-      items: purchaseItems,
-      taxable_amount: taxableTotal,
-      gst_total: gstTotal,
-      grand_total: taxableTotal + gstTotal
+    res.status(500).json({
+      error: err.message
     });
 
-    const products = await Product.find({ _id: { $in: touchedProductIds } })
-      .select('name barcode selling_price gst_rate stock_qty');
-
-    res.status(201).json({ ...purchase.toObject(), products });
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(409).json({ error: 'That purchase number already exists — please try saving again.' });
-    }
-    res.status(400).json({ error: err.message });
   }
 });
+
+
+// ============================================================
+// GET ONE PURCHASE
+// ============================================================
+
+router.get('/:id', async (req, res) => {
+  try {
+
+    const purchase =
+      await Purchase.findById(req.params.id);
+
+    if (!purchase) {
+
+      return res.status(404).json({
+        error: 'Purchase not found'
+      });
+
+    }
+
+    res.json(purchase);
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message
+    });
+
+  }
+});
+
+
+// ============================================================
+// CREATE PURCHASE
+// ============================================================
+
+router.post('/', async (req, res) => {
+
+  try {
+
+    const {
+      supplier,
+      supplier_gstin,
+      invoice_number,
+      invoice_date,
+      supplier_state,
+      reference,
+      items
+    } = req.body;
+
+
+    // --------------------------------------------------------
+    // Validation
+    // --------------------------------------------------------
+
+    if (!supplier || !invoice_number) {
+
+      return res.status(400).json({
+        error:
+          'Supplier and invoice number are required'
+      });
+
+    }
+
+
+    if (!Array.isArray(items) || items.length === 0) {
+
+      return res.status(400).json({
+        error:
+          'At least one item is required'
+      });
+
+    }
+
+
+    const purchaseItems = [];
+
+    let taxableTotal = 0;
+
+    let gstTotal = 0;
+
+    const createdProducts = [];
+
+
+    // ========================================================
+    // PROCESS ITEMS
+    // ========================================================
+
+    for (const line of items) {
+
+      const qty =
+        Number(line.qty) || 0;
+
+      const purchaseRate =
+        Number(
+          line.purchase_rate ?? line.rate
+        ) || 0;
+
+      const mrp =
+        Number(line.mrp) || 0;
+
+      const sellingPrice =
+        Number(line.selling_price) || 0;
+
+      const gstRate =
+        Number(line.gst_rate) || 0;
+
+
+      // ------------------------------------------------------
+      // Validation
+      // ------------------------------------------------------
+
+      if (qty <= 0) {
+
+        throw new Error(
+          `Invalid quantity for ${line.description}`
+        );
+
+      }
+
+
+      if (purchaseRate < 0) {
+
+        throw new Error(
+          `Invalid purchase price for ${line.description}`
+        );
+
+      }
+
+
+      if (sellingPrice < 0) {
+
+        throw new Error(
+          `Invalid selling price for ${line.description}`
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // Purchase bill calculation
+      //
+      // Purchase rate is treated as pre-GST here,
+      // same as your existing purchase system.
+      // ------------------------------------------------------
+
+      const base =
+        qty * purchaseRate;
+
+      const gst =
+        base * gstRate / 100;
+
+      const amount =
+        base + gst;
+
+
+      // ======================================================
+      // FIND EXISTING PRODUCT
+      // ======================================================
+
+      let product = null;
+
+
+      if (line.product_id) {
+
+        product =
+          await Product.findById(
+            line.product_id
+          );
+
+      }
+
+
+      if (!product && line.item_code) {
+
+        product =
+          await Product.findOne({
+            barcode: line.item_code
+          });
+
+      }
+
+
+      // ======================================================
+      // EXISTING PRODUCT
+      // ======================================================
+
+      if (product) {
+
+        product.stock_qty =
+          Number(product.stock_qty || 0) + qty;
+
+
+        // Update purchase price
+        product.purchase_price =
+          purchaseRate;
+
+
+        // Update MRP if supplied
+        if (mrp > 0) {
+
+          product.mrp = mrp;
+
+        }
+
+
+        // Update selling price if supplied
+        if (sellingPrice > 0) {
+
+          product.selling_price =
+            sellingPrice;
+
+        }
+
+
+        // Update GST
+        product.gst_rate =
+          gstRate;
+
+
+        // Update HSN if supplied
+        if (line.hsn_code) {
+
+          product.hsn_code =
+            line.hsn_code;
+
+        }
+
+
+        await product.save();
+
+
+      }
+
+      // ======================================================
+      // NEW PRODUCT
+      // ======================================================
+
+      else {
+
+        product =
+          await Product.create({
+
+            name:
+              line.description ||
+              'Unnamed item',
+
+            barcode:
+              line.item_code ||
+              undefined,
+
+            hsn_code:
+              line.hsn_code ||
+              '',
+
+            purchase_price:
+              purchaseRate,
+
+            mrp:
+              mrp,
+
+            // IMPORTANT:
+            // Selling price comes from user input.
+            selling_price:
+              sellingPrice,
+
+            gst_rate:
+              gstRate,
+
+            stock_qty:
+              qty,
+
+            reorder_level:
+              5
+
+          });
+
+      }
+
+
+      // ------------------------------------------------------
+      // Save created/updated product
+      // ------------------------------------------------------
+
+      createdProducts.push({
+
+        _id:
+          product._id,
+
+        name:
+          product.name,
+
+        barcode:
+          product.barcode,
+
+        mrp:
+          product.mrp,
+
+        purchase_price:
+          product.purchase_price,
+
+        selling_price:
+          product.selling_price,
+
+        gst_rate:
+          product.gst_rate,
+
+        stock_qty:
+          product.stock_qty
+
+      });
+
+
+      // ======================================================
+      // PURCHASE ITEM
+      // ======================================================
+
+      purchaseItems.push({
+
+        item_code:
+          line.item_code || '',
+
+        description:
+          line.description,
+
+        hsn_code:
+          line.hsn_code || '',
+
+        qty,
+
+        mrp,
+
+        purchase_rate:
+          purchaseRate,
+
+        selling_price:
+          sellingPrice,
+
+        // Keep rate for compatibility
+        rate:
+          purchaseRate,
+
+        gst_rate:
+          gstRate,
+
+        amount,
+
+        product_id:
+          product._id
+
+      });
+
+
+      taxableTotal += base;
+
+      gstTotal += gst;
+
+    }
+
+
+    // ========================================================
+    // CREATE PURCHASE RECORD
+    // ========================================================
+
+    const purchase =
+      await Purchase.create({
+
+        supplier,
+
+        supplier_gstin:
+          supplier_gstin || '',
+
+        invoice_number,
+
+        invoice_date:
+          invoice_date
+            ? new Date(invoice_date)
+            : new Date(),
+
+        supplier_state:
+          supplier_state || '',
+
+        reference:
+          reference || '',
+
+        items:
+          purchaseItems,
+
+        taxable_amount:
+          taxableTotal,
+
+        gst_total:
+          gstTotal,
+
+        grand_total:
+          taxableTotal + gstTotal
+
+      });
+
+
+    // ========================================================
+    // RESPONSE
+    // ========================================================
+
+    res.status(201).json({
+
+      ...purchase.toObject(),
+
+      products:
+        createdProducts
+
+    });
+
+
+  } catch (err) {
+
+    console.error(
+      'Purchase save error:',
+      err
+    );
+
+    res.status(400).json({
+      error: err.message
+    });
+
+  }
+
+});
+
 
 module.exports = router;

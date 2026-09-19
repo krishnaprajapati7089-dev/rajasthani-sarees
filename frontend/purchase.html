@@ -155,7 +155,7 @@ td input{min-width:80px;padding:8px}
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr><th>Item Code (barcode)</th><th>Description</th><th>HSN</th><th>Qty</th><th>Rate</th><th>GST %</th><th>Amount</th><th></th></tr>
+          <tr><th>Item Code (barcode)</th><th>Description</th><th>HSN</th><th>Qty</th><th>MRP</th><th>Purchase Rate</th><th>GST %</th><th>Amount</th><th></th></tr>
         </thead>
         <tbody id="purchaseItems">
           <tr>
@@ -163,7 +163,8 @@ td input{min-width:80px;padding:8px}
             <td><input class="description" value="Saree"></td>
             <td><input class="hsn" value="5407"></td>
             <td><input class="qty" type="number" value="1" oninput="calculateTotal()"></td>
-            <td><input class="rate" type="number" value="0" oninput="calculateTotal()"></td>
+            <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP"></td>
+            <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
             <td><input class="gst" type="number" value="5" oninput="calculateTotal()"></td>
             <td class="amount">₹0.00</td>
             <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
@@ -259,7 +260,8 @@ function addItem(){
     <td><input class="description" placeholder="Description"></td>
     <td><input class="hsn" placeholder="HSN"></td>
     <td><input class="qty" type="number" value="1" oninput="calculateTotal()"></td>
-    <td><input class="rate" type="number" value="0" oninput="calculateTotal()"></td>
+    <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP"></td>
+    <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
     <td><input class="gst" type="number" value="5" oninput="calculateTotal()"></td>
     <td class="amount">₹0.00</td>
     <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
@@ -287,12 +289,17 @@ function collectItems(){
     const description = row.querySelector('.description').value.trim();
     const qty = Number(row.querySelector('.qty').value) || 0;
     if (!description || qty <= 0) return;
+    const mrp = Number(row.querySelector('.mrp')?.value) || 0;
+    const purchaseRate = Number(row.querySelector('.rate')?.value) || 0;
+
     items.push({
       item_code: row.querySelector('.itemCode').value.trim(),
       description,
       hsn_code: row.querySelector('.hsn').value.trim(),
       qty,
-      rate: Number(row.querySelector('.rate').value) || 0,
+      mrp,
+      purchase_rate: purchaseRate,
+      rate: purchaseRate,
       gst_rate: Number(row.querySelector('.gst').value) || 0
     });
   });

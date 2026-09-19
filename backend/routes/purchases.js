@@ -1,6 +1,11 @@
+// routes/purchases.js
+// Records supplier purchases, updates inventory, stores MRP/purchase/selling prices,
+// generates a barcode when needed, and returns products for printable labels.
+
 const express = require('express');
 const Product = require('../models/Product');
 const Purchase = require('../models/Purchase');
+const { generateUniqueBarcode } = require('../utils/barcode');
 
 const router = express.Router();
 
@@ -29,7 +34,7 @@ router.get('/', async (req, res) => {
 
 
 // ============================================================
-// GET ONE PURCHASE
+// GET SINGLE PURCHASE
 // ============================================================
 
 router.get('/:id', async (req, res) => {
@@ -78,7 +83,7 @@ router.post('/', async (req, res) => {
 
 
     // --------------------------------------------------------
-    // Validation
+    // VALIDATION
     // --------------------------------------------------------
 
     if (!supplier || !invoice_number) {
@@ -101,17 +106,21 @@ router.post('/', async (req, res) => {
     }
 
 
+    // --------------------------------------------------------
+    // TOTALS
+    // --------------------------------------------------------
+
     const purchaseItems = [];
+
+    const touchedProductIds = [];
 
     let taxableTotal = 0;
 
     let gstTotal = 0;
 
-    const createdProducts = [];
-
 
     // ========================================================
-    // PROCESS ITEMS
+    // PROCESS EACH ITEM
     // ========================================================
 
     for (const line of items) {
@@ -119,76 +128,111 @@ router.post('/', async (req, res) => {
       const qty =
         Number(line.qty) || 0;
 
+
+      // Purchase Rate
       const purchaseRate =
         Number(
           line.purchase_rate ?? line.rate
         ) || 0;
 
+
+      // MRP
       const mrp =
         Number(line.mrp) || 0;
 
+
+      // Selling Price INCLUDING GST
       const sellingPrice =
         Number(line.selling_price) || 0;
 
+
+      // GST %
       const gstRate =
         Number(line.gst_rate) || 0;
 
 
       // ------------------------------------------------------
-      // Validation
+      // VALIDATE QUANTITY
       // ------------------------------------------------------
 
       if (qty <= 0) {
 
         throw new Error(
-          `Invalid quantity for ${line.description}`
-        );
-
-      }
-
-
-      if (purchaseRate < 0) {
-
-        throw new Error(
-          `Invalid purchase price for ${line.description}`
-        );
-
-      }
-
-
-      if (sellingPrice < 0) {
-
-        throw new Error(
-          `Invalid selling price for ${line.description}`
+          `Invalid quantity for ${
+            line.description || 'item'
+          }`
         );
 
       }
 
 
       // ------------------------------------------------------
-      // Purchase bill calculation
+      // VALIDATE SELLING PRICE
+      // ------------------------------------------------------
+
+      if (sellingPrice <= 0) {
+
+        throw new Error(
+          `Selling Price is required for ${
+            line.description || 'item'
+          }`
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // SELLING PRICE SHOULD NOT EXCEED MRP
+      // ------------------------------------------------------
+
+      if (
+        mrp > 0 &&
+        sellingPrice > mrp
+      ) {
+
+        throw new Error(
+          `Selling Price cannot be greater than MRP for ${
+            line.description || 'item'
+          }`
+        );
+
+      }
+
+
+      // ======================================================
+      // PURCHASE BILL CALCULATION
       //
-      // Purchase rate is treated as pre-GST here,
-      // same as your existing purchase system.
-      // ------------------------------------------------------
+      // Purchase Rate is treated as taxable/base amount.
+      //
+      // Example:
+      //
+      // Purchase Rate = ₹980
+      // GST = 5%
+      //
+      // GST = ₹49
+      // Total = ₹1029
+      // ======================================================
 
       const base =
         qty * purchaseRate;
 
+
       const gst =
         base * gstRate / 100;
+
 
       const amount =
         base + gst;
 
 
       // ======================================================
-      // FIND EXISTING PRODUCT
+      // FIND PRODUCT
       // ======================================================
 
       let product = null;
 
 
+      // First try product ID
       if (line.product_id) {
 
         product =
@@ -199,11 +243,16 @@ router.post('/', async (req, res) => {
       }
 
 
-      if (!product && line.item_code) {
+      // Then try barcode
+      if (
+        !product &&
+        line.item_code
+      ) {
 
         product =
           await Product.findOne({
-            barcode: line.item_code
+            barcode:
+              String(line.item_code).trim()
           });
 
       }
@@ -215,38 +264,33 @@ router.post('/', async (req, res) => {
 
       if (product) {
 
+        // Add purchased quantity to existing stock
         product.stock_qty =
-          Number(product.stock_qty || 0) + qty;
+          Number(product.stock_qty || 0) +
+          qty;
 
 
-        // Update purchase price
+        // Save purchase price
         product.purchase_price =
           purchaseRate;
 
 
-        // Update MRP if supplied
-        if (mrp > 0) {
-
-          product.mrp = mrp;
-
-        }
+        // Save MRP
+        product.mrp =
+          mrp;
 
 
-        // Update selling price if supplied
-        if (sellingPrice > 0) {
-
-          product.selling_price =
-            sellingPrice;
-
-        }
+        // Save selling price
+        product.selling_price =
+          sellingPrice;
 
 
-        // Update GST
+        // Save GST
         product.gst_rate =
           gstRate;
 
 
-        // Update HSN if supplied
+        // Update HSN if provided
         if (line.hsn_code) {
 
           product.hsn_code =
@@ -257,14 +301,27 @@ router.post('/', async (req, res) => {
 
         await product.save();
 
-
       }
+
 
       // ======================================================
       // NEW PRODUCT
       // ======================================================
 
       else {
+
+        // Use supplied barcode.
+        // If blank, generate a unique barcode.
+        const barcodeValue =
+          line.item_code &&
+          String(line.item_code).trim()
+
+            ? String(line.item_code).trim()
+
+            : await generateUniqueBarcode(
+                Product
+              );
+
 
         product =
           await Product.create({
@@ -274,27 +331,28 @@ router.post('/', async (req, res) => {
               'Unnamed item',
 
             barcode:
-              line.item_code ||
-              undefined,
+              barcodeValue,
 
             hsn_code:
-              line.hsn_code ||
-              '',
+              line.hsn_code || '',
 
+            // Supplier purchase price
             purchase_price:
               purchaseRate,
 
+            // Product MRP
             mrp:
               mrp,
 
-            // IMPORTANT:
-            // Selling price comes from user input.
+            // Customer selling price INCLUDING GST
             selling_price:
               sellingPrice,
 
+            // GST rate
             gst_rate:
               gstRate,
 
+            // Initial stock
             stock_qty:
               qty,
 
@@ -306,61 +364,46 @@ router.post('/', async (req, res) => {
       }
 
 
-      // ------------------------------------------------------
-      // Save created/updated product
-      // ------------------------------------------------------
+      // ======================================================
+      // SAVE PRODUCT ID
+      // ======================================================
 
-      createdProducts.push({
-
-        _id:
-          product._id,
-
-        name:
-          product.name,
-
-        barcode:
-          product.barcode,
-
-        mrp:
-          product.mrp,
-
-        purchase_price:
-          product.purchase_price,
-
-        selling_price:
-          product.selling_price,
-
-        gst_rate:
-          product.gst_rate,
-
-        stock_qty:
-          product.stock_qty
-
-      });
+      touchedProductIds.push(
+        product._id
+      );
 
 
       // ======================================================
-      // PURCHASE ITEM
+      // SAVE PURCHASE ITEM
       // ======================================================
 
       purchaseItems.push({
 
+        // Always save the actual product barcode
         item_code:
-          line.item_code || '',
+          product.barcode ||
+          line.item_code ||
+          '',
 
         description:
-          line.description,
+          line.description ||
+          product.name,
 
         hsn_code:
-          line.hsn_code || '',
+          line.hsn_code ||
+          product.hsn_code ||
+          '',
 
         qty,
 
+        // MRP
         mrp,
 
+        // Purchase Rate
         purchase_rate:
           purchaseRate,
 
+        // Selling Price
         selling_price:
           sellingPrice,
 
@@ -368,16 +411,23 @@ router.post('/', async (req, res) => {
         rate:
           purchaseRate,
 
+        // GST
         gst_rate:
           gstRate,
 
+        // Purchase amount
         amount,
 
+        // Product reference
         product_id:
           product._id
 
       });
 
+
+      // ======================================================
+      // TOTALS
+      // ======================================================
 
       taxableTotal += base;
 
@@ -427,6 +477,20 @@ router.post('/', async (req, res) => {
 
 
     // ========================================================
+    // GET PRODUCTS FOR FRONTEND
+    // ========================================================
+
+    const products =
+      await Product.find({
+        _id: {
+          $in: touchedProductIds
+        }
+      }).select(
+        'name barcode mrp purchase_price selling_price gst_rate stock_qty'
+      );
+
+
+    // ========================================================
     // RESPONSE
     // ========================================================
 
@@ -434,8 +498,7 @@ router.post('/', async (req, res) => {
 
       ...purchase.toObject(),
 
-      products:
-        createdProducts
+      products
 
     });
 

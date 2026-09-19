@@ -7,15 +7,54 @@ const { generateUniqueBarcode } = require('../utils/barcode');
 
 const router = express.Router();
 
+// Generates the next sequential purchase number: K-1, K-2, K-3, ...
+// Looks at the highest existing K-number rather than just counting
+// documents, so numbering stays correct even if an old bill was deleted.
+async function nextPurchaseNo() {
+  const existing = await Purchase.find({ purchase_no: { $regex: /^K-\d+$/ } })
+    .select('purchase_no');
+
+  let maxSeq = 0;
+  for (const p of existing) {
+    const n = parseInt(String(p.purchase_no).replace('K-', ''), 10);
+    if (!Number.isNaN(n) && n > maxSeq) maxSeq = n;
+  }
+
+  return `K-${maxSeq + 1}`;
+}
+
+// GET /api/purchases?q=search-term
+// Searches by K-number (e.g. "K-5" or just "5"), supplier name, or invoice number.
 router.get('/', async (req, res) => {
   try {
-    const purchases = await Purchase.find().sort({ createdAt: -1 });
+    const { q } = req.query;
+    const filter = {};
+
+    if (q) {
+      const term = q.trim();
+      const orConditions = [
+        { supplier: { $regex: term, $options: 'i' } },
+        { invoice_number: { $regex: term, $options: 'i' } },
+        { purchase_no: { $regex: term, $options: 'i' } }
+      ];
+
+      // Typing a plain number ("5") should also match "K-5" exactly.
+      const numericOnly = term.replace(/^k-?/i, '');
+      if (/^\d+$/.test(numericOnly)) {
+        orConditions.push({ purchase_no: `K-${numericOnly}` });
+      }
+
+      filter.$or = orConditions;
+    }
+
+    const purchases = await Purchase.find(filter).sort({ createdAt: -1 });
     res.json(purchases);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// GET /api/purchases/:id
 router.get('/:id', async (req, res) => {
   try {
     const purchase = await Purchase.findById(req.params.id);
@@ -32,6 +71,7 @@ router.get('/:id', async (req, res) => {
  *   supplier, supplier_gstin, invoice_number, invoice_date, supplier_state, reference,
  *   items: [{ item_code, description, hsn_code, qty, rate, gst_rate, product_id? }]
  * }
+ * Every saved purchase bill gets its own sequential purchase_no (K-1, K-2, ...).
  * For each item: if product_id is given, adds qty to that product's stock and
  * updates its purchase_price. Otherwise tries to match by barcode == item_code;
  * if still not found, creates a new product automatically — and if no item
@@ -108,6 +148,7 @@ router.post('/', async (req, res) => {
     }
 
     const purchase = await Purchase.create({
+      purchase_no: await nextPurchaseNo(),
       supplier,
       supplier_gstin: supplier_gstin || '',
       invoice_number,
@@ -125,6 +166,9 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ ...purchase.toObject(), products });
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({ error: 'That purchase number already exists — please try saving again.' });
+    }
     res.status(400).json({ error: err.message });
   }
 });

@@ -58,7 +58,7 @@ input:focus,select:focus{outline:2px solid var(--gold-light);border-color:var(--
 table{width:100%;border-collapse:collapse}
 th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px}
 th{font-size:12px;color:var(--ink-soft);font-weight:600}
-td input{min-width:80px;padding:8px}
+td input{min-width:95px;padding:8px}
 .summary{max-width:440px;margin-left:auto}
 .summary-row{display:flex;justify-content:space-between;padding:8px 0}
 .summary-total{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line);font-size:20px;color:var(--maroon)}
@@ -151,27 +151,44 @@ td input{min-width:80px;padding:8px}
   <!-- Items -->
   <section class="panel">
     <h2>3. Purchased Items</h2>
-    <p class="form-message">Leave "Item Code" blank for a brand-new saree and the backend will generate a unique barcode for it.</p>
+    <p class="form-message">Enter MRP, Purchase Rate, and final Selling Price separately. Selling Price is the customer price and already includes GST.</p>
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr><th>Item Code (barcode)</th><th>Description</th><th>HSN</th><th>Qty</th><th>MRP</th><th>Purchase Rate</th><th>GST %</th><th>Amount</th><th></th></tr>
+          <tr>
+            <th>Item Code (barcode)</th>
+            <th>Description</th>
+            <th>HSN</th>
+            <th>Qty</th>
+            <th>MRP</th>
+            <th>Purchase Rate</th>
+            <th>Selling Price</th>
+            <th>GST %</th>
+            <th>Amount</th>
+            <th></th>
+          </tr>
         </thead>
         <tbody id="purchaseItems">
           <tr>
             <td><input class="itemCode" placeholder="Blank = auto-generate"></td>
             <td><input class="description" value="Saree"></td>
             <td><input class="hsn" value="5407"></td>
-            <td><input class="qty" type="number" value="1" oninput="calculateTotal()"></td>
+            <td><input class="qty" type="number" min="1" value="1" oninput="calculateTotal()"></td>
             <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP"></td>
             <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
-            <td><input class="gst" type="number" value="5" oninput="calculateTotal()"></td>
+            <td><input class="sellingPrice" type="number" min="0" step="0.01" value="0" placeholder="Selling Price"></td>
+            <td><input class="gst" type="number" min="0" step="0.01" value="5" oninput="calculateTotal()"></td>
             <td class="amount">₹0.00</td>
             <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
           </tr>
         </tbody>
       </table>
     </div>
+    <p class="form-message">
+      <strong>MRP:</strong> printed maximum retail price.
+      <strong>Purchase Rate:</strong> price paid to supplier.
+      <strong>Selling Price:</strong> final customer price, including GST.
+    </p>
     <button class="btn-ghost" style="margin-top:15px" onclick="addItem()">＋ Add Item Row</button>
   </section>
 
@@ -207,7 +224,6 @@ td input{min-width:80px;padding:8px}
 
 <script>
 const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
-
 const fileInput = document.getElementById('billFile');
 const preview = document.getElementById('preview');
 const previewImage = document.getElementById('previewImage');
@@ -255,17 +271,20 @@ function calculateTotal(){
 function addItem(){
   const tbody = document.getElementById('purchaseItems');
   const row = document.createElement('tr');
+
   row.innerHTML = `
     <td><input class="itemCode" placeholder="Blank = auto-generate"></td>
     <td><input class="description" placeholder="Description"></td>
     <td><input class="hsn" placeholder="HSN"></td>
-    <td><input class="qty" type="number" value="1" oninput="calculateTotal()"></td>
+    <td><input class="qty" type="number" min="1" value="1" oninput="calculateTotal()"></td>
     <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP"></td>
     <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
-    <td><input class="gst" type="number" value="5" oninput="calculateTotal()"></td>
+    <td><input class="sellingPrice" type="number" min="0" step="0.01" value="0" placeholder="Selling Price"></td>
+    <td><input class="gst" type="number" min="0" step="0.01" value="5" oninput="calculateTotal()"></td>
     <td class="amount">₹0.00</td>
     <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
   `;
+
   tbody.appendChild(row);
 }
 
@@ -285,24 +304,31 @@ function setPurchaseMessage(msg, type=""){
 function collectItems(){
   const rows = document.querySelectorAll('#purchaseItems tr');
   const items = [];
+
   rows.forEach(row => {
-    const description = row.querySelector('.description').value.trim();
-    const qty = Number(row.querySelector('.qty').value) || 0;
+    const description = row.querySelector('.description')?.value.trim();
+    const qty = Number(row.querySelector('.qty')?.value) || 0;
+
     if (!description || qty <= 0) return;
+
     const mrp = Number(row.querySelector('.mrp')?.value) || 0;
     const purchaseRate = Number(row.querySelector('.rate')?.value) || 0;
+    const sellingPrice = Number(row.querySelector('.sellingPrice')?.value) || 0;
+    const gstRate = Number(row.querySelector('.gst')?.value) || 0;
 
     items.push({
-      item_code: row.querySelector('.itemCode').value.trim(),
+      item_code: row.querySelector('.itemCode')?.value.trim() || '',
       description,
-      hsn_code: row.querySelector('.hsn').value.trim(),
+      hsn_code: row.querySelector('.hsn')?.value.trim() || '',
       qty,
       mrp,
       purchase_rate: purchaseRate,
       rate: purchaseRate,
-      gst_rate: Number(row.querySelector('.gst').value) || 0
+      selling_price: sellingPrice,
+      gst_rate: gstRate
     });
   });
+
   return items;
 }
 
@@ -311,9 +337,32 @@ async function confirmPurchase(){
   const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
   const items = collectItems();
 
-  if (!supplier){ setPurchaseMessage('Please enter the supplier name.', 'error'); return; }
-  if (!invoiceNumber){ setPurchaseMessage('Please enter the invoice number.', 'error'); return; }
-  if (!items.length){ setPurchaseMessage('Add at least one item with a description and quantity.', 'error'); return; }
+  if (!supplier){
+    setPurchaseMessage('Please enter the supplier name.', 'error');
+    return;
+  }
+
+  if (!invoiceNumber){
+    setPurchaseMessage('Please enter the invoice number.', 'error');
+    return;
+  }
+
+  if (!items.length){
+    setPurchaseMessage('Add at least one item with a description and quantity.', 'error');
+    return;
+  }
+
+  for (const item of items) {
+    if (item.selling_price <= 0) {
+      setPurchaseMessage(`Please enter a Selling Price for "${item.description}".`, 'error');
+      return;
+    }
+
+    if (item.mrp > 0 && item.selling_price > item.mrp) {
+      setPurchaseMessage(`Selling Price cannot be greater than MRP for "${item.description}".`, 'error');
+      return;
+    }
+  }
 
   const payload = {
     supplier,
@@ -336,24 +385,42 @@ async function confirmPurchase(){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Could not save purchase');
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not save purchase');
+    }
 
     const statusEl = document.getElementById('successMessage');
-    statusEl.textContent = `Purchase bill saved. Stock updated — total ₹${Number(data.grand_total||0).toFixed(2)}.`;
+    statusEl.textContent =
+      `Purchase bill saved successfully. Stock updated — total ₹${Number(data.grand_total || 0).toFixed(2)}.`;
     statusEl.className = 'status';
     statusEl.style.display = 'block';
-    window.scrollTo({top:0, behavior:'smooth'});
 
     setPurchaseMessage('');
-    await showLabelsForProducts(data.products || []);
+
+    try {
+      await showLabelsForProducts(data.products || []);
+    } catch (qrError) {
+      console.error('QR label error:', qrError);
+      setPurchaseMessage(
+        'Purchase saved successfully, but QR labels could not be generated. The stock and product data are already saved.',
+        'error'
+      );
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
   } catch (err) {
-    console.error(err);
+    console.error('Purchase save error:', err);
+
     const statusEl = document.getElementById('successMessage');
     statusEl.textContent = 'Purchase was NOT saved: ' + err.message;
     statusEl.className = 'status error';
     statusEl.style.display = 'block';
     setPurchaseMessage('');
+
   } finally {
     btn.disabled = false;
     btn.textContent = '✓ Confirm & Add to Inventory';
@@ -361,34 +428,51 @@ async function confirmPurchase(){
 }
 
 async function showLabelsForProducts(products){
-  if (!products.length) return;
+  if (!products || !products.length) return;
 
   if (typeof QRCode === 'undefined' || typeof QRCode.toDataURL !== 'function') {
-    throw new Error('QR code library failed to load. Please refresh the page and try again.');
+    throw new Error('QR code library failed to load.');
   }
 
   currentLabels = [];
+
   for (const p of products) {
     const barcode = String(p.barcode || '').trim();
-    if (!barcode) {
-      throw new Error(`No barcode was returned for product: ${p.name || 'Unknown product'}`);
-    }
+    if (!barcode) continue;
 
-    const dataUrl = await QRCode.toDataURL(barcode, { width: 200, margin: 1 });
-    currentLabels.push({ name: p.name, barcode, price: p.selling_price, dataUrl });
+    const dataUrl = await QRCode.toDataURL(barcode, {
+      width: 200,
+      margin: 1
+    });
+
+    currentLabels.push({
+      name: p.name || 'Product',
+      barcode,
+      price: Number(p.selling_price || 0),
+      dataUrl
+    });
   }
 
+  if (!currentLabels.length) return;
+
   const grid = document.getElementById('labelsGrid');
+
   grid.innerHTML = currentLabels.map(l => `
     <div class="label-card">
       <img src="${l.dataUrl}" alt="QR code">
       <div class="lc-name">${escapeHtml(l.name)}</div>
       <div class="lc-code">${escapeHtml(l.barcode)}</div>
+      ${l.price ? `<div style="font-size:12px;font-weight:700;margin-top:3px;color:var(--maroon)">
+        Selling ₹${l.price.toLocaleString('en-IN')}
+      </div>` : ''}
     </div>
   `).join('');
 
   document.getElementById('labelsPanel').style.display = 'block';
-  document.getElementById('labelsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('labelsPanel').scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
 }
 
 function buildLabelSheetHtml(labels){

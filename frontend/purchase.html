@@ -66,9 +66,7 @@ td input{min-width:80px;padding:8px}
 .btn-ghost{display:inline-flex;align-items:center;padding:10px 18px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer}
 .status{display:none;padding:12px 14px;border-radius:8px;background:#E7F5ED;color:#1E7A4C;font-size:13px;margin-bottom:18px}
 .status.error{background:#FBEAE7;color:#B23A2E}
-.status .k-number{display:inline-block;font-family:'Courier New',monospace;font-weight:700;background:#fff;padding:2px 8px;border-radius:6px;margin-left:4px}
 .form-message{margin-top:8px;font-size:13px;color:var(--ink-soft)}
-.form-message.error{color:#B23A2E}
 
 /* printable labels panel */
 .labels-grid{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px}
@@ -76,20 +74,6 @@ td input{min-width:80px;padding:8px}
 .label-card img{width:120px;height:120px}
 .label-card .lc-name{font-weight:700;font-size:12.5px;margin-top:8px}
 .label-card .lc-code{font-size:11px;color:var(--ink-soft);margin-top:2px;font-family:'Courier New',monospace}
-
-/* search-by-K panel */
-.search-row{display:flex;gap:10px;flex-wrap:wrap}
-.search-row input{flex:1;min-width:180px}
-.k-pill{display:inline-block;font-family:'Courier New',monospace;font-size:12.5px;font-weight:700;letter-spacing:.5px;background:#FBF3E4;color:var(--maroon);padding:3px 9px;border-radius:6px}
-.results-empty{color:var(--ink-soft);font-size:13px;padding:16px 0}
-
-/* purchase detail modal */
-.modal{position:fixed;inset:0;background:rgba(43,18,16,.5);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px}
-.modal.open{display:flex}
-.modal-box{background:#fff;border-radius:14px;padding:22px;max-width:640px;width:100%;box-shadow:0 20px 50px rgba(43,18,16,.25);max-height:90vh;overflow:auto}
-.modal-box h3{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 4px;font-size:20px}
-.modal-sub{color:var(--ink-soft);font-size:13px;margin:0 0 16px}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
 
 @media(max-width:900px){.primary-nav{display:none}.form-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr}.page-inner{padding:25px 16px}.page-header{align-items:flex-start;flex-direction:column}.brand-sub{display:none}}
@@ -129,22 +113,12 @@ td input{min-width:80px;padding:8px}
       <h1>Upload Purchase Bill</h1>
       <p style="color:var(--ink-soft);margin:0">
         Upload your supplier invoice, verify the items, and add the purchased stock to inventory.
-        Every bill gets its own K-number, and new sarees get a printable barcode/QR label automatically.
+        New sarees get a printable barcode/QR label automatically.
       </p>
     </div>
   </div>
 
   <div id="successMessage" class="status"></div>
-
-  <!-- Find a Purchase Bill -->
-  <section class="panel">
-    <h2>Find a Purchase Bill</h2>
-    <div class="search-row">
-      <input id="kSearch" placeholder="Search by K number (e.g. K-5 or just 5), supplier, or invoice no." onkeydown="if(event.key==='Enter'){event.preventDefault();searchPurchases();}">
-      <button class="btn-primary" type="button" onclick="searchPurchases()">Search</button>
-    </div>
-    <div id="searchResults"></div>
-  </section>
 
   <!-- Upload -->
   <section class="panel">
@@ -227,27 +201,12 @@ td input{min-width:80px;padding:8px}
 </div>
 </main>
 
-<!-- Purchase bill detail modal (used by search results) -->
-<div class="modal" id="detailModal">
-  <div class="modal-box">
-    <h3 id="detailTitle">Purchase Bill</h3>
-    <p class="modal-sub" id="detailSub"></p>
-    <div class="table-wrapper">
-      <table>
-        <thead><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>GST</th><th>Amount</th></tr></thead>
-        <tbody id="detailItems"></tbody>
-      </table>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" type="button" onclick="closeDetailModal()">Close</button>
-    </div>
-  </div>
-</div>
-
 <!-- QR code generator for printable barcode/QR labels -->
-<script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
 <script>
+const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
+
 const fileInput = document.getElementById('billFile');
 const preview = document.getElementById('preview');
 const previewImage = document.getElementById('previewImage');
@@ -272,11 +231,6 @@ function escapeHtml(value){
   return String(value ?? "").replace(/[&<>"']/g, ch => ({
     "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
   }[ch]));
-}
-function money(v){ return "₹" + Number(v||0).toLocaleString('en-IN', {maximumFractionDigits:2}); }
-function fmtDate(iso){
-  if(!iso) return "";
-  return new Date(iso).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
 }
 
 function calculateTotal(){
@@ -370,7 +324,7 @@ async function confirmPurchase(){
   setPurchaseMessage('Saving purchase bill...');
 
   try {
-    const response = await fetch('/api/purchases', {
+    const response = await fetch(`${API_BASE_URL}/api/purchases`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -379,9 +333,7 @@ async function confirmPurchase(){
     if (!response.ok) throw new Error(data.error || 'Could not save purchase');
 
     const statusEl = document.getElementById('successMessage');
-    statusEl.innerHTML =
-      `Purchase bill <span class="k-number">${escapeHtml(data.purchase_no)}</span> saved. ` +
-      `Stock updated — total ${money(data.grand_total)}.`;
+    statusEl.textContent = `Purchase bill saved. Stock updated — total ₹${Number(data.grand_total||0).toFixed(2)}.`;
     statusEl.className = 'status';
     statusEl.style.display = 'block';
     window.scrollTo({top:0, behavior:'smooth'});
@@ -404,9 +356,17 @@ async function confirmPurchase(){
 async function showLabelsForProducts(products){
   if (!products.length) return;
 
+  if (typeof QRCode === 'undefined' || typeof QRCode.toDataURL !== 'function') {
+    throw new Error('QR code library failed to load. Please refresh the page and try again.');
+  }
+
   currentLabels = [];
   for (const p of products) {
-    const barcode = p.barcode || 'NO-CODE';
+    const barcode = String(p.barcode || '').trim();
+    if (!barcode) {
+      throw new Error(`No barcode was returned for product: ${p.name || 'Unknown product'}`);
+    }
+
     const dataUrl = await QRCode.toDataURL(barcode, { width: 200, margin: 1 });
     currentLabels.push({ name: p.name, barcode, price: p.selling_price, dataUrl });
   }
@@ -464,97 +424,6 @@ function clearForm(){
   setPurchaseMessage('');
   calculateTotal();
 }
-
-/* ---------------- Find a Purchase Bill (search by K number) ---------------- */
-
-let searchTimer = null;
-
-async function searchPurchases(){
-  const q = document.getElementById('kSearch').value.trim();
-  const resultsEl = document.getElementById('searchResults');
-
-  if (!q){
-    resultsEl.innerHTML = '<div class="results-empty">Type a K number (e.g. K-3), supplier name, or invoice number to search.</div>';
-    return;
-  }
-
-  resultsEl.innerHTML = '<div class="results-empty">Searching...</div>';
-
-  try {
-    const response = await fetch('/api/purchases?q=' + encodeURIComponent(q));
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Search failed');
-
-    if (!data.length){
-      resultsEl.innerHTML = `<div class="results-empty">No purchase bill found for "${escapeHtml(q)}".</div>`;
-      return;
-    }
-
-    resultsEl.innerHTML = `
-      <div class="table-wrapper" style="margin-top:12px">
-        <table>
-          <thead><tr><th>K No.</th><th>Supplier</th><th>Invoice No.</th><th>Date</th><th>Items</th><th>Total</th><th></th></tr></thead>
-          <tbody>
-            ${data.map(p => `
-              <tr>
-                <td><span class="k-pill">${escapeHtml(p.purchase_no)}</span></td>
-                <td>${escapeHtml(p.supplier)}</td>
-                <td>${escapeHtml(p.invoice_number)}</td>
-                <td>${fmtDate(p.invoice_date)}</td>
-                <td>${p.items.length}</td>
-                <td><strong>${money(p.grand_total)}</strong></td>
-                <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="viewPurchase('${p._id}')">View</button></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  } catch (err) {
-    console.error(err);
-    resultsEl.innerHTML = `<div class="results-empty">Search failed: ${escapeHtml(err.message)}</div>`;
-  }
-}
-
-document.getElementById('kSearch').addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(searchPurchases, 300);
-});
-
-async function viewPurchase(id){
-  try {
-    const response = await fetch('/api/purchases/' + encodeURIComponent(id));
-    const p = await response.json();
-    if (!response.ok) throw new Error(p.error || 'Could not load purchase bill');
-
-    document.getElementById('detailTitle').textContent = 'Purchase Bill ' + p.purchase_no;
-    document.getElementById('detailSub').textContent =
-      `${p.supplier} · Invoice #${p.invoice_number} · ${fmtDate(p.invoice_date)} · Total ${money(p.grand_total)}`;
-
-    document.getElementById('detailItems').innerHTML = p.items.map(item => `
-      <tr>
-        <td>${escapeHtml(item.description)}</td>
-        <td>${escapeHtml(item.hsn_code || '-')}</td>
-        <td>${item.qty}</td>
-        <td>${money(item.rate)}</td>
-        <td>${item.gst_rate}%</td>
-        <td><strong>${money(item.amount)}</strong></td>
-      </tr>
-    `).join('');
-
-    document.getElementById('detailModal').classList.add('open');
-  } catch (err) {
-    alert('Could not load purchase bill.\n\n' + err.message);
-  }
-}
-
-function closeDetailModal(){
-  document.getElementById('detailModal').classList.remove('open');
-}
-
-document.getElementById('detailModal').addEventListener('click', e => {
-  if (e.target.id === 'detailModal') closeDetailModal();
-});
 
 calculateTotal();
 </script>

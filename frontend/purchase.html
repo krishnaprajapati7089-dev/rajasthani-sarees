@@ -306,20 +306,35 @@ function collectItems(){
   const items = [];
 
   rows.forEach(row => {
-    const description = row.querySelector('.description')?.value.trim();
-    const qty = Number(row.querySelector('.qty')?.value) || 0;
+    const description =
+      row.querySelector('.description')?.value.trim();
+
+    const qty =
+      Number(row.querySelector('.qty')?.value) || 0;
 
     if (!description || qty <= 0) return;
 
-    const mrp = Number(row.querySelector('.mrp')?.value) || 0;
-    const purchaseRate = Number(row.querySelector('.rate')?.value) || 0;
-    const sellingPrice = Number(row.querySelector('.sellingPrice')?.value) || 0;
-    const gstRate = Number(row.querySelector('.gst')?.value) || 0;
+    const mrp =
+      Number(row.querySelector('.mrp')?.value) || 0;
+
+    const purchaseRate =
+      Number(row.querySelector('.rate')?.value) || 0;
+
+    const sellingPrice =
+      Number(row.querySelector('.sellingPrice')?.value) || 0;
+
+    const gstRate =
+      Number(row.querySelector('.gst')?.value) || 0;
 
     items.push({
-      item_code: row.querySelector('.itemCode')?.value.trim() || '',
+      item_code:
+        row.querySelector('.itemCode')?.value.trim() || '',
+
       description,
-      hsn_code: row.querySelector('.hsn')?.value.trim() || '',
+
+      hsn_code:
+        row.querySelector('.hsn')?.value.trim() || '',
+
       qty,
       mrp,
       purchase_rate: purchaseRate,
@@ -333,117 +348,194 @@ function collectItems(){
 }
 
 async function confirmPurchase(){
-  const supplier = document.getElementById('supplier').value.trim();
-  const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+  const supplier =
+    document.getElementById('supplier').value.trim();
+
+  const invoiceNumber =
+    document.getElementById('invoiceNumber').value.trim();
+
   const items = collectItems();
 
-  if (!supplier){
-    setPurchaseMessage('Please enter the supplier name.', 'error');
+  if (!supplier) {
+    setPurchaseMessage(
+      'Please enter the supplier name.',
+      'error'
+    );
     return;
   }
 
-  if (!invoiceNumber){
-    setPurchaseMessage('Please enter the invoice number.', 'error');
+  if (!invoiceNumber) {
+    setPurchaseMessage(
+      'Please enter the invoice number.',
+      'error'
+    );
     return;
   }
 
-  if (!items.length){
-    setPurchaseMessage('Add at least one item with a description and quantity.', 'error');
+  if (!items.length) {
+    setPurchaseMessage(
+      'Add at least one item with a description and quantity.',
+      'error'
+    );
     return;
   }
 
   for (const item of items) {
     if (item.selling_price <= 0) {
-      setPurchaseMessage(`Please enter a Selling Price for "${item.description}".`, 'error');
+      setPurchaseMessage(
+        `Please enter a Selling Price for "${item.description}".`,
+        'error'
+      );
       return;
     }
 
     if (item.mrp > 0 && item.selling_price > item.mrp) {
-      setPurchaseMessage(`Selling Price cannot be greater than MRP for "${item.description}".`, 'error');
+      setPurchaseMessage(
+        `Selling Price cannot be greater than MRP for "${item.description}".`,
+        'error'
+      );
       return;
     }
   }
 
   const payload = {
     supplier,
-    supplier_gstin: document.getElementById('supplierGstin').value.trim(),
-    invoice_number: invoiceNumber,
-    invoice_date: document.getElementById('invoiceDate').value,
-    supplier_state: document.getElementById('supplierState').value.trim(),
-    reference: document.getElementById('reference').value.trim(),
+    supplier_gstin:
+      document.getElementById('supplierGstin').value.trim(),
+
+    invoice_number:
+      invoiceNumber,
+
+    invoice_date:
+      document.getElementById('invoiceDate').value,
+
+    supplier_state:
+      document.getElementById('supplierState').value.trim(),
+
+    reference:
+      document.getElementById('reference').value.trim(),
+
     items
   };
 
-  const btn = document.getElementById('confirmBtn');
+  const btn =
+    document.getElementById('confirmBtn');
+
   btn.disabled = true;
   btn.textContent = 'Saving...';
+
   setPurchaseMessage('Saving purchase bill...');
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/purchases`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/purchases`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      }
+    );
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Could not save purchase');
+      throw new Error(
+        data.error || 'Could not save purchase'
+      );
     }
 
-    const statusEl = document.getElementById('successMessage');
+    const statusEl =
+      document.getElementById('successMessage');
+
     statusEl.textContent =
       `Purchase bill saved successfully. Stock updated — total ₹${Number(data.grand_total || 0).toFixed(2)}.`;
+
     statusEl.className = 'status';
     statusEl.style.display = 'block';
 
     setPurchaseMessage('');
 
+    // QR printing is optional. A QR error must NOT turn a saved
+    // purchase into a "NOT saved" error.
     try {
-      await showLabelsForProducts(data.products || []);
+      await showLabelsForProducts(
+        data.products || []
+      );
     } catch (qrError) {
-      console.error('QR label error:', qrError);
+      console.error(
+        'QR label error:',
+        qrError
+      );
+
       setPurchaseMessage(
-        'Purchase saved successfully, but QR labels could not be generated. The stock and product data are already saved.',
+        'Purchase was saved successfully, but QR labels could not be generated. Stock and product data are already saved.',
         'error'
       );
     }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
 
   } catch (err) {
-    console.error('Purchase save error:', err);
+    console.error(
+      'Purchase save error:',
+      err
+    );
 
-    const statusEl = document.getElementById('successMessage');
-    statusEl.textContent = 'Purchase was NOT saved: ' + err.message;
-    statusEl.className = 'status error';
-    statusEl.style.display = 'block';
+    const statusEl =
+      document.getElementById('successMessage');
+
+    statusEl.textContent =
+      'Purchase was NOT saved: ' + err.message;
+
+    statusEl.className =
+      'status error';
+
+    statusEl.style.display =
+      'block';
+
     setPurchaseMessage('');
 
   } finally {
     btn.disabled = false;
-    btn.textContent = '✓ Confirm & Add to Inventory';
+    btn.textContent =
+      '✓ Confirm & Add to Inventory';
   }
 }
 
 async function showLabelsForProducts(products){
   if (!products || !products.length) return;
 
-  if (typeof QRCode === 'undefined' || typeof QRCode.toDataURL !== 'function') {
-    throw new Error('QR code library failed to load.');
+  if (
+    typeof QRCode === 'undefined' ||
+    typeof QRCode.toDataURL !== 'function'
+  ) {
+    throw new Error(
+      'QR code library failed to load.'
+    );
   }
 
   currentLabels = [];
 
   for (const p of products) {
-    const barcode = String(p.barcode || '').trim();
+    const barcode =
+      String(p.barcode || '').trim();
+
     if (!barcode) continue;
 
-    const dataUrl = await QRCode.toDataURL(barcode, {
-      width: 200,
-      margin: 1
-    });
+    const dataUrl =
+      await QRCode.toDataURL(
+        barcode,
+        {
+          width: 200,
+          margin: 1
+        }
+      );
 
     currentLabels.push({
       name: p.name || 'Product',
@@ -455,21 +547,34 @@ async function showLabelsForProducts(products){
 
   if (!currentLabels.length) return;
 
-  const grid = document.getElementById('labelsGrid');
+  const grid =
+    document.getElementById('labelsGrid');
 
-  grid.innerHTML = currentLabels.map(l => `
-    <div class="label-card">
-      <img src="${l.dataUrl}" alt="QR code">
-      <div class="lc-name">${escapeHtml(l.name)}</div>
-      <div class="lc-code">${escapeHtml(l.barcode)}</div>
-      ${l.price ? `<div style="font-size:12px;font-weight:700;margin-top:3px;color:var(--maroon)">
-        Selling ₹${l.price.toLocaleString('en-IN')}
-      </div>` : ''}
-    </div>
-  `).join('');
+  grid.innerHTML =
+    currentLabels.map(l => `
+      <div class="label-card">
+        <img src="${l.dataUrl}" alt="QR code">
+        <div class="lc-name">
+          ${escapeHtml(l.name)}
+        </div>
+        <div class="lc-code">
+          ${escapeHtml(l.barcode)}
+        </div>
+        ${l.price ? `
+          <div style="font-size:12px;font-weight:700;margin-top:3px;color:var(--maroon)">
+            Selling ₹${l.price.toLocaleString('en-IN')}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
 
-  document.getElementById('labelsPanel').style.display = 'block';
-  document.getElementById('labelsPanel').scrollIntoView({
+  document.getElementById(
+    'labelsPanel'
+  ).style.display = 'block';
+
+  document.getElementById(
+    'labelsPanel'
+  ).scrollIntoView({
     behavior: 'smooth',
     block: 'start'
   });

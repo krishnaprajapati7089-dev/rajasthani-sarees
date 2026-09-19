@@ -3,6 +3,7 @@
 const express = require('express');
 const Product = require('../models/Product');
 const Purchase = require('../models/Purchase');
+const { generateUniqueBarcode } = require('../utils/barcode');
 
 const router = express.Router();
 
@@ -33,7 +34,13 @@ router.get('/:id', async (req, res) => {
  * }
  * For each item: if product_id is given, adds qty to that product's stock and
  * updates its purchase_price. Otherwise tries to match by barcode == item_code;
- * if still not found, creates a new product automatically.
+ * if still not found, creates a new product automatically — and if no item
+ * code/barcode was given on the bill, a unique one is generated so a label
+ * can be printed and stuck on the saree.
+ *
+ * The response includes a `products` array (id, name, barcode, price) for
+ * every item on the bill, so the frontend can immediately print barcode/QR
+ * labels for anything new without a second round of API calls.
  */
 router.post('/', async (req, res) => {
   try {
@@ -47,6 +54,7 @@ router.post('/', async (req, res) => {
     }
 
     const purchaseItems = [];
+    const touchedProductIds = [];
     let taxableTotal = 0, gstTotal = 0;
 
     for (const line of items) {
@@ -69,9 +77,13 @@ router.post('/', async (req, res) => {
         product.purchase_price = rate;
         await product.save();
       } else {
+        const barcodeValue = line.item_code && String(line.item_code).trim()
+          ? String(line.item_code).trim()
+          : await generateUniqueBarcode(Product);
+
         product = await Product.create({
           name: line.description || 'Unnamed item',
-          barcode: line.item_code || undefined,
+          barcode: barcodeValue,
           hsn_code: line.hsn_code || '',
           purchase_price: rate,
           selling_price: rate, // owner should adjust the margin in Inventory afterwards
@@ -80,6 +92,8 @@ router.post('/', async (req, res) => {
           reorder_level: 5
         });
       }
+
+      touchedProductIds.push(product._id);
 
       purchaseItems.push({
         item_code: line.item_code || '',
@@ -106,7 +120,10 @@ router.post('/', async (req, res) => {
       grand_total: taxableTotal + gstTotal
     });
 
-    res.status(201).json(purchase);
+    const products = await Product.find({ _id: { $in: touchedProductIds } })
+      .select('name barcode selling_price gst_rate stock_qty');
+
+    res.status(201).json({ ...purchase.toObject(), products });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

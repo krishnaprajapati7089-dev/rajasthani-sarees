@@ -14,7 +14,7 @@
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--maroon);flex-shrink:0}.brand-text{display:flex;flex-direction:column;line-height:1}
 .brand-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;letter-spacing:.5px;color:var(--maroon);white-space:nowrap}.brand-sub{font-size:10.5px;letter-spacing:1.4px;color:var(--gold);margin-top:3px;font-weight:500}
 .primary-nav{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}.nav-link{display:flex;align-items:center;padding:10px 16px;font-size:14.5px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-radius:8px;white-space:nowrap}.nav-link:hover,.nav-link.is-active{color:var(--maroon);background:#FBF3E4}
-.header-actions{display:flex;align-items:center;gap:10px}.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--maroon);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}.btn-primary:hover{background:var(--maroon-dark)}.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.header-actions{display:flex;align-items:center;gap:10px}.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--maroon);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}.btn-primary:hover{background:var(--maroon-dark)}
 .btn-ghost{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer;text-decoration:none}
 .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--maroon-dark)}
 .menu-toggle{display:none;width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer}.menu-toggle span{display:block;width:18px;height:2px;background:var(--maroon);margin:auto;position:relative}.menu-toggle span:before,.menu-toggle span:after{content:"";position:absolute;width:18px;height:2px;background:var(--maroon);left:0}.menu-toggle span:before{top:-6px}.menu-toggle span:after{top:6px}
@@ -28,35 +28,30 @@
 @media(max-width:700px){.kpi-row{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}.page-inner{padding:28px 16px}.brand-sub{display:none}}
 @media(max-width:480px){.kpi-row{grid-template-columns:1fr}.page-header{align-items:flex-start;flex-direction:column}.btn-primary .label{display:none}}
 
-.product-results{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:#fff;display:none;overflow:hidden;max-height:320px;overflow-y:auto}
+.product-results{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:#fff;display:none;overflow:hidden}
 .product-result{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:#fff;text-align:left;cursor:pointer;font:inherit;color:var(--ink)}
 .product-result:last-child{border-bottom:0}
 .product-result:hover{background:#FBF3E4}
 .product-result-name{font-weight:600}
 .product-result-meta{font-size:12px;color:var(--ink-soft)}
-.product-result-meta .out{color:#B23A2E;font-weight:600}
 .form-message{margin-top:10px;font-size:13px;color:var(--ink-soft)}
-.form-message.error{color:#B23A2E}
-.form-message.success{color:#1E7A4C}
 .save-status{margin-top:12px;font-size:13px;font-weight:600}
 .save-status.success{color:#1E7A4C}
 .save-status.error{color:#B23A2E}
 
-.selected-preview{display:none;margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:#FBF8F2}
-.selected-preview.show{display:block}
-.selected-name{font-weight:700;color:var(--maroon);margin-bottom:8px}
-.selected-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.selected-field label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
-.selected-field input{padding:9px 10px}
-.selected-field .readonly-value{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#F1EEE7;color:var(--ink-soft);font-weight:600}
-
-.price-cell input{width:100px;padding:8px 9px;font-size:13px}
-.mrp-cell{color:var(--ink-soft);font-size:12.5px}
-.mrp-cell .strike{text-decoration:line-through}
-.price-note{font-size:11px;color:var(--ink-soft);margin-top:3px}
-.price-note.discount{color:#1E7A4C}
-.price-note.markup{color:#B23A2E}
-@media(max-width:700px){.selected-grid{grid-template-columns:1fr}}
+/* --- Barcode / QR scanner --- */
+.scan-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.scan-btn:hover{border-color:var(--gold);background:#FBF3E4}
+.scanner-modal{position:fixed;inset:0;background:rgba(43,18,16,.55);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px}
+.scanner-modal.open{display:flex}
+.scanner-box{background:#fff;border-radius:14px;padding:20px;max-width:440px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(43,18,16,.25)}
+.scanner-box h3{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 4px;font-size:20px}
+.scanner-sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+#scannerRegion{width:100%;border-radius:10px;overflow:hidden;background:#000;min-height:260px}
+#scannerRegion video{border-radius:10px}
+.scanner-status{margin-top:10px;font-size:12.5px;color:var(--ink-soft);min-height:16px}
+.scanner-status.error{color:#B23A2E}
+.scanner-actions{display:flex;gap:10px;justify-content:center;margin-top:14px}
 </style>
 </head>
 <body>
@@ -124,39 +119,39 @@
   </div>
 </div>
 </section>
-
 <section class="panel">
 <h2>Add Product</h2>
-<div style="display:flex;gap:10px">
-  <input id="productSearch" placeholder="Search saree by name or barcode/code..." autocomplete="off">
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+  <input id="productSearch" placeholder="Search product or scan barcode" autocomplete="off" style="flex:1;min-width:180px">
+  <button class="scan-btn" type="button" onclick="openScanner()" title="Scan barcode or QR code with camera">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 8V5a1 1 0 011-1h3M4 16v3a1 1 0 001 1h3M20 8V5a1 1 0 00-1-1h-3M20 16v3a1 1 0 01-1 1h-3M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Scan
+  </button>
+  <button class="btn-primary" type="button" onclick="addSelectedProduct()">Add</button>
 </div>
 <div id="productResults" class="product-results"></div>
-<div id="productMessage" class="form-message">Search your inventory to add a saree.</div>
+<div id="productMessage" class="form-message">Search your inventory, or scan a barcode/QR code, to add a product.</div>
+</section>
+<section class="panel"><h2>Bill Items</h2><div class="table-wrapper"><table><thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>GST</th><th>Total</th></tr></thead><tbody id="billItems"></tbody></table></div></section>
+<section class="panel" style="max-width:520px;margin-left:auto"><div style="display:flex;justify-content:space-between;padding:8px 0">Subtotal <strong id="subtotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0">GST <strong id="gst">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);font-size:20px">Total <strong id="grandTotal">₹0</strong></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn-ghost" onclick="clearBill()">Clear</button><button class="btn-primary" type="button" onclick="saveInvoice()">Save Bill</button><button class="btn-primary" type="button" onclick="window.print()">Print</button></div><div id="saveStatus" class="save-status"></div></section>
+</div></main>
 
-<div id="selectedPreview" class="selected-preview">
-  <div class="selected-name" id="selectedName"></div>
-  <div class="selected-grid">
-    <div class="selected-field">
-      <label>MRP (Inventory Price)</label>
-      <div class="readonly-value" id="selectedMrp">₹0</div>
+<!-- Barcode / QR scanner modal -->
+<div class="scanner-modal" id="scannerModal">
+  <div class="scanner-box">
+    <h3>Scan Product</h3>
+    <p class="scanner-sub">Point the camera at the saree's barcode or QR tag.</p>
+    <div id="scannerRegion"></div>
+    <div class="scanner-status" id="scannerStatus"></div>
+    <div class="scanner-actions">
+      <button class="btn-ghost" type="button" onclick="closeScanner()">Cancel</button>
     </div>
-    <div class="selected-field">
-      <label>Selling Price (you can change this)</label>
-      <input id="selectedPrice" type="number" min="0" step="1">
-    </div>
-    <div class="selected-field">
-      <label>Quantity</label>
-      <input id="selectedQty" type="number" min="1" value="1">
-    </div>
-  </div>
-  <div style="display:flex;justify-content:flex-end;margin-top:14px">
-    <button class="btn-primary" type="button" onclick="addSelectedProduct()">Add to Bill</button>
   </div>
 </div>
-</section>
 
-<section class="panel"><h2>Bill Items</h2><div class="table-wrapper"><table><thead><tr><th>Product</th><th>Qty</th><th>MRP</th><th>Your Price</th><th>GST</th><th>Total</th><th></th></tr></thead><tbody id="billItems"></tbody></table></div></section>
-<section class="panel" style="max-width:560px;margin-left:auto"><div style="display:flex;justify-content:space-between;padding:8px 0">MRP Total <strong id="mrpTotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0">Subtotal (your price) <strong id="subtotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0">GST <strong id="gst">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);font-size:20px">Total You'll Collect <strong id="grandTotal">₹0</strong></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn-ghost" onclick="clearBill()">Clear</button><button class="btn-primary" type="button" onclick="saveInvoice()">Save Bill</button><button class="btn-primary" type="button" onclick="window.print()">Print</button></div><div id="saveStatus" class="save-status"></div></section>
+<!-- Camera barcode/QR scanning library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 <script>
 let items = [];
 let selectedProduct = null;
@@ -166,11 +161,6 @@ let saving = false;
 const productSearch = document.getElementById("productSearch");
 const productResults = document.getElementById("productResults");
 const productMessage = document.getElementById("productMessage");
-const selectedPreview = document.getElementById("selectedPreview");
-const selectedName = document.getElementById("selectedName");
-const selectedMrp = document.getElementById("selectedMrp");
-const selectedPrice = document.getElementById("selectedPrice");
-const selectedQty = document.getElementById("selectedQty");
 
 function money(value) {
   return "₹" + Number(value || 0).toFixed(2);
@@ -187,25 +177,19 @@ function showMessage(message, type = "") {
   productMessage.className = "form-message " + type;
 }
 
-function hideSelectedPreview() {
-  selectedPreview.classList.remove("show");
-  selectedProduct = null;
-}
-
 async function searchProducts() {
   const q = productSearch.value.trim();
 
-  hideSelectedPreview();
+  selectedProduct = null;
   productResults.innerHTML = "";
   productResults.style.display = "none";
 
   if (!q) {
-    showMessage("Search your inventory to add a saree.");
+    showMessage("Search your inventory, or scan a barcode/QR code, to add a product.");
     return;
   }
 
   try {
-    // Matches by name, barcode/code, or category — same fields inventory.html saves.
     const response = await fetch("/api/products?q=" + encodeURIComponent(q));
     const data = await response.json();
 
@@ -214,31 +198,39 @@ async function searchProducts() {
     }
 
     if (!data.length) {
-      showMessage("No matching saree found in inventory. Check the name/code, or add it from the Inventory page first.", "error");
+      showMessage("No matching product found in inventory for \"" + q + "\".", "error");
       return;
     }
 
-    productResults.innerHTML = data.slice(0, 15).map(product => {
-      const outOfStock = Number(product.stock_qty || 0) <= 0;
-      return `
-        <button type="button" class="product-result" data-id="${escapeHtml(product._id)}" ${outOfStock ? "disabled style=\"opacity:.5;cursor:not-allowed\"" : ""}>
-          <span>
-            <span class="product-result-name">${escapeHtml(product.name)}</span><br>
-            <span class="product-result-meta">
-              Code: ${escapeHtml(product.barcode || "—")} ·
-              Stock: <span class="${outOfStock ? 'out' : ''}">${outOfStock ? 'Out of stock' : Number(product.stock_qty || 0)}</span> ·
-              MRP ${money(product.selling_price)}
-            </span>
+    // If the query is an exact barcode match (from a scan, or a scanner
+    // "keyboard wedge" typing the code + Enter), skip the picker entirely
+    // and add the product straight to the bill.
+    const exactMatch = data.find(
+      product => String(product.barcode || "").toLowerCase() === q.toLowerCase()
+    );
+
+    if (exactMatch) {
+      selectedProduct = exactMatch;
+      addSelectedProduct();
+      return;
+    }
+
+    productResults.innerHTML = data.slice(0, 10).map(product => `
+      <button type="button" class="product-result" data-id="${escapeHtml(product._id)}">
+        <span>
+          <span class="product-result-name">${escapeHtml(product.name)}</span><br>
+          <span class="product-result-meta">
+            ${escapeHtml(product.barcode || "No barcode")} · Stock: ${Number(product.stock_qty || 0)} · ${money(product.selling_price)}
           </span>
-          <span>${Number(product.gst_rate || 0)}% GST</span>
-        </button>
-      `;
-    }).join("");
+        </span>
+        <span>${Number(product.gst_rate || 0)}% GST</span>
+      </button>
+    `).join("");
 
     productResults.style.display = "block";
-    showMessage(`${data.length} saree${data.length === 1 ? "" : "s"} found — select one below.`);
+    showMessage(data.length === 1 ? "Select the product below or press Add." : "Select a product from the results.");
 
-    productResults.querySelectorAll(".product-result:not([disabled])").forEach(button => {
+    productResults.querySelectorAll(".product-result").forEach(button => {
       button.addEventListener("click", async () => {
         const response = await fetch("/api/products/" + encodeURIComponent(button.dataset.id));
         const product = await response.json();
@@ -251,74 +243,54 @@ async function searchProducts() {
         selectedProduct = product;
         productSearch.value = product.name;
         productResults.style.display = "none";
-        showMessage("Selected: " + product.name + ". Set quantity and price below, then Add to Bill.", "success");
-
-        selectedName.textContent = product.name + (product.barcode ? " (" + product.barcode + ")" : "");
-        selectedMrp.textContent = money(product.selling_price);
-        selectedPrice.value = Number(product.selling_price || 0);
-        selectedQty.value = 1;
-        selectedQty.max = Number(product.stock_qty || 1);
-        selectedPreview.classList.add("show");
-        selectedPrice.focus();
-        selectedPrice.select();
+        showMessage("Selected: " + product.name);
       });
     });
   } catch (error) {
     console.error(error);
-    showMessage("Backend/product search failed: " + error.message + " (is the server running?)", "error");
+    showMessage("Backend/product search failed: " + error.message, "error");
   }
 }
 
 function addSelectedProduct() {
   if (!selectedProduct) {
-    showMessage("Please search and select a saree from inventory first.", "error");
+    showMessage("Please search and select a product from inventory first.", "error");
     productSearch.focus();
     return;
   }
 
-  const stock = Number(selectedProduct.stock_qty || 0);
-  if (stock <= 0) {
-    showMessage("This saree is out of stock.", "error");
+  if (Number(selectedProduct.stock_qty || 0) <= 0) {
+    showMessage(selectedProduct.name + " is out of stock.", "error");
+    selectedProduct = null;
     return;
   }
 
-  const qty = Math.max(1, Math.floor(Number(selectedQty.value) || 1));
-  const price = Math.max(0, Number(selectedPrice.value));
-
-  if (isNaN(price)) {
-    showMessage("Please enter a valid selling price.", "error");
-    return;
-  }
-
+  const productName = selectedProduct.name;
   const existing = items.find(item => item.product_id === selectedProduct._id);
-  const alreadyInBill = existing ? existing.qty : 0;
-
-  if (alreadyInBill + qty > stock) {
-    showMessage(`Only ${stock} piece(s) of ${selectedProduct.name} available (${alreadyInBill} already in this bill).`, "error");
-    return;
-  }
 
   if (existing) {
-    existing.qty += qty;
-    existing.price = price; // latest price entered wins for this line
+    if (existing.qty >= Number(selectedProduct.stock_qty)) {
+      showMessage("You cannot add more than available stock for " + productName + ".", "error");
+      selectedProduct = null;
+      return;
+    }
+    existing.qty += 1;
   } else {
     items.push({
       product_id: selectedProduct._id,
       name: selectedProduct.name,
-      barcode: selectedProduct.barcode || "",
-      qty: qty,
-      mrp: Number(selectedProduct.selling_price || 0),
-      price: price,
+      qty: 1,
+      price: Number(selectedProduct.selling_price || 0),
       gst: Number(selectedProduct.gst_rate || 0),
-      stock_qty: stock
+      stock_qty: Number(selectedProduct.stock_qty || 0)
     });
   }
 
   productSearch.value = "";
+  selectedProduct = null;
   productResults.innerHTML = "";
   productResults.style.display = "none";
-  hideSelectedPreview();
-  showMessage("Added to bill.", "success");
+  showMessage("Added: " + productName);
   renderBill();
 }
 
@@ -340,14 +312,6 @@ function changeQty(index, delta) {
   renderBill();
 }
 
-function updatePrice(index, value) {
-  const item = items[index];
-  if (!item) return;
-  const price = Number(value);
-  item.price = isNaN(price) || price < 0 ? 0 : price;
-  renderBill();
-}
-
 function removeItem(index) {
   items.splice(index, 1);
   renderBill();
@@ -357,25 +321,18 @@ function renderBill() {
   const body = document.getElementById("billItems");
 
   if (!items.length) {
-    body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--ink-soft);padding:24px">No sarees added yet.</td></tr>';
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:24px">No products added yet.</td></tr>';
   } else {
     body.innerHTML = items.map((item, index) => {
       const lineSubtotal = item.price * item.qty;
       const lineGst = lineSubtotal * item.gst / 100;
       const lineTotal = lineSubtotal + lineGst;
-      const diff = item.price - item.mrp;
-      let note = "";
-      if (item.mrp > 0 && diff !== 0) {
-        note = diff < 0
-          ? `<div class="price-note discount">₹${Math.abs(diff).toFixed(0)} off MRP</div>`
-          : `<div class="price-note markup">₹${diff.toFixed(0)} above MRP</div>`;
-      }
 
       return `
         <tr>
           <td>
             <strong>${escapeHtml(item.name)}</strong>
-            <div style="font-size:11px;color:var(--ink-soft);margin-top:3px">Available: ${item.stock_qty}${item.barcode ? " · Code: " + escapeHtml(item.barcode) : ""}</div>
+            <div style="font-size:11px;color:var(--ink-soft);margin-top:3px">Available: ${item.stock_qty}</div>
           </td>
           <td>
             <div style="display:flex;align-items:center;gap:7px">
@@ -383,26 +340,20 @@ function renderBill() {
               <strong>${item.qty}</strong>
               <button type="button" class="btn-ghost" style="padding:5px 9px" onclick="changeQty(${index},1)">+</button>
             </div>
+            <button type="button" style="border:0;background:none;color:#B23A2E;cursor:pointer;padding:5px 0;font-size:11px" onclick="removeItem(${index})">Remove</button>
           </td>
-          <td class="mrp-cell">${money(item.mrp)}</td>
-          <td class="price-cell">
-            <input type="number" min="0" step="1" value="${item.price}" onchange="updatePrice(${index}, this.value)">
-            ${note}
-          </td>
+          <td>${money(item.price)}</td>
           <td>${item.gst}%</td>
           <td><strong>${money(lineTotal)}</strong></td>
-          <td><button type="button" style="border:0;background:none;color:#B23A2E;cursor:pointer;padding:5px 0;font-size:11px" onclick="removeItem(${index})">Remove</button></td>
         </tr>
       `;
     }).join("");
   }
 
-  const mrpTotal = items.reduce((sum, item) => sum + item.mrp * item.qty, 0);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const gst = items.reduce((sum, item) => sum + item.price * item.qty * item.gst / 100, 0);
   const total = subtotal + gst;
 
-  document.getElementById("mrpTotal").textContent = money(mrpTotal);
   document.getElementById("subtotal").textContent = money(subtotal);
   document.getElementById("gst").textContent = money(gst);
   document.getElementById("grandTotal").textContent = money(total);
@@ -412,7 +363,7 @@ function clearBill() {
   if (items.length && !confirm("Clear this bill?")) return;
 
   items = [];
-  hideSelectedPreview();
+  selectedProduct = null;
   productSearch.value = "";
   productResults.innerHTML = "";
   productResults.style.display = "none";
@@ -427,32 +378,21 @@ async function saveInvoice() {
   if (saving) return;
 
   if (!items.length) {
-    alert("Please add at least one saree.");
+    alert("Please add at least one product.");
     return;
   }
 
-  // The backend prices each line from the product's own selling_price and
-  // applies discount_percent on top of it. To let you charge a different
-  // amount than the inventory MRP, we convert your entered price into the
-  // equivalent discount (or markup, as a negative discount) per line.
   const payload = {
     customer_name: document.getElementById("customerName").value.trim() || "Walk-in Customer",
     customer_phone: document.getElementById("customerPhone").value.trim(),
     customer_state: document.getElementById("customerState").value.trim(),
     payment_mode: document.getElementById("paymentMode").value,
     payment_status: "Paid",
-    items: items.map(item => {
-      let discountPercent = 0;
-      if (item.mrp > 0) {
-        discountPercent = ((item.mrp - item.price) / item.mrp) * 100;
-        discountPercent = Math.round(discountPercent * 100) / 100;
-      }
-      return {
-        product_id: item.product_id,
-        qty: item.qty,
-        discount_percent: discountPercent
-      };
-    })
+    items: items.map(item => ({
+      product_id: item.product_id,
+      qty: item.qty,
+      discount_percent: 0
+    }))
   };
 
   saving = true;
@@ -480,13 +420,13 @@ async function saveInvoice() {
 
     // Stock was decremented by the backend, so clear the current bill.
     items = [];
-    hideSelectedPreview();
+    selectedProduct = null;
     productSearch.value = "";
     productResults.innerHTML = "";
     productResults.style.display = "none";
     renderBill();
 
-    alert(`Bill ${data.invoice_no} saved successfully. Total collected: ${money(data.grand_total)}`);
+    alert(`Bill ${data.invoice_no} saved successfully in MongoDB.`);
 
     // Open the backend-generated printable invoice.
     if (data._id) {
@@ -512,21 +452,11 @@ productSearch.addEventListener("input", () => {
 
 productSearch.addEventListener("keydown", event => {
   if (event.key === "Enter") {
+    // A hardware/USB barcode scanner types the code then sends Enter
+    // instantly — don't wait for the debounce timer, search right now.
     event.preventDefault();
+    clearTimeout(searchTimer);
     searchProducts();
-  }
-});
-
-selectedQty.addEventListener("keydown", event => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    addSelectedProduct();
-  }
-});
-selectedPrice.addEventListener("keydown", event => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    addSelectedProduct();
   }
 });
 
@@ -544,6 +474,95 @@ document.getElementById("menuToggle").addEventListener("click", () => {
 });
 
 renderBill();
+
+/* =========================================================
+   Camera barcode / QR scanner
+   Uses html5-qrcode (supports QR codes and common 1D barcodes:
+   EAN-13, EAN-8, UPC-A, Code128, Code39, etc. depending on
+   browser/device camera support).
+   ========================================================= */
+let html5QrCode = null;
+let scannerBusy = false;
+
+function setScannerStatus(message, isError = false) {
+  const el = document.getElementById("scannerStatus");
+  el.textContent = message;
+  el.className = "scanner-status" + (isError ? " error" : "");
+}
+
+async function openScanner() {
+  const modal = document.getElementById("scannerModal");
+  modal.classList.add("open");
+  setScannerStatus("Starting camera...");
+
+  if (typeof Html5Qrcode === "undefined") {
+    setScannerStatus("Scanner library failed to load. Check your internet connection.", true);
+    return;
+  }
+
+  if (!window.isSecureContext) {
+    setScannerStatus("Camera access needs HTTPS (or localhost). Ask your host to enable SSL.", true);
+    return;
+  }
+
+  try {
+    html5QrCode = new Html5Qrcode("scannerRegion");
+
+    await html5QrCode.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 260, height: 160 },
+        // Let the library try every supported 1D/2D format it can.
+      },
+      onScanSuccess,
+      () => { /* ignore per-frame "no code found" noise */ }
+    );
+
+    setScannerStatus("Camera ready — hold the barcode/QR code steady in view.");
+  } catch (err) {
+    console.error(err);
+    setScannerStatus("Could not access camera: " + (err.message || err), true);
+  }
+}
+
+async function closeScanner() {
+  const modal = document.getElementById("scannerModal");
+  modal.classList.remove("open");
+  setScannerStatus("");
+
+  if (html5QrCode) {
+    try {
+      await html5QrCode.stop();
+      await html5QrCode.clear();
+    } catch (err) {
+      // Scanner may already be stopped — safe to ignore.
+    }
+    html5QrCode = null;
+  }
+}
+
+async function onScanSuccess(decodedText) {
+  if (scannerBusy) return;
+  scannerBusy = true;
+
+  setScannerStatus("Scanned: " + decodedText);
+  await closeScanner();
+
+  productSearch.value = decodedText;
+  await searchProducts();
+
+  // Small cooldown so the same code isn't processed twice if the modal
+  // is quickly reopened.
+  setTimeout(() => { scannerBusy = false; }, 800);
+}
+
+// Close the scanner modal if the user clicks the dark overlay.
+document.getElementById("scannerModal").addEventListener("click", event => {
+  if (event.target.id === "scannerModal") {
+    closeScanner();
+  }
+});
 </script>
 </body>
 </html>

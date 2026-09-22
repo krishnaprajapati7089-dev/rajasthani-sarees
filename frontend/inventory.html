@@ -42,7 +42,7 @@
 .modal-box h3{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 16px;font-size:20px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
 .label-preview{text-align:center;padding:10px 0}
-.label-preview img{width:180px;height:180px}
+.label-preview svg{width:260px;height:90px;max-width:100%}
 .label-preview .lp-name{font-weight:700;margin-top:8px}
 .label-preview .lp-code{font-family:'Courier New',monospace;color:var(--ink-soft);margin-top:2px}
 </style>
@@ -147,13 +147,13 @@
   </div>
 </div>
 
-<!-- QR code generator (used to build printable barcode labels) -->
-<script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+<!-- Code 128 barcode generator -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <script>
 let allProducts = [];
 let searchTimer = null;
-let currentLabel = null; // { name, barcode, price, dataUrl }
+let currentLabel = null; // { name, barcode, price, stock, barcodeSvg }
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -297,33 +297,78 @@ async function submitAddProduct(){
   }
 }
 
-/* ---------------- Barcode / QR label ---------------- */
+/* ---------------- Barcode labels ---------------- */
 
 async function showLabel(productId){
   const product = allProducts.find(p => p._id === productId);
+
   if (!product){
     alert("Could not find this product.");
     return;
   }
+
   await showLabelForProduct(product);
 }
 
 async function showLabelForProduct(product){
-  const barcode = product.barcode || "NO-CODE";
-  const dataUrl = await QRCode.toDataURL(barcode, { width: 220, margin: 1 });
+  const barcode = String(product.barcode || "").trim();
+  const stock = Math.max(0, Math.floor(Number(product.stock_qty) || 0));
+
+  if (!barcode || barcode === "NO-CODE"){
+    alert("This product does not have a barcode. Please add/generate a barcode for this saree first.");
+    return;
+  }
+
+  if (stock <= 0){
+    alert("This saree has 0 stock, so there are no labels to print.");
+    return;
+  }
+
+  // One product = ONE barcode/code.
+  // The same barcode is repeated once for every physical saree in stock.
+  const barcodeSvg = document.createElement("svg");
+
+  try {
+    JsBarcode(barcodeSvg, barcode, {
+      format: "CODE128",
+      displayValue: true,
+      text: barcode,
+      fontSize: 13,
+      font: "Arial",
+      height: 55,
+      width: 2,
+      margin: 4,
+      background: "#ffffff",
+      lineColor: "#000000"
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Could not generate Code 128 barcode.");
+    return;
+  }
 
   currentLabel = {
     name: product.name,
     barcode,
     price: product.selling_price,
-    dataUrl
+    stock,
+    barcodeSvg: barcodeSvg.outerHTML
   };
 
   document.getElementById("labelPreview").innerHTML = `
-    <img src="${dataUrl}" alt="Barcode for ${escapeHtml(product.name)}">
-    <div class="lp-name">${escapeHtml(product.name)}</div>
-    <div class="lp-code">${escapeHtml(barcode)}</div>
+    <div style="font-weight:700;font-size:20px;margin-bottom:6px">
+      ${escapeHtml(product.name)}
+    </div>
+    <div style="font-weight:700;font-size:16px;margin-bottom:8px">
+      MRP ${money(product.selling_price)}
+    </div>
+    ${barcodeSvg.outerHTML}
+    <div class="lp-code" style="margin-top:4px">${escapeHtml(barcode)}</div>
+    <div class="form-message success" style="margin-top:10px">
+      ${stock} label${stock === 1 ? "" : "s"} will be printed using the same code.
+    </div>
   `;
+
   document.getElementById("labelModal").classList.add("open");
 }
 
@@ -335,32 +380,108 @@ function closeLabelModal(){
 function buildLabelSheetHtml(labels){
   const cards = labels.map(l => `
     <div class="label-card">
-      <img src="${l.dataUrl}" alt="QR code">
       <div class="label-name">${escapeHtml(l.name)}</div>
+      <div class="label-price">MRP ${money(l.price)}</div>
+      ${l.barcodeSvg}
       <div class="label-code">${escapeHtml(l.barcode)}</div>
-      ${l.price ? `<div class="label-price">₹${Number(l.price).toLocaleString('en-IN')}</div>` : ""}
     </div>
   `).join("");
 
-  return `<!DOCTYPE html><html><head><title>Print Labels</title><meta charset="UTF-8"><style>
-    body{font-family:Arial,sans-serif;margin:0;padding:16px;background:#fff}
-    .label-sheet{display:flex;flex-wrap:wrap;gap:10px}
-    .label-card{width:170px;border:1px dashed #999;border-radius:8px;padding:12px;text-align:center;page-break-inside:avoid}
-    .label-card img{width:130px;height:130px}
-    .label-name{font-weight:700;font-size:12.5px;margin-top:8px}
-    .label-code{font-size:11px;color:#555;letter-spacing:1px;margin-top:2px;font-family:'Courier New',monospace}
-    .label-price{font-size:12.5px;font-weight:700;margin-top:3px;color:#5E1620}
-    @media print{ body{padding:0} }
-  </style></head><body>
-    <div class="label-sheet">${cards}</div>
-    <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 300); };<\/script>
-  </body></html>`;
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <title>Print Labels</title>
+  <meta charset="UTF-8">
+  <style>
+    *{box-sizing:border-box}
+    body{
+      font-family:Arial,sans-serif;
+      margin:0;
+      padding:10mm;
+      background:#fff;
+    }
+    .label-sheet{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:4mm;
+      align-items:start;
+    }
+    .label-card{
+      width:100%;
+      min-height:35mm;
+      border:1px dashed #999;
+      padding:3mm 2.5mm;
+      text-align:center;
+      page-break-inside:avoid;
+      break-inside:avoid;
+      overflow:hidden;
+    }
+    .label-card svg{
+      display:block;
+      width:100%;
+      height:16mm;
+      max-height:16mm;
+      margin:2mm auto 0;
+    }
+    .label-name{
+      font-weight:700;
+      font-size:12px;
+      line-height:1.15;
+      margin-bottom:1.5mm;
+    }
+    .label-price{
+      font-size:11.5px;
+      font-weight:700;
+      margin-bottom:1mm;
+    }
+    .label-code{
+      font-size:9px;
+      letter-spacing:.8px;
+      margin-top:1mm;
+      font-family:'Courier New',monospace;
+    }
+    @page{
+      size:A4;
+      margin:8mm;
+    }
+    @media print{
+      body{padding:0}
+      .label-card{border:1px dashed #999}
+    }
+  </style>
+</head>
+<body>
+  <div class="label-sheet">${cards}</div>
+  <script>
+    window.onload = function(){
+      setTimeout(function(){ window.print(); }, 300);
+    };
+  <\/script>
+</body>
+</html>`;
 }
 
 function printCurrentLabel(){
   if (!currentLabel) return;
+
+  const labels = Array.from(
+    { length: currentLabel.stock },
+    () => ({
+      name: currentLabel.name,
+      barcode: currentLabel.barcode,
+      price: currentLabel.price,
+      barcodeSvg: currentLabel.barcodeSvg
+    })
+  );
+
   const w = window.open("", "_blank");
-  w.document.write(buildLabelSheetHtml([currentLabel]));
+
+  if (!w){
+    alert("Please allow pop-ups for this site so the labels can be printed.");
+    return;
+  }
+
+  w.document.write(buildLabelSheetHtml(labels));
   w.document.close();
 }
 

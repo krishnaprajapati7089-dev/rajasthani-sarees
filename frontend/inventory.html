@@ -602,6 +602,7 @@ function printCurrentLabel(){
     { length: currentLabel.stock },
     () => ({
       name: currentLabel.name,
+      category: currentLabel.category,
       barcode: currentLabel.barcode,
       price: currentLabel.price,
       barcodeSvg: currentLabel.barcodeSvg
@@ -656,6 +657,7 @@ async function printAllLabels(){
     for (let i = 0; i < stock; i++){
       labels.push({
         name: product.name,
+        category: product.category || 'General',
         barcode,
         price: product.selling_price,
         barcodeSvg: barcodeSvg.outerHTML
@@ -702,6 +704,7 @@ function buildLabelSheetHtml(labels){
       return `
         <div class="label-card">
           <div class="label-name">${escapeHtml(l.name)}</div>
+          <div class="label-category">${escapeHtml(l.category || 'General')}</div>
           <div class="label-price">MRP ${money(l.price)}</div>
           ${l.barcodeSvg}
           <div class="label-code">${escapeHtml(l.barcode)}</div>
@@ -773,8 +776,16 @@ function buildLabelSheetHtml(labels){
       font-weight:700;
       font-size:12px;
       line-height:1.15;
-      margin-bottom:1mm;
+      margin-bottom:.5mm;
       color:#5E1620;
+    }
+
+    .label-category{
+      font-size:9.5px;
+      line-height:1.1;
+      margin-bottom:1mm;
+      color:#6B5C56;
+      font-weight:600;
     }
 
     /* Background is ONLY behind MRP. */

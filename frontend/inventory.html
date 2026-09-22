@@ -95,7 +95,13 @@
 <section class="panel"><input id="inventorySearch" placeholder="Search saree, barcode or category..." oninput="onSearchInput()"></section>
 
 <section class="panel">
-  <div class="page-header" style="margin-bottom:10px"><h2>All Stock</h2><span id="productCount">Loading…</span></div>
+  <div class="page-header" style="margin-bottom:10px">
+  <h2>All Stock</h2>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span id="productCount">Loading…</span>
+    <button class="btn-primary" type="button" onclick="printAllLabels()">🏷️ Print All Labels</button>
+  </div>
+</div>
   <div id="inventoryMessage" class="form-message"></div>
   <div class="table-wrapper">
     <table>
@@ -602,6 +608,70 @@ function printCurrentLabel(){
     })
   );
 
+  openLabelPrintWindow(labels);
+}
+
+/*
+ * Print all products in inventory.
+ * Each product uses its ONE barcode, repeated stock_qty times.
+ * The labels are filled left-to-right, top-to-bottom.
+ * 24 sticker positions = 3 columns x 8 rows.
+ */
+async function printAllLabels(){
+  const products = Array.isArray(allProducts) ? allProducts : [];
+
+  if (!products.length){
+    alert("There are no products in inventory.");
+    return;
+  }
+
+  const labels = [];
+
+  products.forEach(product => {
+    const stock = Math.max(0, Math.floor(Number(product.stock_qty) || 0));
+    const barcode = String(product.barcode || "").trim();
+
+    if (stock <= 0 || !barcode) return;
+
+    const barcodeSvg = document.createElement("svg");
+
+    try {
+      JsBarcode(barcodeSvg, barcode, {
+        format: "CODE128",
+        displayValue: true,
+        text: barcode,
+        fontSize: 13,
+        font: "Arial",
+        height: 55,
+        width: 2,
+        margin: 4,
+        background: "#ffffff",
+        lineColor: "#000000"
+      });
+    } catch (err) {
+      console.error("Barcode generation failed for", product.name, err);
+      return;
+    }
+
+    for (let i = 0; i < stock; i++){
+      labels.push({
+        name: product.name,
+        barcode,
+        price: product.selling_price,
+        barcodeSvg: barcodeSvg.outerHTML
+      });
+    }
+  });
+
+  if (!labels.length){
+    alert("There are no printable labels. Check stock quantities and barcodes.");
+    return;
+  }
+
+  openLabelPrintWindow(labels);
+}
+
+function openLabelPrintWindow(labels){
   const w = window.open("", "_blank");
 
   if (!w){
@@ -611,6 +681,144 @@ function printCurrentLabel(){
 
   w.document.write(buildLabelSheetHtml(labels));
   w.document.close();
+}
+
+function buildLabelSheetHtml(labels){
+  const labelsPerPage = 24;
+  const pages = [];
+
+  for (let i = 0; i < labels.length; i += labelsPerPage){
+    const pageLabels = labels.slice(i, i + labelsPerPage);
+
+    while (pageLabels.length < labelsPerPage){
+      pageLabels.push(null);
+    }
+
+    const cards = pageLabels.map(l => {
+      if (!l){
+        return '<div class="label-card label-blank"></div>';
+      }
+
+      return `
+        <div class="label-card">
+          <div class="label-name">${escapeHtml(l.name)}</div>
+          <div class="label-price">MRP ${money(l.price)}</div>
+          ${l.barcodeSvg}
+          <div class="label-code">${escapeHtml(l.barcode)}</div>
+        </div>
+      `;
+    }).join("");
+
+    pages.push(`<div class="label-page">${cards}</div>`);
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <title>Print Labels</title>
+  <meta charset="UTF-8">
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#fff}
+    body{font-family:Arial,sans-serif}
+
+    .label-page{
+      width:210mm;
+      height:297mm;
+      padding:8mm;
+      display:grid;
+      grid-template-columns:repeat(3,69.8mm);
+      grid-template-rows:repeat(8,35mm);
+      column-gap:4.8mm;
+      row-gap:0;
+      align-items:start;
+      justify-content:start;
+      page-break-after:always;
+      break-after:page;
+      overflow:hidden;
+    }
+
+    .label-page:last-child{
+      page-break-after:auto;
+      break-after:auto;
+    }
+
+    .label-card{
+      width:69.8mm;
+      height:35mm;
+      border:1px dashed #999;
+      border-radius:3mm;
+      padding:2mm;
+      text-align:center;
+      page-break-inside:avoid;
+      break-inside:avoid;
+      overflow:hidden;
+      background:#FFFFFF;
+    }
+
+    .label-card.label-blank{
+      border-color:transparent;
+      background:transparent;
+    }
+
+    .label-card svg{
+      display:block;
+      width:100%;
+      height:14mm;
+      max-height:14mm;
+      margin:1mm auto 0;
+    }
+
+    .label-name{
+      font-weight:700;
+      font-size:12px;
+      line-height:1.15;
+      margin-bottom:1mm;
+      color:#5E1620;
+    }
+
+    /* Background is ONLY behind MRP. */
+    .label-price{
+      display:inline-block;
+      font-size:11.5px;
+      font-weight:700;
+      line-height:1;
+      margin:0 auto 1mm;
+      padding:1.2mm 3mm;
+      border-radius:1mm;
+      background:#C9A24A;
+      color:#3E0E15;
+    }
+
+    .label-code{
+      font-size:9px;
+      letter-spacing:.8px;
+      margin-top:1mm;
+      font-family:'Courier New',monospace;
+      color:#6B5C56;
+    }
+
+    @page{
+      size:A4;
+      margin:0;
+    }
+
+    @media print{
+      body{margin:0;padding:0}
+      .label-page{page-break-after:always}
+      .label-page:last-child{page-break-after:auto}
+    }
+  </style>
+</head>
+<body>
+  ${pages.join("")}
+  <script>
+    window.onload = function(){
+      setTimeout(function(){ window.print(); }, 500);
+    };
+  <\/script>
+</body>
+</html>`;
 }
 
 /* ---------------- header / mobile nav ---------------- */

@@ -721,7 +721,7 @@ function printCurrentLabel(){
  * Print all products in inventory.
  * Each product uses its ONE barcode, repeated stock_qty times.
  * The labels are filled left-to-right, top-to-bottom.
- * 24 sticker positions = 3 columns x 8 rows.
+ * 48 sticker positions = 4 columns x 12 rows.
  */
 async function openPrintAllModal(){
   if (!Array.isArray(allProducts) || !allProducts.length){
@@ -880,7 +880,7 @@ function openLabelPrintWindow(labels){
 }
 
 function buildLabelSheetHtml(labels){
-  const labelsPerPage = 24;
+  const labelsPerPage = 48;
   const pages = [];
 
   for (let i = 0; i < labels.length; i += labelsPerPage){
@@ -923,11 +923,12 @@ function buildLabelSheetHtml(labels){
     .label-page{
       width:210mm;
       height:297mm;
-      padding:8mm;
+      margin:0;
+      padding:0;
       display:grid;
-      grid-template-columns:repeat(3,69.8mm);
-      grid-template-rows:repeat(8,35mm);
-      column-gap:4.8mm;
+      grid-template-columns:repeat(4,48mm);
+      grid-template-rows:repeat(12,24mm);
+      column-gap:6mm;
       row-gap:0;
       align-items:start;
       justify-content:start;
@@ -942,11 +943,11 @@ function buildLabelSheetHtml(labels){
     }
 
     .label-card{
-      width:69.8mm;
-      height:35mm;
+      width:48mm;
+      height:24mm;
       border:1px dashed #999;
-      border-radius:3mm;
-      padding:2mm;
+      border-radius:2mm;
+      padding:1.2mm;
       text-align:center;
       page-break-inside:avoid;
       break-inside:avoid;
@@ -1012,7 +1013,7 @@ function buildLabelSheetHtml(labels){
     }
 
     @page{
-      size:A4;
+      size:A4 portrait;
       margin:0;
     }
 

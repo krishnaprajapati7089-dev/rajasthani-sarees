@@ -134,6 +134,53 @@
   </div>
 </div>
 
+<!-- Edit Saree modal -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <h3>Edit Saree</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Saree Name</label>
+        <input id="editName" readonly>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <input id="editCategory" readonly>
+      </div>
+    </div>
+
+    <div class="form-row" style="margin-top:14px">
+      <div class="form-group">
+        <label>Purchase Price (₹)</label>
+        <input id="editPurchasePrice" type="number" min="0">
+      </div>
+      <div class="form-group">
+        <label>Selling Price / MRP (₹) *</label>
+        <input id="editSellingPrice" type="number" min="0">
+      </div>
+    </div>
+
+    <div class="form-row" style="margin-top:14px">
+      <div class="form-group">
+        <label>GST Rate (%)</label>
+        <input id="editGst" type="number" min="0">
+      </div>
+      <div class="form-group">
+        <label>Stock Quantity</label>
+        <input id="editStock" type="number" min="0">
+      </div>
+    </div>
+
+    <div id="editMessage" class="form-message"></div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" type="button" onclick="closeEditProduct()">Cancel</button>
+      <button class="btn-primary" type="button" onclick="saveEditProduct()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <!-- Label preview modal -->
 <div class="modal" id="labelModal">
   <div class="modal-box">
@@ -204,7 +251,7 @@ function renderInventory(){
       <td>${Number(p.gst_rate||0)}%</td>
       <td>${Number(p.stock_qty||0)}</td>
       <td><button class="btn-ghost small" type="button" onclick="showLabel('${p._id}')">🏷️ Label</button></td>
-      <td class="row-actions"><button class="btn-danger-text" type="button" onclick="deactivateProduct('${p._id}','${escapeHtml(p.name)}')">Remove</button></td>
+      <td class="row-actions"><button class="btn-ghost small" type="button" onclick="openEditProduct('${p._id}')">✏️ Edit</button></td>
     </tr>
   `).join("");
 }
@@ -215,15 +262,83 @@ function onSearchInput(){
   searchTimer = setTimeout(() => loadInventory(q), 250);
 }
 
-async function deactivateProduct(id, name){
-  if (!confirm(`Remove "${name}" from active inventory? (Past bills keep the record.)`)) return;
+async function openEditProduct(id){
+  const product = allProducts.find(p => p._id === id);
+
+  if (!product){
+    alert("Could not find this product.");
+    return;
+  }
+
+  document.getElementById("editName").value = product.name || "";
+  document.getElementById("editCategory").value = product.category || "General";
+  document.getElementById("editPurchasePrice").value = Number(product.purchase_price || 0);
+  document.getElementById("editSellingPrice").value = Number(product.selling_price || 0);
+  document.getElementById("editGst").value = Number(product.gst_rate || 0);
+  document.getElementById("editStock").value = Number(product.stock_qty || 0);
+
+  document.getElementById("editMessage").textContent = "";
+  document.getElementById("editMessage").className = "form-message";
+
+  document.getElementById("editModal").dataset.productId = id;
+  document.getElementById("editModal").classList.add("open");
+}
+
+function closeEditProduct(){
+  document.getElementById("editModal").classList.remove("open");
+  document.getElementById("editModal").dataset.productId = "";
+}
+
+async function saveEditProduct(){
+  const modal = document.getElementById("editModal");
+  const id = modal.dataset.productId;
+  const msgEl = document.getElementById("editMessage");
+
+  const sellingPrice = Number(document.getElementById("editSellingPrice").value);
+  const stock = Number(document.getElementById("editStock").value);
+
+  if (!sellingPrice || sellingPrice <= 0){
+    msgEl.textContent = "Please enter a valid selling price / MRP.";
+    msgEl.className = "form-message error";
+    return;
+  }
+
+  if (!Number.isInteger(stock) || stock < 0){
+    msgEl.textContent = "Stock must be a whole number (0 or more).";
+    msgEl.className = "form-message error";
+    return;
+  }
+
+  const payload = {
+    purchase_price: Number(document.getElementById("editPurchasePrice").value) || 0,
+    selling_price: sellingPrice,
+    gst_rate: Number(document.getElementById("editGst").value) || 0,
+    stock_qty: stock
+  };
+
+  msgEl.textContent = "Saving...";
+  msgEl.className = "form-message";
+
   try {
-    const response = await fetch("/api/products/" + encodeURIComponent(id), { method: "DELETE" });
+    const response = await fetch("/api/products/" + encodeURIComponent(id), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Could not remove product");
-    loadInventory(document.getElementById("inventorySearch").value.trim());
+
+    if (!response.ok){
+      throw new Error(data.error || "Could not update product");
+    }
+
+    closeEditProduct();
+    await loadInventory(document.getElementById("inventorySearch").value.trim());
+    setInventoryMessage("Product updated successfully.", "success");
   } catch (err) {
-    alert("Could not remove product.\n\n" + err.message);
+    console.error(err);
+    msgEl.textContent = "Could not save: " + err.message;
+    msgEl.className = "form-message error";
   }
 }
 
@@ -402,43 +517,56 @@ function buildLabelSheetHtml(labels){
     }
     .label-sheet{
       display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:4mm;
+      grid-template-columns:repeat(3, 69.8mm);
+      grid-auto-rows:35mm;
+      column-gap:4.8mm;
+      row-gap:4mm;
       align-items:start;
+      justify-content:start;
     }
     .label-card{
-      width:100%;
-      min-height:35mm;
+      width:69.8mm;
+      height:35mm;
       border:1px dashed #999;
-      padding:3mm 2.5mm;
+      border-radius:3mm;
+      padding:2mm;
       text-align:center;
       page-break-inside:avoid;
       break-inside:avoid;
       overflow:hidden;
+      background:#FFFFFF;
     }
     .label-card svg{
       display:block;
       width:100%;
-      height:16mm;
-      max-height:16mm;
-      margin:2mm auto 0;
+      height:14mm;
+      max-height:14mm;
+      margin:1mm auto 0;
     }
     .label-name{
       font-weight:700;
       font-size:12px;
       line-height:1.15;
-      margin-bottom:1.5mm;
+      margin-bottom:1mm;
+      color:#5E1620;
     }
     .label-price{
+      display:inline-block;
       font-size:11.5px;
       font-weight:700;
-      margin-bottom:1mm;
+      line-height:1;
+      margin:0 auto 1mm;
+      padding:1.2mm 3mm;
+      border-radius:1mm;
+      background:#C9A24A;
+      color:#3E0E15;
     }
     .label-code{
       font-size:9px;
       letter-spacing:.8px;
       margin-top:1mm;
       font-family:'Courier New',monospace;
+      color:#6B5C56;
     }
     @page{
       size:A4;
@@ -494,7 +622,7 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   button.setAttribute("aria-expanded", panel.classList.contains("open") ? "true" : "false");
 });
 
-[document.getElementById("addModal"), document.getElementById("labelModal")].forEach(modal => {
+[document.getElementById("addModal"), document.getElementById("editModal"), document.getElementById("labelModal")].forEach(modal => {
   modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
 });
 

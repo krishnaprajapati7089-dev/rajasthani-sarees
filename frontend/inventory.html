@@ -45,6 +45,62 @@
 .label-preview svg{width:260px;height:90px;max-width:100%}
 .label-preview .lp-name{font-weight:700;margin-top:8px}
 .label-preview .lp-code{font-family:'Courier New',monospace;color:var(--ink-soft);margin-top:2px}
+
+.print-filter-box{max-width:620px}
+.print-filter-search{margin-top:8px}
+.print-filter-toolbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:10px 0;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  margin:10px 0;
+}
+.print-filter-toolbar span{
+  margin-left:auto;
+  font-size:12.5px;
+  color:var(--ink-soft);
+  font-weight:600;
+}
+.print-product-list{
+  max-height:48vh;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:10px;
+}
+.print-product-row{
+  display:grid;
+  grid-template-columns:34px 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:11px 12px;
+  border-bottom:1px solid var(--line);
+}
+.print-product-row:last-child{border-bottom:0}
+.print-product-check{width:18px;height:18px;accent-color:var(--maroon)}
+.print-product-info{min-width:0}
+.print-product-name{
+  font-weight:700;
+  color:var(--maroon);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.print-product-category{
+  display:block;
+  font-size:11.5px;
+  color:var(--ink-soft);
+  margin-top:2px;
+}
+.print-product-stock{
+  font-size:12px;
+  font-weight:600;
+  color:var(--ink-soft);
+  white-space:nowrap;
+}
+
 </style>
 </head>
 <body>
@@ -99,7 +155,7 @@
   <h2>All Stock</h2>
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span id="productCount">Loading…</span>
-    <button class="btn-primary" type="button" onclick="printAllLabels()">🏷️ Print All Labels</button>
+    <button class="btn-primary" type="button" onclick="openPrintAllModal()">🏷️ Print All Labels</button>
   </div>
 </div>
   <div id="inventoryMessage" class="form-message"></div>
@@ -131,6 +187,10 @@
     <div class="form-row" style="margin-top:14px">
       <div class="form-group"><label>Reorder Level</label><input id="newReorder" type="number" min="0" value="5"></div>
       <div class="form-group"><label>Barcode (optional)</label><input id="newBarcode" placeholder="Leave blank to auto-generate"></div>
+    </div>
+    <div class="form-row" style="margin-top:14px">
+      <div class="form-group"><label>Color (optional)</label><input id="newColor" placeholder="e.g. Red, Maroon, Pink"></div>
+      <div></div>
     </div>
     <div id="addMessage" class="form-message"></div>
     <div class="modal-actions">
@@ -178,11 +238,44 @@
       </div>
     </div>
 
+    <div class="form-row" style="margin-top:14px">
+      <div class="form-group"><label>Color (optional)</label><input id="editColor" placeholder="e.g. Red, Maroon, Pink"></div>
+      <div></div>
+    </div>
     <div id="editMessage" class="form-message"></div>
 
     <div class="modal-actions">
       <button class="btn-ghost" type="button" onclick="closeEditProduct()">Cancel</button>
       <button class="btn-primary" type="button" onclick="saveEditProduct()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print All Labels selection modal -->
+<div class="modal" id="printAllModal">
+  <div class="modal-box print-filter-box">
+    <h3>Print Labels</h3>
+    <p class="form-message" style="margin-top:-8px">
+      Select one or more sarees. Each selected product prints according to its current stock.
+    </p>
+
+    <div class="print-filter-search">
+      <input id="printProductSearch"
+             placeholder="Search saree name or category..."
+             oninput="filterPrintProducts()">
+    </div>
+
+    <div class="print-filter-toolbar">
+      <button class="btn-ghost small" type="button" onclick="selectAllPrintProducts()">Select All</button>
+      <button class="btn-ghost small" type="button" onclick="clearAllPrintProducts()">Clear All</button>
+      <span id="selectedPrintSummary">0 products · 0 labels</span>
+    </div>
+
+    <div id="printProductList" class="print-product-list"></div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" type="button" onclick="closePrintAllModal()">Cancel</button>
+      <button class="btn-primary" type="button" onclick="printSelectedLabels()">🖨 Print Selected</button>
     </div>
   </div>
 </div>
@@ -282,6 +375,7 @@ async function openEditProduct(id){
   document.getElementById("editSellingPrice").value = Number(product.selling_price || 0);
   document.getElementById("editGst").value = Number(product.gst_rate || 0);
   document.getElementById("editStock").value = Number(product.stock_qty || 0);
+  document.getElementById("editColor").value = product.color || "";
 
   document.getElementById("editMessage").textContent = "";
   document.getElementById("editMessage").className = "form-message";
@@ -319,7 +413,8 @@ async function saveEditProduct(){
     purchase_price: Number(document.getElementById("editPurchasePrice").value) || 0,
     selling_price: sellingPrice,
     gst_rate: Number(document.getElementById("editGst").value) || 0,
-    stock_qty: stock
+    stock_qty: stock,
+    color: document.getElementById("editColor").value.trim()
   };
 
   msgEl.textContent = "Saving...";
@@ -382,6 +477,7 @@ async function submitAddProduct(){
     selling_price: sellingPrice,
     gst_rate: Number(document.getElementById("newGst").value) || 0,
     stock_qty: Number(document.getElementById("newStock").value) || 0,
+    color: document.getElementById("newColor").value.trim(),
     reorder_level: Number(document.getElementById("newReorder").value) || 5,
     barcode: document.getElementById("newBarcode").value.trim() || undefined
   };
@@ -401,6 +497,7 @@ async function submitAddProduct(){
     closeAddProduct();
     document.getElementById("newName").value = "";
     document.getElementById("newCategory").value = "";
+    document.getElementById("newColor").value = "";
     document.getElementById("newBarcode").value = "";
     document.getElementById("newPurchasePrice").value = "0";
     document.getElementById("newSellingPrice").value = "0";
@@ -470,6 +567,8 @@ async function showLabelForProduct(product){
 
   currentLabel = {
     name: product.name,
+    category: product.category || "General",
+    color: product.color || "",
     barcode,
     price: product.selling_price,
     stock,
@@ -480,6 +579,10 @@ async function showLabelForProduct(product){
     <div style="font-weight:700;font-size:20px;margin-bottom:6px">
       ${escapeHtml(product.name)}
     </div>
+    <div style="font-size:13px;color:var(--ink-soft);font-weight:600;margin-bottom:6px">
+      ${escapeHtml(product.category || "General")}
+    </div>
+    ${product.color ? `<div style="font-size:12px;color:var(--ink-soft);font-weight:600;margin-bottom:6px">${escapeHtml(product.color)}</div>` : ""}
     <div style="font-weight:700;font-size:16px;margin-bottom:8px">
       MRP ${money(product.selling_price)}
     </div>
@@ -502,6 +605,7 @@ function buildLabelSheetHtml(labels){
   const cards = labels.map(l => `
     <div class="label-card">
       <div class="label-name">${escapeHtml(l.name)}</div>
+      <div class="label-category">${escapeHtml(l.category || "General")}</div>
       <div class="label-price">MRP ${money(l.price)}</div>
       ${l.barcodeSvg}
       <div class="label-code">${escapeHtml(l.barcode)}</div>
@@ -602,7 +706,8 @@ function printCurrentLabel(){
     { length: currentLabel.stock },
     () => ({
       name: currentLabel.name,
-      category: currentLabel.category,
+      category: currentLabel.category || "General",
+      color: currentLabel.color || "",
       barcode: currentLabel.barcode,
       price: currentLabel.price,
       barcodeSvg: currentLabel.barcodeSvg
@@ -618,17 +723,104 @@ function printCurrentLabel(){
  * The labels are filled left-to-right, top-to-bottom.
  * 24 sticker positions = 3 columns x 8 rows.
  */
-async function printAllLabels(){
-  const products = Array.isArray(allProducts) ? allProducts : [];
-
-  if (!products.length){
+async function openPrintAllModal(){
+  if (!Array.isArray(allProducts) || !allProducts.length){
     alert("There are no products in inventory.");
+    return;
+  }
+
+  const list = document.getElementById("printProductList");
+
+  list.innerHTML = allProducts.map((product, index) => {
+    const stock = Math.max(0, Math.floor(Number(product.stock_qty) || 0));
+    const category = product.category || "General";
+    const disabled = stock <= 0 || !String(product.barcode || "").trim();
+
+    return `
+      <label class="print-product-row print-product-item"
+             data-search="${escapeHtml((product.name || "") + " " + category)}"
+             style="${disabled ? "opacity:.5" : ""}">
+        <input
+          class="print-product-check"
+          type="checkbox"
+          value="${escapeHtml(product._id)}"
+          data-index="${index}"
+          ${disabled ? "disabled" : ""}
+          onchange="updatePrintSelectionSummary()"
+        >
+        <span class="print-product-info">
+          <span class="print-product-name">${escapeHtml(product.name)}</span>
+          <span class="print-product-category">${escapeHtml(category)}</span>
+        </span>
+        <span class="print-product-stock">
+          ${stock} label${stock === 1 ? "" : "s"}
+        </span>
+      </label>
+    `;
+  }).join("");
+
+  document.getElementById("printProductSearch").value = "";
+  updatePrintSelectionSummary();
+  document.getElementById("printAllModal").classList.add("open");
+}
+
+function closePrintAllModal(){
+  document.getElementById("printAllModal").classList.remove("open");
+}
+
+function filterPrintProducts(){
+  const q = document.getElementById("printProductSearch").value.trim().toLowerCase();
+
+  document.querySelectorAll("#printProductList .print-product-item").forEach(row => {
+    const haystack = String(row.dataset.search || "").toLowerCase();
+    row.style.display = !q || haystack.includes(q) ? "grid" : "none";
+  });
+}
+
+function selectAllPrintProducts(){
+  document.querySelectorAll("#printProductList .print-product-check:not(:disabled)")
+    .forEach(cb => cb.checked = true);
+  updatePrintSelectionSummary();
+}
+
+function clearAllPrintProducts(){
+  document.querySelectorAll("#printProductList .print-product-check")
+    .forEach(cb => cb.checked = false);
+  updatePrintSelectionSummary();
+}
+
+function updatePrintSelectionSummary(){
+  const checked = Array.from(
+    document.querySelectorAll("#printProductList .print-product-check:checked")
+  );
+
+  let totalLabels = 0;
+
+  checked.forEach(cb => {
+    const product = allProducts[Number(cb.dataset.index)];
+    totalLabels += Math.max(0, Math.floor(Number(product?.stock_qty) || 0));
+  });
+
+  document.getElementById("selectedPrintSummary").textContent =
+    `${checked.length} product${checked.length === 1 ? "" : "s"} · ${totalLabels} label${totalLabels === 1 ? "" : "s"}`;
+}
+
+function printSelectedLabels(){
+  const checked = Array.from(
+    document.querySelectorAll("#printProductList .print-product-check:checked")
+  );
+
+  if (!checked.length){
+    alert("Please select at least one saree.");
     return;
   }
 
   const labels = [];
 
-  products.forEach(product => {
+  checked.forEach(cb => {
+    const product = allProducts[Number(cb.dataset.index)];
+    if (!product) return;
+
     const stock = Math.max(0, Math.floor(Number(product.stock_qty) || 0));
     const barcode = String(product.barcode || "").trim();
 
@@ -657,7 +849,8 @@ async function printAllLabels(){
     for (let i = 0; i < stock; i++){
       labels.push({
         name: product.name,
-        category: product.category || 'General',
+        category: product.category || "General",
+        color: product.color || "",
         barcode,
         price: product.selling_price,
         barcodeSvg: barcodeSvg.outerHTML
@@ -666,10 +859,11 @@ async function printAllLabels(){
   });
 
   if (!labels.length){
-    alert("There are no printable labels. Check stock quantities and barcodes.");
+    alert("There are no printable labels in the selected products.");
     return;
   }
 
+  closePrintAllModal();
   openLabelPrintWindow(labels);
 }
 
@@ -705,6 +899,7 @@ function buildLabelSheetHtml(labels){
         <div class="label-card">
           <div class="label-name">${escapeHtml(l.name)}</div>
           <div class="label-category">${escapeHtml(l.category || 'General')}</div>
+          ${l.color ? `<div class="label-color">${escapeHtml(l.color)}</div>` : ""}
           <div class="label-price">MRP ${money(l.price)}</div>
           ${l.barcodeSvg}
           <div class="label-code">${escapeHtml(l.barcode)}</div>
@@ -783,8 +978,15 @@ function buildLabelSheetHtml(labels){
     .label-category{
       font-size:9.5px;
       line-height:1.1;
-      margin-bottom:1mm;
+      margin-bottom:.6mm;
       color:#6B5C56;
+      font-weight:600;
+    }
+    .label-color{
+      font-size:9.5px;
+      line-height:1.1;
+      margin-bottom:1mm;
+      color:#5E1620;
       font-weight:600;
     }
 
@@ -841,7 +1043,7 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   button.setAttribute("aria-expanded", panel.classList.contains("open") ? "true" : "false");
 });
 
-[document.getElementById("addModal"), document.getElementById("editModal"), document.getElementById("labelModal")].forEach(modal => {
+[document.getElementById("addModal"), document.getElementById("editModal"), document.getElementById("printAllModal"), document.getElementById("labelModal")].forEach(modal => {
   modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
 });
 

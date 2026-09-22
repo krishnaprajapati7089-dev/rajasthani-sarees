@@ -52,9 +52,18 @@
 .scanner-status{margin-top:10px;font-size:12.5px;color:var(--ink-soft);min-height:16px}
 .scanner-status.error{color:#B23A2E}
 .scanner-actions{display:flex;gap:10px;justify-content:center;margin-top:14px}
+
+/* --- Bill item line pricing controls --- */
+.mrp-value{color:var(--ink-soft)}
+.price-input,.discount-input{width:90px;padding:8px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13px}
+.price-input:focus,.discount-input:focus{outline:2px solid var(--gold-light);border-color:var(--gold)}
+.discount-cell{display:flex;align-items:center;gap:4px}
+.reset-price{border:0;background:none;color:var(--ink-soft);cursor:pointer;font-size:11px;text-decoration:underline;padding:0;margin-top:4px}
+.reset-price:hover{color:var(--maroon)}
 </style>
 </head>
 <body>
+<script src="auth-guard.js"></script>
 <header class="site-header">
   <div class="header-inner">
     <a href="dashboard.html" class="brand" aria-label="Rajastani Saree home">
@@ -82,6 +91,7 @@
       <button class="icon-btn hide-xs" aria-label="Notifications" title="Notifications">♢</button>
       <a class="btn-primary" href="billing.html">＋ <span class="label">New Bill</span></a>
       <div class="avatar" title="Store Manager">SM</div>
+      <button class="icon-btn hide-xs" onclick="rsLogout()" title="Logout">⏻</button>
       <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
     </div>
   </div>
@@ -96,6 +106,7 @@
     <div class="mobile-divider"></div>
     <div class="mobile-actions">
       <a class="btn-primary" href="billing.html">＋ New Bill</a>
+      <button class="btn-ghost" style="justify-content:center;margin-top:10px;width:100%" onclick="rsLogout()">Logout</button>
     </div>
   </div>
 </div>
@@ -132,7 +143,7 @@
 <div id="productResults" class="product-results"></div>
 <div id="productMessage" class="form-message">Search your inventory, or scan a barcode/QR code, to add a product.</div>
 </section>
-<section class="panel"><h2>Bill Items</h2><div class="table-wrapper"><table><thead><tr><th>Product</th><th>Qty</th><th>MRP</th><th>Selling Price (Incl. GST)</th><th>Total</th></tr></thead><tbody id="billItems"></tbody></table></div></section>
+<section class="panel"><h2>Bill Items</h2><p class="form-message">MRP comes from Inventory. Type a Selling Price or a Discount % to change what you actually charge — the other field updates to match.</p><div class="table-wrapper"><table><thead><tr><th>Product</th><th>Qty</th><th>MRP</th><th>Selling Price</th><th>Discount %</th><th>Total</th></tr></thead><tbody id="billItems"></tbody></table></div></section>
 <section class="panel" style="max-width:520px;margin-left:auto"><div style="display:flex;justify-content:space-between;padding:8px 0">Subtotal <strong id="subtotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;color:var(--ink-soft)">GST included in selling price <strong id="gst">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);font-size:20px">Total Payable <strong id="grandTotal">₹0</strong></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn-ghost" onclick="clearBill()">Clear</button><button class="btn-primary" type="button" onclick="saveInvoice()">Save Bill</button><button class="btn-primary" type="button" onclick="window.print()">Print</button></div><div id="saveStatus" class="save-status"></div></section>
 </div></main>
 
@@ -165,6 +176,10 @@ const productMessage = document.getElementById("productMessage");
 
 function money(value) {
   return "₹" + Number(value || 0).toFixed(2);
+}
+
+function round2(n) {
+  return Math.round((Number(n) || 0) * 100) / 100;
 }
 
 function escapeHtml(value) {
@@ -221,7 +236,7 @@ async function searchProducts() {
         <span>
           <span class="product-result-name">${escapeHtml(product.name)}</span><br>
           <span class="product-result-meta">
-            ${escapeHtml(product.barcode || "No barcode")} · Stock: ${Number(product.stock_qty || 0)} · ${money(product.selling_price)}
+            ${escapeHtml(product.barcode || "No barcode")} · Stock: ${Number(product.stock_qty || 0)} · MRP ${money(product.selling_price)}
           </span>
         </span>
         <span>${Number(product.gst_rate || 0)}% GST</span>
@@ -267,6 +282,7 @@ function addSelectedProduct() {
   }
 
   const productName = selectedProduct.name;
+  const mrp = Number(selectedProduct.selling_price || 0); // MRP comes from Inventory
   const existing = items.find(item => item.product_id === selectedProduct._id);
 
   if (existing) {
@@ -281,8 +297,9 @@ function addSelectedProduct() {
       product_id: selectedProduct._id,
       name: selectedProduct.name,
       qty: 1,
-      mrp: Number(selectedProduct.mrp || 0),
-      price: Number(selectedProduct.selling_price || 0),
+      mrp: mrp,              // fixed reference — always Inventory's price, never edited here
+      price: mrp,             // the actual selling price for this bill — editable
+      discountPercent: 0,     // kept in sync with price
       gst: Number(selectedProduct.gst_rate || 0),
       stock_qty: Number(selectedProduct.stock_qty || 0)
     });
@@ -319,18 +336,77 @@ function removeItem(index) {
   renderBill();
 }
 
+// Recomputes discountPercent from a manually-typed selling price.
+function applyPriceEdit(index, rawValue) {
+  const item = items[index];
+  if (!item) return;
+
+  const price = Math.max(0, Number(rawValue) || 0);
+  item.price = price;
+  item.discountPercent = item.mrp > 0 ? round2(((item.mrp - price) / item.mrp) * 100) : 0;
+
+  const discountInput = document.querySelector(`.discount-input[data-index="${index}"]`);
+  if (discountInput) discountInput.value = item.discountPercent;
+
+  updateRowTotal(index);
+  updateFooterTotals();
+}
+
+// Recomputes the selling price from a manually-typed discount percentage.
+// Positive = discount, negative = markup above MRP.
+function applyDiscountEdit(index, rawValue) {
+  const item = items[index];
+  if (!item) return;
+
+  const discount = Number(rawValue) || 0;
+  item.discountPercent = discount;
+  item.price = Math.max(0, round2(item.mrp * (1 - discount / 100)));
+
+  const priceInput = document.querySelector(`.price-input[data-index="${index}"]`);
+  if (priceInput) priceInput.value = item.price;
+
+  updateRowTotal(index);
+  updateFooterTotals();
+}
+
+function resetPriceToMrp(index) {
+  const item = items[index];
+  if (!item) return;
+  item.price = item.mrp;
+  item.discountPercent = 0;
+  renderBill();
+}
+
+function updateRowTotal(index) {
+  const item = items[index];
+  if (!item) return;
+  const lineTotal = item.price * item.qty;
+  const el = document.getElementById("rowTotal-" + index);
+  if (el) el.textContent = money(lineTotal);
+}
+
+function updateFooterTotals() {
+  const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  // Selling price already includes GST, so back out the GST component for display only.
+  const gst = items.reduce((sum, item) => {
+    const lineTotal = item.price * item.qty;
+    return sum + (item.gst > 0 ? lineTotal - (lineTotal / (1 + item.gst / 100)) : 0);
+  }, 0);
+  const subtotal = total - gst;
+
+  document.getElementById("subtotal").textContent = money(subtotal);
+  document.getElementById("gst").textContent = money(gst);
+  document.getElementById("grandTotal").textContent = money(total);
+}
+
 function renderBill() {
   const body = document.getElementById("billItems");
 
   if (!items.length) {
-    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:24px">No products added yet.</td></tr>';
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:24px">No products added yet.</td></tr>';
   } else {
     body.innerHTML = items.map((item, index) => {
-      // Selling price already includes GST, so GST is informational only.
       const lineTotal = item.price * item.qty;
-      const lineGst = item.gst > 0
-        ? lineTotal - (lineTotal / (1 + item.gst / 100))
-        : 0;
 
       return `
         <tr>
@@ -346,26 +422,39 @@ function renderBill() {
             </div>
             <button type="button" style="border:0;background:none;color:#B23A2E;cursor:pointer;padding:5px 0;font-size:11px" onclick="removeItem(${index})">Remove</button>
           </td>
-          <td>${money(item.mrp)}</td>
-          <td>${money(item.price)} <span style="font-size:11px;color:var(--ink-soft)">incl. GST</span></td>
-          <td><strong>${money(lineTotal)}</strong></td>
+          <td><span class="mrp-value">${money(item.mrp)}</span></td>
+          <td>
+            <input type="number" min="0" step="0.01" class="price-input" data-index="${index}" value="${item.price}">
+            <button type="button" class="reset-price" onclick="resetPriceToMrp(${index})">Reset to MRP</button>
+          </td>
+          <td>
+            <div class="discount-cell">
+              <input type="number" step="0.1" class="discount-input" data-index="${index}" value="${item.discountPercent}">
+              <span>%</span>
+            </div>
+          </td>
+          <td><strong id="rowTotal-${index}">${money(lineTotal)}</strong></td>
         </tr>
       `;
     }).join("");
   }
 
-  const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  // GST is already included in each selling price; calculate only the GST component for display.
-  const gst = items.reduce((sum, item) => {
-    const lineTotal = item.price * item.qty;
-    return sum + (item.gst > 0 ? lineTotal - (lineTotal / (1 + item.gst / 100)) : 0);
-  }, 0);
-  const subtotal = total - gst;
-
-  document.getElementById("subtotal").textContent = money(subtotal);
-  document.getElementById("gst").textContent = money(gst);
-  document.getElementById("grandTotal").textContent = money(total);
+  updateFooterTotals();
 }
+
+// Event delegation: updates price/discount as the person types, without
+// rebuilding the whole table (which would lose input focus mid-keystroke).
+document.getElementById("billItems").addEventListener("input", event => {
+  const target = event.target;
+  const index = Number(target.dataset.index);
+  if (Number.isNaN(index) || !items[index]) return;
+
+  if (target.classList.contains("price-input")) {
+    applyPriceEdit(index, target.value);
+  } else if (target.classList.contains("discount-input")) {
+    applyDiscountEdit(index, target.value);
+  }
+});
 
 function clearBill() {
   if (items.length && !confirm("Clear this bill?")) return;
@@ -399,7 +488,10 @@ async function saveInvoice() {
     items: items.map(item => ({
       product_id: item.product_id,
       qty: item.qty,
-      discount_percent: 0
+      // The backend applies this against the product's current MRP to work
+      // out the taxable value and GST — so a custom selling price or a
+      // typed discount both arrive here the same way.
+      discount_percent: round2(item.discountPercent)
     }))
   };
 

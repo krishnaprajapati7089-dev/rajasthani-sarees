@@ -598,6 +598,77 @@ router.post('/:id/cancel', async (req, res) => {
 
 
 // ============================================================
+// DELETE BILL — permanently removes it from MongoDB
+// ============================================================
+
+router.delete('/:id', async (req, res) => {
+
+  try {
+
+    const bill =
+      await Bill.findById(req.params.id);
+
+
+    if (!bill) {
+
+      return res.status(404).json({
+        error: 'Bill not found'
+      });
+
+    }
+
+
+    // --------------------------------------------------------
+    // Restore stock — unless this bill was already cancelled,
+    // in which case /cancel already put the stock back.
+    // --------------------------------------------------------
+
+    if (bill.status !== 'CANCELLED') {
+
+      for (const item of bill.items) {
+
+        const product =
+          await Product.findById(item.product_id);
+
+
+        if (product) {
+
+          product.stock_qty =
+            Number(product.stock_qty) +
+            Number(item.qty || 0);
+
+          await product.save();
+
+        }
+
+      }
+
+    }
+
+
+    await Bill.findByIdAndDelete(req.params.id);
+
+
+    res.json({
+      message: 'Bill deleted',
+      id: req.params.id
+    });
+
+
+  } catch (err) {
+
+    console.error('Delete bill error:', err);
+
+    res.status(500).json({
+      error: err.message
+    });
+
+  }
+
+});
+
+
+// ============================================================
 // INVOICE HTML
 // ============================================================
 

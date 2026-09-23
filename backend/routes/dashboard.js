@@ -1,5 +1,4 @@
 // routes/dashboard.js — one call to feed the owner dashboard screen
-// (converted from the original better-sqlite3 version to Mongoose)
 const express = require('express');
 const Bill = require('../models/Bill');
 const Product = require('../models/Product');
@@ -18,11 +17,14 @@ router.get('/', async (req, res) => {
       { $group: { _id: null, total: { $sum: '$grand_total' }, bill_count: { $sum: 1 } } }
     ]);
 
+    // Stock value on hand is valued at cost (purchase_price), not at MRP —
+    // MRP is what you'd sell it for, not what it cost you, so pricing this
+    // by selling_price overstated the value of goods actually on the shelf.
     const [stockAgg] = await Product.aggregate([
       { $match: { active: true } },
       { $group: {
           _id: null,
-          value: { $sum: { $multiply: ['$stock_qty', '$selling_price'] } },
+          value: { $sum: { $multiply: ['$stock_qty', '$purchase_price'] } },
           pieces: { $sum: '$stock_qty' }
         }
       }

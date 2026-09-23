@@ -135,9 +135,17 @@ router.post('/', async (req, res) => {
 
     // --------------------------------------------------------
     // Totals
+    //
+    // subtotalDiscounted / finalInclusiveTotal both track the amount
+    // AFTER each line's discount_percent has been applied — this is what
+    // the customer is actually being charged. (The old bug: `subtotal`
+    // was accumulating the pre-discount gross amount, so a discounted
+    // sale still billed the customer as if no discount had been given.)
     // --------------------------------------------------------
 
-    let subtotal = 0;
+    let subtotalDiscounted = 0; // = taxableTotal, kept as its own variable for clarity
+
+    let finalInclusiveTotal = 0; // GST-inclusive, post-discount — what grand_total is built from
 
     let taxableTotal = 0;
 
@@ -200,9 +208,15 @@ router.post('/', async (req, res) => {
 
       // ------------------------------------------------------
       // MRP
+      //
+      // Your Product model doesn't have a separate `mrp` field today —
+      // only `selling_price`, which IS the MRP (GST-inclusive, as set in
+      // Inventory). Falls back to product.mrp first in case you add that
+      // field to the Product schema later.
       // ------------------------------------------------------
 
-      const mrp = Number(product.mrp) || 0;
+      const mrp =
+        Number(product.mrp || product.selling_price) || 0;
 
 
       // ------------------------------------------------------
@@ -361,10 +375,12 @@ router.post('/', async (req, res) => {
 
 
       // ------------------------------------------------------
-      // Add totals
+      // Add totals — all post-discount
       // ------------------------------------------------------
 
-      subtotal += grossInclusive;
+      subtotalDiscounted += taxable;
+
+      finalInclusiveTotal += finalInclusiveAmount;
 
       taxableTotal += taxable;
 
@@ -399,13 +415,13 @@ router.post('/', async (req, res) => {
     // --------------------------------------------------------
     // Amount before rounding
     //
-    // Since prices already include GST:
-    //
-    // taxable + GST = inclusive amount
+    // Built from the POST-DISCOUNT, GST-inclusive total — not the raw
+    // undiscounted subtotal — so per-item discounts actually reduce what
+    // the customer is charged.
     // --------------------------------------------------------
 
     const inclusiveBeforeRound =
-      subtotal - extraDiscount;
+      finalInclusiveTotal - extraDiscount;
 
 
     // --------------------------------------------------------
@@ -452,9 +468,10 @@ router.post('/', async (req, res) => {
       paid_amount:
         Number(paid_amount) || grandTotal,
 
+      // The actual charged amount, net of every line discount, net of GST
+      // — matches the "Subtotal" line shown on the New Bill page.
       subtotal:
-
-        subtotal,
+        subtotalDiscounted,
 
       discount_amount:
         extraDiscount,

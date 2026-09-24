@@ -829,10 +829,12 @@ body{font-family:Arial,sans-serif}
   padding:0 !important;
   display:grid;
   grid-template-columns:repeat(4,52.5mm);
-  grid-template-rows:repeat(12,24.75mm);
+  grid-template-rows:repeat(12,24.5mm);
   gap:0 !important;
   align-items:start;
   align-content:start;
+  position:relative;
+  top:0;
   justify-content:start;
   overflow:hidden;
   page-break-after:always;
@@ -845,7 +847,7 @@ body{font-family:Arial,sans-serif}
 
 .label-card{
   width:52.5mm;
-  height:24.75mm;
+  height:24.5mm;
   margin:0;
   padding:1.1mm 2mm 0.9mm;
   border:1px dashed #999;
@@ -939,7 +941,7 @@ body{font-family:Arial,sans-serif}
 
 @page{
   size:210mm 297mm;
-  margin:0;
+  margin:0 !important;
 }
 
 @media print{

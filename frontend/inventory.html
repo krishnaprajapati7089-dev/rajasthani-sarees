@@ -640,52 +640,64 @@ function buildLabelSheetHtml(labels){
       box-sizing:border-box;
       border:1px dashed #999;
       border-radius:2mm;
-      padding:1mm;
+      padding:1.5mm 2.2mm 1.2mm;
       margin:0;
       text-align:center;
       page-break-inside:avoid;
       break-inside:avoid;
       overflow:hidden;
       background:#FFFFFF;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
     }
     .label-card svg{
       display:block;
-      width:88%;
-      height:9mm;
-      max-height:9mm;
-      margin:0.5mm auto 0;
+      width:82% !important;
+      max-width:82% !important;
+      height:7mm !important;
+      max-height:7mm !important;
+      margin:0.6mm auto 0 !important;
+      flex:none;
     }
     .label-name{
       font-weight:700;
-      font-size:10.5px;
-      line-height:1.05;
-      margin-bottom:.35mm;
+      font-size:9.5px;
+      line-height:1;
+      margin-bottom:.3mm;
       color:#5E1620;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
       max-width:100%;
+      flex:none;
     }
     .label-price{
       display:inline-block;
-      font-size:9px;
+      font-size:8.5px;
       font-weight:700;
       line-height:1;
-      margin:0 auto .35mm;
-      padding:.65mm 2.2mm;
+      margin:0 auto .3mm;
+      padding:.55mm 2mm;
       border-radius:.7mm;
       background:#C9A24A;
       color:#3E0E15;
+      flex:none;
     }
     .label-code{
-      font-size:8.5px;
+      width:100%;
+      font-size:7.5px;
       line-height:1;
-      letter-spacing:.45px;
-      margin-top:0.5mm;
+      letter-spacing:.3px;
+      margin-top:.4mm;
       font-family:'Courier New',monospace;
       color:#000000;
       font-weight:700;
       white-space:nowrap;
+      overflow:hidden;
+      text-align:center;
+      flex:none;
     }
     @page{
       size:A4;
@@ -994,26 +1006,28 @@ function buildLabelSheetHtml(labels){
     }
 
     .label-category{
-      font-size:8px;
+      font-size:7.2px;
       line-height:1;
-      margin-bottom:.35mm;
+      margin-bottom:.3mm;
       color:#6B5C56;
       font-weight:600;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
       max-width:100%;
+      flex:none;
     }
     .label-color{
-      font-size:8px;
+      font-size:7.2px;
       line-height:1;
-      margin-bottom:.35mm;
+      margin-bottom:.3mm;
       color:#5E1620;
       font-weight:600;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
       max-width:100%;
+      flex:none;
     }
 
     /* Background is ONLY behind MRP. */

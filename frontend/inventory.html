@@ -549,13 +549,12 @@ async function showLabelForProduct(product){
   try {
     JsBarcode(barcodeSvg, barcode, {
       format: "CODE128",
-      displayValue: true,
-      text: barcode,
-      fontSize: 13,
+      displayValue: false,
+      fontSize: 10,
       font: "Arial",
-      height: 55,
-      width: 2,
-      margin: 4,
+      height: 28,
+      width: 1.15,
+      margin: 0,
       background: "#ffffff",
       lineColor: "#000000"
     });
@@ -599,125 +598,6 @@ async function showLabelForProduct(product){
 function closeLabelModal(){
   document.getElementById("labelModal").classList.remove("open");
   currentLabel = null;
-}
-
-function buildLabelSheetHtml(labels){
-  const cards = labels.map(l => `
-    <div class="label-card">
-      <div class="label-name">${escapeHtml(l.name)}</div>
-      <div class="label-category">${escapeHtml(l.category || "General")}</div>
-      <div class="label-price">MRP ${money(l.price)}</div>
-      ${l.barcodeSvg}
-      <div class="label-code">${escapeHtml(l.barcode)}</div>
-    </div>
-  `).join("");
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <title>Print Labels</title>
-  <meta charset="UTF-8">
-  <style>
-    *{box-sizing:border-box}
-    body{
-      font-family:Arial,sans-serif;
-      margin:0;
-      padding:10mm;
-      background:#fff;
-    }
-    .label-sheet{
-      display:grid;
-      grid-template-columns:repeat(3, 69.8mm);
-      grid-auto-rows:35mm;
-      column-gap:4.8mm;
-      row-gap:4mm;
-      align-items:start;
-      justify-content:start;
-    }
-    .label-card{
-      width:52.5mm;
-      height:24.75mm;
-      box-sizing:border-box;
-      border:1px dashed #999;
-      border-radius:2mm;
-      padding:1.5mm 2.2mm 1.2mm;
-      margin:0;
-      text-align:center;
-      page-break-inside:avoid;
-      break-inside:avoid;
-      overflow:hidden;
-      background:#FFFFFF;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:flex-start;
-    }
-    .label-card svg{
-      display:block;
-      width:82% !important;
-      max-width:82% !important;
-      height:7mm !important;
-      max-height:7mm !important;
-      margin:0.6mm auto 0 !important;
-      flex:none;
-    }
-    .label-name{
-      font-weight:700;
-      font-size:9.5px;
-      line-height:1;
-      margin-bottom:.3mm;
-      color:#5E1620;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:100%;
-      flex:none;
-    }
-    .label-price{
-      display:inline-block;
-      font-size:8.5px;
-      font-weight:700;
-      line-height:1;
-      margin:0 auto .3mm;
-      padding:.55mm 2mm;
-      border-radius:.7mm;
-      background:#C9A24A;
-      color:#3E0E15;
-      flex:none;
-    }
-    .label-code{
-      width:100%;
-      font-size:7.5px;
-      line-height:1;
-      letter-spacing:.3px;
-      margin-top:.4mm;
-      font-family:'Courier New',monospace;
-      color:#000000;
-      font-weight:700;
-      white-space:nowrap;
-      overflow:hidden;
-      text-align:center;
-      flex:none;
-    }
-    @page{
-      size:A4;
-      margin:8mm;
-    }
-    @media print{
-      body{padding:0}
-      .label-card{border:1px dashed #999}
-    }
-  </style>
-</head>
-<body>
-  <div class="label-sheet">${cards}</div>
-  <script>
-    window.onload = function(){
-      setTimeout(function(){ window.print(); }, 300);
-    };
-  <\/script>
-</body>
-</html>`;
 }
 
 function printCurrentLabel(){
@@ -852,13 +732,12 @@ function printSelectedLabels(){
     try {
       JsBarcode(barcodeSvg, barcode, {
         format: "CODE128",
-        displayValue: true,
-        text: barcode,
-        fontSize: 13,
-        font: "Arial",
-        height: 55,
-        width: 2,
-        margin: 4,
+        displayValue: false,
+      fontSize: 10,
+      font: "Arial",
+      height: 28,
+      width: 1.15,
+      margin: 0,
         background: "#ffffff",
         lineColor: "#000000"
       });
@@ -907,22 +786,18 @@ function buildLabelSheetHtml(labels){
   for (let i = 0; i < labels.length; i += labelsPerPage){
     const pageLabels = labels.slice(i, i + labelsPerPage);
 
-    while (pageLabels.length < labelsPerPage){
-      pageLabels.push(null);
-    }
+    while (pageLabels.length < labelsPerPage) pageLabels.push(null);
 
     const cards = pageLabels.map(l => {
-      if (!l){
-        return '<div class="label-card label-blank"></div>';
-      }
+      if (!l) return '<div class="label-card label-blank"></div>';
 
       return `
         <div class="label-card">
           <div class="label-name">${escapeHtml(l.name)}</div>
-          <div class="label-category">${escapeHtml(l.category || 'General')}</div>
+          <div class="label-category">${escapeHtml(l.category || "General")}</div>
           ${l.color ? `<div class="label-color">${escapeHtml(l.color)}</div>` : ""}
           <div class="label-price">MRP ${money(l.price)}</div>
-          ${l.barcodeSvg}
+          <div class="barcode-wrap">${l.barcodeSvg}</div>
           <div class="label-code">${escapeHtml(l.barcode)}</div>
         </div>
       `;
@@ -934,139 +809,156 @@ function buildLabelSheetHtml(labels){
   return `<!DOCTYPE html>
 <html>
 <head>
-  <title>Print Labels</title>
-  <meta charset="UTF-8">
-  <style>
-    *{box-sizing:border-box}
-    html,body{margin:0 !important;padding:0 !important;background:#fff;width:210mm;height:297mm}
-    body{font-family:Arial,sans-serif}
+<meta charset="UTF-8">
+<title>Print Labels</title>
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0 !important;
+  padding:0 !important;
+  width:210mm;
+  height:297mm;
+  background:#fff;
+}
+body{font-family:Arial,sans-serif}
 
-    .label-page{
-      width:210mm;
-      height:297mm;
-      margin:0 !important;
-      padding:0 !important;
-      box-sizing:border-box;
-      display:grid;
-      grid-template-columns:repeat(4,52.5mm);
-      grid-template-rows:repeat(12,24.75mm);
-      column-gap:0 !important;
-      row-gap:0 !important;
-      gap:0 !important;
-      align-items:start;
-      justify-content:start;
-      align-content:start;
-      page-break-after:always;
-      break-after:page;
-      overflow:hidden;
-    }
+.label-page{
+  width:210mm;
+  height:297mm;
+  margin:0 !important;
+  padding:0 !important;
+  display:grid;
+  grid-template-columns:repeat(4,52.5mm);
+  grid-template-rows:repeat(12,24.75mm);
+  gap:0 !important;
+  align-items:start;
+  align-content:start;
+  justify-content:start;
+  overflow:hidden;
+  page-break-after:always;
+  break-after:page;
+}
+.label-page:last-child{
+  page-break-after:auto;
+  break-after:auto;
+}
 
-    .label-page:last-child{
-      page-break-after:auto;
-      break-after:auto;
-    }
+.label-card{
+  width:52.5mm;
+  height:24.75mm;
+  margin:0;
+  padding:1.1mm 2mm 0.9mm;
+  border:1px dashed #999;
+  border-radius:2mm;
+  overflow:hidden;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  text-align:center;
+}
 
-    @media print{
-      html,body{margin:0 !important;padding:0 !important;width:210mm;height:297mm;}
-      .label-page{margin:0 !important;padding:0 !important;}
-    }
+.label-card.label-blank{
+  border-color:transparent;
+  background:transparent;
+}
 
-    .label-card{
-      width:48mm;
-      height:24mm;
-      border:1px dashed #999;
-      border-radius:2mm;
-      padding:1.2mm;
-      text-align:center;
-      page-break-inside:avoid;
-      break-inside:avoid;
-      overflow:hidden;
-      background:#FFFFFF;
-    }
+.label-name{
+  width:100%;
+  font-weight:700;
+  font-size:9.5px;
+  line-height:1;
+  margin:0 0 .25mm;
+  color:#5E1620;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-    .label-card.label-blank{
-      border-color:transparent;
-      background:transparent;
-    }
+.label-category,.label-color{
+  width:100%;
+  font-size:7.2px;
+  line-height:1;
+  margin:0 0 .25mm;
+  color:#6B5C56;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.label-color{color:#5E1620}
 
-    .label-card svg{
-      display:block;
-      width:100%;
-      height:14mm;
-      max-height:14mm;
-      margin:1mm auto 0;
-    }
+.label-price{
+  display:inline-block;
+  font-size:8.5px;
+  font-weight:700;
+  line-height:1;
+  margin:0 0 .35mm;
+  padding:.55mm 2mm;
+  border-radius:.7mm;
+  background:#C9A24A;
+  color:#3E0E15;
+}
 
-    .label-name{
-      font-weight:700;
-      font-size:12px;
-      line-height:1.15;
-      margin-bottom:.5mm;
-      color:#5E1620;
-    }
+.barcode-wrap{
+  width:100%;
+  height:7mm;
+  margin:0;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
 
-    .label-category{
-      font-size:7.2px;
-      line-height:1;
-      margin-bottom:.3mm;
-      color:#6B5C56;
-      font-weight:600;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:100%;
-      flex:none;
-    }
-    .label-color{
-      font-size:7.2px;
-      line-height:1;
-      margin-bottom:.3mm;
-      color:#5E1620;
-      font-weight:600;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:100%;
-      flex:none;
-    }
+.barcode-wrap svg{
+  display:block;
+  width:84% !important;
+  max-width:84% !important;
+  height:6.2mm !important;
+  max-height:6.2mm !important;
+  margin:0 !important;
+  padding:0 !important;
+  flex:none;
+}
 
-    /* Background is ONLY behind MRP. */
-    .label-price{
-      display:inline-block;
-      font-size:11.5px;
-      font-weight:700;
-      line-height:1;
-      margin:0 auto 1mm;
-      padding:1.2mm 3mm;
-      border-radius:1mm;
-      background:#C9A24A;
-      color:#3E0E15;
-    }
+.label-code{
+  width:100%;
+  font-size:7.5px;
+  line-height:1;
+  letter-spacing:.25px;
+  margin:.35mm 0 0;
+  font-family:'Courier New',monospace;
+  color:#000;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-align:center;
+}
 
-    .label-code{
-      font-size:9px;
-      letter-spacing:.8px;
-      margin-top:1mm;
-      font-family:'Courier New',monospace;
-      color:#6B5C56;
-    }
+@page{
+  size:210mm 297mm;
+  margin:0;
+}
 
-    @page{size:210mm 297mm;margin:0;padding:0;}
-
-    @media print{
-      body{margin:0;padding:0}
-      .label-page{page-break-after:always}
-      .label-page:last-child{page-break-after:auto}
-    }
-  </style>
+@media print{
+  html,body{
+    margin:0 !important;
+    padding:0 !important;
+    width:210mm;
+    height:297mm;
+  }
+}
+</style>
 </head>
 <body>
-  ${pages.join("")}
-  <script>
-    window.onload = function(){
-      setTimeout(function(){ window.print(); }, 500);
-    };
-  <\/script>
+${pages.join("")}
+<script>
+window.onload=function(){
+  setTimeout(function(){window.print();},500);
+};
+<\/script>
 </body>
 </html>`;
 }

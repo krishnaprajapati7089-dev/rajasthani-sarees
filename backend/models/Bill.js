@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 
+
+// ============================================================
+// BILL ITEM SCHEMA
+// ============================================================
+
 const billItemSchema = new mongoose.Schema({
 
   product_id: {
@@ -10,6 +15,18 @@ const billItemSchema = new mongoose.Schema({
   product_name: {
     type: String,
     required: true
+  },
+
+  // Saree category
+  category: {
+    type: String,
+    default: ''
+  },
+
+  // Barcode / code number
+  barcode_number: {
+    type: String,
+    default: ''
   },
 
   hsn_code: {
@@ -87,6 +104,10 @@ const billItemSchema = new mongoose.Schema({
 });
 
 
+// ============================================================
+// BILL SCHEMA
+// ============================================================
+
 const billSchema = new mongoose.Schema({
 
   invoice_no: {
@@ -95,10 +116,34 @@ const billSchema = new mongoose.Schema({
     unique: true
   },
 
+
+  // ==========================================================
+  // BILL DATE
+  // ==========================================================
+
   bill_date: {
     type: Date,
     default: Date.now
   },
+
+
+  // ==========================================================
+  // EXACT CREATION TIME
+  //
+  // This stores the exact date/time when the bill document
+  // is created.
+  // ==========================================================
+
+  created_at: {
+    type: Date,
+    default: Date.now,
+    immutable: true
+  },
+
+
+  // ==========================================================
+  // CUSTOMER
+  // ==========================================================
 
   customer_name: {
     type: String,
@@ -120,10 +165,20 @@ const billSchema = new mongoose.Schema({
     default: ''
   },
 
+
+  // ==========================================================
+  // GST
+  // ==========================================================
+
   is_interstate: {
     type: Boolean,
     default: false
   },
+
+
+  // ==========================================================
+  // PAYMENT
+  // ==========================================================
 
   payment_mode: {
     type: String,
@@ -139,6 +194,11 @@ const billSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+
+
+  // ==========================================================
+  // TOTALS
+  // ==========================================================
 
   subtotal: {
     type: Number,
@@ -180,15 +240,41 @@ const billSchema = new mongoose.Schema({
     default: 0
   },
 
+
+  // ==========================================================
+  // STATUS
+  // ==========================================================
+
   status: {
     type: String,
     default: 'ACTIVE'
   },
 
-  items: [billItemSchema]
+
+  // ==========================================================
+  // ITEMS
+  // ==========================================================
+
+  items: [
+    billItemSchema
+  ]
 
 }, {
+
+  // Mongoose automatically creates:
+  //
+  // createdAt
+  // updatedAt
+  //
+  // createdAt is also useful as a backup creation timestamp.
+
   timestamps: true
+
 });
+
+
+// ============================================================
+// MODEL
+// ============================================================
 
 module.exports = mongoose.model('Bill', billSchema);

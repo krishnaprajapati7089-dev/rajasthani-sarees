@@ -926,22 +926,24 @@ function buildLabelSheetHtml(labels){
   <meta charset="UTF-8">
   <style>
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:#fff}
+    html,body{margin:0 !important;padding:0 !important;background:#fff;width:210mm;height:297mm}
     body{font-family:Arial,sans-serif}
 
     .label-page{
       width:210mm;
       height:297mm;
-      margin:0;
-      padding:0;
+      margin:0 !important;
+      padding:0 !important;
       box-sizing:border-box;
       display:grid;
       grid-template-columns:repeat(4,52.5mm);
       grid-template-rows:repeat(12,24.75mm);
-      column-gap:0;
-      row-gap:0;
+      column-gap:0 !important;
+      row-gap:0 !important;
+      gap:0 !important;
       align-items:start;
       justify-content:start;
+      align-content:start;
       page-break-after:always;
       break-after:page;
       overflow:hidden;
@@ -950,6 +952,11 @@ function buildLabelSheetHtml(labels){
     .label-page:last-child{
       page-break-after:auto;
       break-after:auto;
+    }
+
+    @media print{
+      html,body{margin:0 !important;padding:0 !important;width:210mm;height:297mm;}
+      .label-page{margin:0 !important;padding:0 !important;}
     }
 
     .label-card{
@@ -1030,10 +1037,7 @@ function buildLabelSheetHtml(labels){
       color:#6B5C56;
     }
 
-    @page{
-      size:A4 portrait;
-      margin:0;
-    }
+    @page{size:210mm 297mm;margin:0;padding:0;}
 
     @media print{
       body{margin:0;padding:0}

@@ -48,6 +48,8 @@
 
 .print-filter-box{max-width:620px}
 .print-filter-search{margin-top:8px}
+.print-filter-search select{margin-top:8px}
+.print-filter-hint{font-size:11.5px;color:var(--ink-soft);margin:5px 2px 0}
 .print-filter-toolbar{
   display:flex;
   align-items:center;
@@ -256,17 +258,24 @@
   <div class="modal-box print-filter-box">
     <h3>Print Labels</h3>
     <p class="form-message" style="margin-top:-8px">
-      Select one or more sarees. Each selected product prints according to its current stock.
+      Search and/or filter, then use "Select All" to pick only what's currently shown. Each selected product prints according to its current stock.
     </p>
 
     <div class="print-filter-search">
       <input id="printProductSearch"
-             placeholder="Search saree name or category..."
+             placeholder="Search saree name or category — use commas for multiple, e.g. silk, cotton"
              oninput="filterPrintProducts()">
+      <select id="printDateFilter" onchange="filterPrintProducts()">
+        <option value="all">All time</option>
+        <option value="today">Added today</option>
+        <option value="yesterday">Added yesterday</option>
+        <option value="week">Added in last 7 days</option>
+      </select>
     </div>
+    <p class="print-filter-hint">Tip: search for one name, click "Select All", then search another name and click "Select All" again — your earlier picks stay selected.</p>
 
     <div class="print-filter-toolbar">
-      <button class="btn-ghost small" type="button" onclick="selectAllPrintProducts()">Select All</button>
+      <button class="btn-ghost small" type="button" onclick="selectAllPrintProducts()">Select All (shown)</button>
       <button class="btn-ghost small" type="button" onclick="clearAllPrintProducts()">Clear All</button>
       <span id="selectedPrintSummary">0 products · 0 labels</span>
     </div>
@@ -618,6 +627,27 @@ function printCurrentLabel(){
   openLabelPrintWindow(labels);
 }
 
+/* ---------------- Print All: search + date filter helpers ---------------- */
+
+// Tries several common field names so this works whichever one the backend uses.
+function getProductTimestamp(product){
+  const raw = product.created_at || product.createdAt || product.date_added ||
+              product.dateAdded || product.added_at || product.addedAt || null;
+  if (!raw) return null;
+  const t = new Date(raw).getTime();
+  return isNaN(t) ? null : t;
+}
+
+function getDateBounds(){
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const endToday = startToday + 24 * 60 * 60 * 1000 - 1;
+  const startYesterday = startToday - 24 * 60 * 60 * 1000;
+  const endYesterday = startToday - 1;
+  const startWeek = startToday - 7 * 24 * 60 * 60 * 1000;
+  return { startToday, endToday, startYesterday, endYesterday, startWeek };
+}
+
 /*
  * Print all products in inventory.
  * Each product uses its ONE barcode, repeated stock_qty times.
@@ -636,10 +666,12 @@ async function openPrintAllModal(){
     const stock = Math.max(0, Math.floor(Number(product.stock_qty) || 0));
     const category = product.category || "General";
     const disabled = stock <= 0 || !String(product.barcode || "").trim();
+    const createdTs = getProductTimestamp(product);
 
     return `
       <label class="print-product-row print-product-item"
              data-search="${escapeHtml((product.name || "") + " " + category)}"
+             data-created="${createdTs !== null ? createdTs : ""}"
              style="${disabled ? "opacity:.5" : ""}">
         <input
           class="print-product-check"
@@ -661,7 +693,8 @@ async function openPrintAllModal(){
   }).join("");
 
   document.getElementById("printProductSearch").value = "";
-  updatePrintSelectionSummary();
+  document.getElementById("printDateFilter").value = "all";
+  filterPrintProducts();
   document.getElementById("printAllModal").classList.add("open");
 }
 
@@ -669,18 +702,49 @@ function closePrintAllModal(){
   document.getElementById("printAllModal").classList.remove("open");
 }
 
+// Supports multiple comma-separated search terms, e.g. "silk, cotton" matches
+// rows whose name/category includes EITHER term. Also applies the date filter.
+// Rows that don't match stay in the DOM (still selectable via "Select All"
+// run earlier) but are hidden and excluded from the next "Select All" pass.
 function filterPrintProducts(){
-  const q = document.getElementById("printProductSearch").value.trim().toLowerCase();
+  const rawQuery = document.getElementById("printProductSearch").value.trim().toLowerCase();
+  const terms = rawQuery.split(",").map(t => t.trim()).filter(Boolean);
+  const dateFilter = document.getElementById("printDateFilter").value;
+  const bounds = getDateBounds();
 
   document.querySelectorAll("#printProductList .print-product-item").forEach(row => {
     const haystack = String(row.dataset.search || "").toLowerCase();
-    row.style.display = !q || haystack.includes(q) ? "grid" : "none";
+    const matchesSearch = !terms.length || terms.some(term => haystack.includes(term));
+
+    let matchesDate = true;
+    if (dateFilter !== "all"){
+      const created = row.dataset.created ? Number(row.dataset.created) : null;
+      if (created === null){
+        matchesDate = false; // unknown date, can't match a specific date filter
+      } else if (dateFilter === "today"){
+        matchesDate = created >= bounds.startToday && created <= bounds.endToday;
+      } else if (dateFilter === "yesterday"){
+        matchesDate = created >= bounds.startYesterday && created <= bounds.endYesterday;
+      } else if (dateFilter === "week"){
+        matchesDate = created >= bounds.startWeek;
+      }
+    }
+
+    row.style.display = (matchesSearch && matchesDate) ? "grid" : "none";
   });
+
+  updatePrintSelectionSummary();
 }
 
+// Only checks boxes for rows currently visible (i.e. matching the active
+// search + date filter). Rows already checked from an earlier search stay
+// checked even while hidden, so you can build up a selection across searches.
 function selectAllPrintProducts(){
-  document.querySelectorAll("#printProductList .print-product-check:not(:disabled)")
-    .forEach(cb => cb.checked = true);
+  document.querySelectorAll("#printProductList .print-product-item").forEach(row => {
+    if (row.style.display === "none") return;
+    const cb = row.querySelector(".print-product-check");
+    if (cb && !cb.disabled) cb.checked = true;
+  });
   updatePrintSelectionSummary();
 }
 
@@ -981,4 +1045,4 @@ document.getElementById("menuToggle").addEventListener("click", () => {
 loadInventory();
 </script>
 </body>
-</html>``
+</html>

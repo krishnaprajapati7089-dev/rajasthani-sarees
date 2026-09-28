@@ -17,6 +17,20 @@
     --ink-soft:#6B5C56;
     --line:#E9DFCD;
     --header-h:72px;
+
+    /* Consistent design tokens */
+    --fs-xs:12px;
+    --fs-sm:14px;
+    --fs-md:16px;
+    --fs-lg:20px;
+    --fs-xl:24px;
+    --fs-2xl:32px;
+
+    --radius-sm:4px;
+    --radius-md:8px;
+    --radius-lg:12px;
+    --radius-pill:20px;
+    --radius-round:50%;
   }
 
   *{box-sizing:border-box;}
@@ -69,14 +83,14 @@
   .brand-name{
     font-family:'Playfair Display',serif;
     font-weight:700;
-    font-size:20px;
+    font-size:var(--fs-lg);
     letter-spacing:0.5px;
     color:var(--maroon);
     white-space:nowrap;
   }
 
   .brand-sub{
-    font-size:10.5px;
+    font-size:var(--fs-xs);
     letter-spacing:1.4px;
     color:var(--gold);
     margin-top:3px;
@@ -97,11 +111,11 @@
     align-items:center;
     gap:6px;
     padding:10px 16px;
-    font-size:14.5px;
+    font-size:var(--fs-sm);
     font-weight:500;
     color:var(--ink-soft);
     text-decoration:none;
-    border-radius:8px;
+    border-radius:var(--radius-md);
     white-space:nowrap;
     transition:color .15s ease, background .15s ease;
   }
@@ -124,7 +138,7 @@
     bottom:2px;
     height:2px;
     background:var(--gold);
-    border-radius:2px;
+    border-radius:var(--radius-sm);
   }
 
   .header-actions{
@@ -140,7 +154,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    border-radius:9px;
+    border-radius:var(--radius-md);
     border:1px solid var(--line);
     background:#fff;
     color:var(--ink-soft);
@@ -155,7 +169,7 @@
     right:6px;
     width:7px;
     height:7px;
-    border-radius:50%;
+    border-radius:var(--radius-round);
     background:#C0392B;
     border:1.5px solid #fff;
   }
@@ -168,9 +182,9 @@
     background:var(--maroon);
     color:#fff;
     border:none;
-    border-radius:9px;
+    border-radius:var(--radius-md);
     font-family:'Inter',sans-serif;
-    font-size:14px;
+    font-size:var(--fs-sm);
     font-weight:600;
     cursor:pointer;
     white-space:nowrap;
@@ -182,14 +196,14 @@
   .avatar{
     width:38px;
     height:38px;
-    border-radius:50%;
+    border-radius:var(--radius-round);
     background:linear-gradient(135deg,var(--gold-light),var(--gold));
     display:flex;
     align-items:center;
     justify-content:center;
     font-family:'Playfair Display',serif;
     font-weight:700;
-    font-size:14px;
+    font-size:var(--fs-sm);
     color:var(--maroon-dark);
     cursor:pointer;
     flex-shrink:0;
@@ -201,7 +215,7 @@
     height:40px;
     border:1px solid var(--line);
     background:#fff;
-    border-radius:9px;
+    border-radius:var(--radius-md);
     cursor:pointer;
     align-items:center;
     justify-content:center;
@@ -262,11 +276,11 @@
   .mobile-sheet .nav-link{
     width:100%;
     padding:13px 12px;
-    font-size:15.5px;
+    font-size:var(--fs-sm);
     justify-content:space-between;
   }
   .mobile-sheet .nav-link.is-active::after{ display:none; }
-  .mobile-sheet .nav-link.is-active{ background:#FBF3E4; border-radius:8px; }
+  .mobile-sheet .nav-link.is-active{ background:#FBF3E4; border-radius:var(--radius-md); }
 
   .mobile-divider{
     height:1px;
@@ -284,6 +298,11 @@
     width:100%;
     justify-content:center;
     padding:13px;
+  }
+
+  .mobile-purchase-link{
+    justify-content:center;
+    margin-top:10px;
   }
 
   @media (max-width: 980px){
@@ -331,35 +350,27 @@
     display:inline-flex;
     align-items:center;
     gap:7px;
-    font-size:12.5px;
+    font-size:var(--fs-xs);
     font-weight:600;
     letter-spacing:0.3px;
     color:var(--gold);
     background:#FBF3E4;
     padding:6px 12px;
-    border-radius:20px;
+    border-radius:var(--radius-pill);
     margin-bottom:14px;
   }
 
   .greeting-title{
     font-family:'Playfair Display',serif;
     font-weight:700;
-    font-size:clamp(26px, 3vw, 36px);
+    font-size:var(--fs-2xl);
     line-height:1.15;
     color:var(--maroon);
     margin:0 0 6px;
   }
 
-  .greeting-title .caret{
-    display:inline-block;
-    color:var(--gold);
-    animation:blink 1s step-end infinite;
-  }
-
-  @keyframes blink{ 50%{ opacity:0; } }
-
   .greeting-sub{
-    font-size:15px;
+    font-size:var(--fs-md);
     color:var(--ink-soft);
     margin:0;
     max-width:520px;
@@ -371,7 +382,7 @@
     flex-wrap:wrap;
   }
 
-  .btn-large{ padding:13px 22px; font-size:14.5px; }
+  .btn-large{ padding:13px 22px; font-size:var(--fs-sm); }
 
   .btn-ghost{
     display:inline-flex;
@@ -381,9 +392,9 @@
     background:#fff;
     color:var(--maroon);
     border:1px solid var(--line);
-    border-radius:9px;
+    border-radius:var(--radius-md);
     font-family:'Inter',sans-serif;
-    font-size:14px;
+    font-size:var(--fs-sm);
     font-weight:600;
     cursor:pointer;
     text-decoration:none;
@@ -405,7 +416,7 @@
   .action-tile{
     background:#fff;
     border:1px solid var(--line);
-    border-radius:12px;
+    border-radius:var(--radius-lg);
     padding:18px 18px;
     display:flex;
     align-items:center;
@@ -424,7 +435,7 @@
     width:40px;
     height:40px;
     flex-shrink:0;
-    border-radius:10px;
+    border-radius:var(--radius-md);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -440,13 +451,13 @@
 
   .action-title{
     display:block;
-    font-size:14.5px;
+    font-size:var(--fs-sm);
     font-weight:600;
     color:var(--ink);
   }
   .action-sub{
     display:block;
-    font-size:12.5px;
+    font-size:var(--fs-xs);
     color:var(--ink-soft);
     margin-top:2px;
   }
@@ -461,9 +472,9 @@
   .kpi-section{ padding:38px 0 6px; }
 
   .section-label{
-    font-size:12px;
+    font-size:var(--fs-sm);
     font-weight:600;
-    letter-spacing:0.4px;
+    letter-spacing:0.6px;
     color:var(--ink-soft);
     margin:0 0 14px;
   }
@@ -477,7 +488,7 @@
   .kpi-card{
     background:#fff;
     border:1px solid var(--line);
-    border-radius:12px;
+    border-radius:var(--radius-lg);
     padding:18px 20px;
   }
 
@@ -491,7 +502,7 @@
   .kpi-icon{
     width:32px;
     height:32px;
-    border-radius:8px;
+    border-radius:var(--radius-md);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -500,10 +511,10 @@
   }
 
   .kpi-trend{
-    font-size:12px;
+    font-size:var(--fs-xs);
     font-weight:600;
     padding:3px 8px;
-    border-radius:20px;
+    border-radius:var(--radius-pill);
   }
   .kpi-trend.up{ color:#1E7A4C; background:#E7F5ED; }
   .kpi-trend.down{ color:#B23A2E; background:#FBEAE7; }
@@ -512,13 +523,13 @@
   .kpi-value{
     font-family:'Playfair Display',serif;
     font-weight:700;
-    font-size:26px;
+    font-size:var(--fs-xl);
     color:var(--maroon);
     line-height:1;
     margin-bottom:6px;
   }
 
-  .kpi-label{ font-size:13px; color:var(--ink-soft); }
+  .kpi-label{ font-size:var(--fs-sm); color:var(--ink-soft); }
 
   @media (max-width: 900px){
     .kpi-row{ grid-template-columns:repeat(2, 1fr); }
@@ -538,7 +549,7 @@
   .panel{
     background:#fff;
     border:1px solid var(--line);
-    border-radius:12px;
+    border-radius:var(--radius-lg);
     padding:22px;
   }
 
@@ -551,19 +562,30 @@
 
   .panel-head h2{
     font-family:'Playfair Display',serif;
-    font-size:18px;
+    font-size:var(--fs-lg);
     font-weight:700;
     color:var(--maroon);
     margin:0;
   }
 
   .panel-link{
-    font-size:12.5px;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    font-size:var(--fs-xs);
     font-weight:600;
     color:var(--gold);
     text-decoration:none;
   }
+
+  .panel-link > span{
+    font-size:var(--fs-md);
+    line-height:1;
+    transition:transform .15s ease;
+  }
+
   .panel-link:hover{ text-decoration:underline; }
+  .panel-link:hover > span{ transform:translateX(2px); }
 
   .chart-total{
     display:flex;
@@ -573,11 +595,11 @@
   }
   .chart-total .amount{
     font-family:'Playfair Display',serif;
-    font-size:28px;
+    font-size:var(--fs-xl);
     font-weight:700;
     color:var(--ink);
   }
-  .chart-total .period{ font-size:12.5px; color:var(--ink-soft); }
+  .chart-total .period{ font-size:var(--fs-xs); color:var(--ink-soft); }
 
   .bar-chart{
     display:flex;
@@ -601,13 +623,13 @@
   .bar{
     width:100%;
     max-width:34px;
-    border-radius:6px 6px 3px 3px;
+    border-radius:var(--radius-md);
     background:linear-gradient(180deg, var(--gold-light), var(--gold));
     position:relative;
   }
   .bar-col.is-today .bar{ background:linear-gradient(180deg, #9B2C3B, var(--maroon)); }
 
-  .bar-day{ font-size:11.5px; color:var(--ink-soft); }
+  .bar-day{ font-size:var(--fs-xs); color:var(--ink-soft); }
   .bar-col.is-today .bar-day{ color:var(--maroon); font-weight:600; }
 
   .bill-row{
@@ -620,12 +642,12 @@
   .bill-row:last-child{ border-bottom:none; padding-bottom:0; }
   .bill-row:first-of-type{ padding-top:0; }
 
-  .bill-id{ font-size:13.5px; font-weight:600; color:var(--ink); }
-  .bill-meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
-  .bill-amount{ font-size:14px; font-weight:600; color:var(--maroon); text-align:right; }
+  .bill-id{ font-size:var(--fs-sm); font-weight:600; color:var(--ink); }
+  .bill-meta{ font-size:var(--fs-xs); color:var(--ink-soft); margin-top:2px; }
+  .bill-amount{ font-size:var(--fs-sm); font-weight:600; color:var(--maroon); text-align:right; }
   .bill-status{
     display:block;
-    font-size:11px;
+    font-size:var(--fs-xs);
     margin-top:2px;
     text-align:right;
   }
@@ -642,14 +664,14 @@
   .stock-row:last-child{ border-bottom:none; padding-bottom:0; }
   .stock-row:first-of-type{ padding-top:0; }
 
-  .stock-name{ font-size:13.5px; font-weight:600; color:var(--ink); }
-  .stock-meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .stock-name{ font-size:var(--fs-sm); font-weight:600; color:var(--ink); }
+  .stock-meta{ font-size:var(--fs-xs); color:var(--ink-soft); margin-top:2px; }
 
   .stock-count{
-    font-size:12.5px;
+    font-size:var(--fs-xs);
     font-weight:700;
     padding:4px 10px;
-    border-radius:20px;
+    border-radius:var(--radius-pill);
     background:#FBEAE7;
     color:#B23A2E;
     white-space:nowrap;
@@ -676,7 +698,7 @@
       </svg>
       <span class="brand-text">
         <span class="brand-name">Rajastani&nbsp;Saree</span>
-        <span class="brand-sub">BILLING &amp; INVENTORY</span>
+        <span class="brand-sub">Billing &amp; Inventory</span>
       </span>
     </a>
 
@@ -693,13 +715,11 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </a>
       <a href="inventory.html" class="icon-btn hide-xs" aria-label="Low stock alerts" title="Low stock alerts">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7 21a2 2 0 01-3.4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M10.3 3.9L2.7 18a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
         <span class="badge-dot" id="headerAlertDot" style="display:none"></span>
-      </a>
-
-      <a href="billing.html" class="btn-primary" title="Create a new bill">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
-        <span class="label">New Bill</span>
       </a>
 
       <div class="avatar" title="Meera Sharma, Store Manager">MS</div>
@@ -722,7 +742,7 @@
     <div class="mobile-divider"></div>
     <div class="mobile-actions">
       <a href="billing.html" class="btn-primary">＋ New Bill</a>
-      <a href="purchase.html" class="btn-ghost" style="justify-content:center;margin-top:10px;">Upload Purchase Bill</a>
+      <a href="purchase.html" class="btn-ghost mobile-purchase-link">Upload Purchase Bill</a>
     </div>
   </div>
 </div>
@@ -736,15 +756,11 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <span id="todayDate">—</span>
         </span>
-        <h1 class="greeting-title"><span id="typedMain"></span><span class="caret">|</span></h1>
+        <h1 class="greeting-title" aria-label="Welcome to Rajasthani Saree"><span id="typedMain" aria-hidden="true"></span></h1>
         <p class="greeting-sub">Here's how the shop is doing today — quick actions on the right, full numbers below.</p>
       </div>
 
       <div class="greeting-actions">
-        <a href="billing.html" class="btn-primary btn-large">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
-          New Bill
-        </a>
         <a href="purchase.html" class="btn-ghost">Add Stock</a>
       </div>
     </div>
@@ -756,7 +772,7 @@
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M9 2h6l1 4H8l1-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 6h12l1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L6 6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
       </span>
       <span>
-        <span class="action-title">Create Bill</span>
+        <span class="action-title">New Bill</span>
         <span class="action-sub">Start a new sale</span>
       </span>
     </a>
@@ -795,7 +811,7 @@
   <div class="page-inner">
 
     <section class="kpi-section">
-      <p class="section-label">TODAY AT A GLANCE</p>
+      <p class="section-label">Today at a glance</p>
 
       <div class="kpi-row">
         <div class="kpi-card">
@@ -849,7 +865,7 @@
       <div class="panel">
         <div class="panel-head">
           <h2>Daily sales — last 7 days</h2>
-          <a href="reports.html" class="panel-link">Full report</a>
+          <a href="reports.html" class="panel-link">Full report <span aria-hidden="true">›</span></a>
         </div>
 
         <div class="chart-total">
@@ -872,7 +888,7 @@
         <div class="panel">
           <div class="panel-head">
             <h2>Recent bills</h2>
-            <a href="reports.html" class="panel-link">View all</a>
+            <a href="reports.html" class="panel-link">View all <span aria-hidden="true">›</span></a>
           </div>
 
           <div id="recentBills">
@@ -891,7 +907,7 @@
         <div class="panel">
           <div class="panel-head">
             <h2>Low stock alerts</h2>
-            <a href="inventory.html" class="panel-link">Manage</a>
+            <a href="inventory.html" class="panel-link">Manage <span aria-hidden="true">›</span></a>
           </div>
 
           <div id="lowStockList">
@@ -912,257 +928,703 @@
 </main>
 <script>
   // ================= API CONFIG =================
-  // Live Node/Express backend on Render
-  const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
+// Live Node/Express backend on Render
+const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
 
-  // ================= DASHBOARD DATA =================
-  async function loadDashboard() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
-        headers: { 'Accept': 'application/json' }
-      });
 
-      if (!response.ok) {
-        throw new Error(`Dashboard API returned ${response.status}`);
+// ================= DASHBOARD DATA =================
+async function loadDashboard() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
+      headers: {
+        Accept: "application/json"
       }
+    });
 
-      const data = await response.json();
+    if (!response.ok) {
+      throw new Error(`Dashboard API returned ${response.status}`);
+    }
 
-      const money = (value) =>
-        `₹${Number(value || 0).toLocaleString('en-IN', {
-          maximumFractionDigits: 2
-        })}`;
+    const data = await response.json();
 
-      const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value;
-      };
+    const money = (value) =>
+      `₹${Number(value || 0).toLocaleString("en-IN", {
+        maximumFractionDigits: 2
+      })}`;
 
-      setText('todaySales', money(data.today_sales));
-      setText('billsToday', Number(data.bills_today || 0).toLocaleString('en-IN'));
-      setText('stockValue', money(data.stock_value));
-      setText('stockPiecesTrend',
-        `${Number(data.stock_pieces || 0).toLocaleString('en-IN')} pcs`);
-      setText('lowStockCount', Number(data.low_stock_count || 0).toLocaleString('en-IN'));
-
-      setText(
-        'quickLowStock',
-        `${Number(data.low_stock_count || 0).toLocaleString('en-IN')} items need reorder`
-      );
-
-      const headerDot = document.getElementById('headerAlertDot');
-      if (headerDot) headerDot.style.display = Number(data.low_stock_count || 0) > 0 ? 'block' : 'none';
-
-      setText('salesTrend', '—');
-      setText('billsTrend', '—');
-      setText('stockTrend', Number(data.low_stock_count || 0) > 0 ? 'Reorder' : 'OK');
-
-      const stockTrend = document.getElementById('stockTrend');
-      if (stockTrend) {
-        stockTrend.className =
-          `kpi-trend ${Number(data.low_stock_count || 0) > 0 ? 'down' : 'flat'}`;
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = value;
       }
+    };
 
-      // Recent bills
-      const billsEl = document.getElementById('recentBills');
-      const bills = Array.isArray(data.recent_bills) ? data.recent_bills : [];
+    // ================= KPI DATA =================
 
-      if (billsEl) {
-        if (!bills.length) {
-          billsEl.innerHTML = `
-            <div class="bill-row">
-              <div>
-                <div class="bill-id">No bills yet</div>
-                <div class="bill-meta">Create your first bill to see it here.</div>
+    setText("todaySales", money(data.today_sales));
+
+    setText(
+      "billsToday",
+      Number(data.bills_today || 0).toLocaleString("en-IN")
+    );
+
+    setText("stockValue", money(data.stock_value));
+
+    setText(
+      "stockPiecesTrend",
+      `${Number(data.stock_pieces || 0).toLocaleString("en-IN")} pcs`
+    );
+
+    setText(
+      "lowStockCount",
+      Number(data.low_stock_count || 0).toLocaleString("en-IN")
+    );
+
+    setText(
+      "quickLowStock",
+      `${Number(data.low_stock_count || 0).toLocaleString("en-IN")} items need reorder`
+    );
+
+
+    // ================= HEADER LOW-STOCK DOT =================
+
+    const headerDot = document.getElementById("headerAlertDot");
+
+    if (headerDot) {
+      headerDot.style.display =
+        Number(data.low_stock_count || 0) > 0
+          ? "block"
+          : "none";
+    }
+
+
+    // ================= KPI STATUS =================
+
+    setText("salesTrend", "—");
+    setText("billsTrend", "—");
+
+    setText(
+      "stockTrend",
+      Number(data.low_stock_count || 0) > 0
+        ? "Reorder"
+        : "OK"
+    );
+
+    const stockTrend = document.getElementById("stockTrend");
+
+    if (stockTrend) {
+      stockTrend.className =
+        `kpi-trend ${
+          Number(data.low_stock_count || 0) > 0
+            ? "down"
+            : "flat"
+        }`;
+    }
+
+
+    // ================= RECENT BILLS =================
+
+    const billsEl = document.getElementById("recentBills");
+
+    const bills = Array.isArray(data.recent_bills)
+      ? data.recent_bills
+      : [];
+
+    if (billsEl) {
+
+      // No bills
+      if (!bills.length) {
+
+        billsEl.innerHTML = `
+          <div class="bill-row">
+            <div>
+              <div class="bill-id">No bills yet</div>
+              <div class="bill-meta">
+                Create your first bill to see it here.
               </div>
-              <div>
-                <div class="bill-amount">₹0</div>
-              </div>
-            </div>`;
-        } else {
-          billsEl.innerHTML = bills.map((bill) => {
-            const customer = bill.customer_name || 'Walk-in customer';
-            const invoice = bill.invoice_no || bill.invoice_number || bill._id || 'Bill';
-            const amount = Number(bill.grand_total || 0);
-            const statusRaw = String(
-              bill.payment_status || bill.paymentStatus || bill.status || 'ACTIVE'
-            ).toUpperCase();
+            </div>
 
-            const isPaid = statusRaw === 'PAID' || statusRaw === 'ACTIVE';
-            const statusText = statusRaw === 'PAID' ? 'Paid' :
-              statusRaw === 'DUE' || statusRaw === 'UNPAID' ? 'Due' : statusRaw;
+            <div>
+              <div class="bill-amount">₹0</div>
+            </div>
+          </div>
+        `;
+
+      } else {
+
+        // Display recent bills
+        billsEl.innerHTML = bills
+          .map((bill) => {
+
+            const customer =
+              bill.customer_name ||
+              "Walk-in customer";
+
+            const invoice =
+              bill.invoice_no ||
+              bill.invoice_number ||
+              bill._id ||
+              "Bill";
+
+            const amount =
+              Number(bill.grand_total || 0);
+
+            const statusRaw =
+              String(
+                bill.payment_status ||
+                bill.paymentStatus ||
+                bill.status ||
+                "ACTIVE"
+              ).toUpperCase();
+
+            const isPaid =
+              statusRaw === "PAID" ||
+              statusRaw === "ACTIVE";
+
+            const statusText =
+              statusRaw === "PAID"
+                ? "Paid"
+                : statusRaw === "DUE" ||
+                  statusRaw === "UNPAID"
+                ? "Due"
+                : statusRaw;
 
             return `
               <div class="bill-row">
+
                 <div>
-                  <div class="bill-id">#${escapeHtml(invoice)}</div>
-                  <div class="bill-meta">${escapeHtml(customer)}</div>
+                  <div class="bill-id">
+                    #${escapeHtml(invoice)}
+                  </div>
+
+                  <div class="bill-meta">
+                    ${escapeHtml(customer)}
+                  </div>
                 </div>
+
                 <div>
-                  <div class="bill-amount">${money(amount)}</div>
-                  <span class="bill-status ${isPaid ? 'paid' : 'due'}">${escapeHtml(statusText)}</span>
+                  <div class="bill-amount">
+                    ${money(amount)}
+                  </div>
+
+                  <span class="bill-status ${
+                    isPaid ? "paid" : "due"
+                  }">
+                    ${escapeHtml(statusText)}
+                  </span>
                 </div>
-              </div>`;
-          }).join('');
-        }
+
+              </div>
+            `;
+          })
+          .join("");
       }
+    }
 
-      // Low-stock products
-      const stockEl = document.getElementById('lowStockList');
-      const lowStock = Array.isArray(data.low_stock) ? data.low_stock : [];
 
-      if (stockEl) {
-        if (!lowStock.length) {
-          stockEl.innerHTML = `
-            <div class="stock-row">
-              <div>
-                <div class="stock-name">No low-stock items</div>
-                <div class="stock-meta">Your inventory is currently empty or above reorder level.</div>
+    // ================= LOW STOCK PRODUCTS =================
+
+    const stockEl =
+      document.getElementById("lowStockList");
+
+    // Dashboard intentionally displays only
+    // the first 5 low-stock products.
+    // The complete list remains available
+    // on inventory.html.
+
+    const lowStock =
+      Array.isArray(data.low_stock)
+        ? data.low_stock.slice(0, 5)
+        : [];
+
+    if (stockEl) {
+
+      // No low-stock products
+      if (!lowStock.length) {
+
+        stockEl.innerHTML = `
+          <div class="stock-row">
+
+            <div>
+              <div class="stock-name">
+                No low-stock items
               </div>
-              <span class="stock-count ok">OK</span>
-            </div>`;
-        } else {
-          stockEl.innerHTML = lowStock.map((product) => `
-            <div class="stock-row">
-              <div>
-                <div class="stock-name">${escapeHtml(product.name || 'Unnamed product')}</div>
-                <div class="stock-meta">Reorder level: ${Number(product.reorder_level || 0)}</div>
+
+              <div class="stock-meta">
+                Your inventory is currently empty
+                or above reorder level.
               </div>
-              <span class="stock-count">${Number(product.stock_qty || 0)} left</span>
             </div>
-          `).join('');
-        }
+
+            <span class="stock-count ok">
+              OK
+            </span>
+
+          </div>
+        `;
+
+      } else {
+
+        // Display maximum 5 products
+        stockEl.innerHTML = lowStock
+          .map((product) => {
+
+            return `
+              <div class="stock-row">
+
+                <div>
+
+                  <div class="stock-name">
+                    ${escapeHtml(
+                      product.name ||
+                      "Unnamed product"
+                    )}
+                  </div>
+
+                  <div class="stock-meta">
+                    Reorder level:
+                    ${Number(
+                      product.reorder_level || 0
+                    )}
+                  </div>
+
+                </div>
+
+                <span class="stock-count">
+                  ${Number(
+                    product.stock_qty || 0
+                  )} left
+                </span>
+
+              </div>
+            `;
+          })
+          .join("");
       }
-
-    } catch (error) {
-      console.error('Dashboard loading failed:', error);
     }
-  }
 
-  // ================= 7-DAY SALES CHART =================
-  // /api/dashboard doesn't include this — it lives at /api/reports/sales-trend.
-  async function loadSalesChart() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/reports/sales-trend?days=7`);
-      if (!response.ok) throw new Error(`sales-trend API returned ${response.status}`);
-      const days = await response.json(); // [{date, total}, ...]
-      renderSalesChart(days);
-    } catch (error) {
-      console.error('Sales trend loading failed:', error);
+  } catch (error) {
+
+    console.error(
+      "Dashboard loading failed:",
+      error
+    );
+  }
+}
+
+
+// ================= 7-DAY SALES CHART =================
+
+// /api/dashboard does not contain sales-trend data.
+// The chart uses:
+// /api/reports/sales-trend?days=7
+
+async function loadSalesChart() {
+
+  try {
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/reports/sales-trend?days=7`
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `sales-trend API returned ${response.status}`
+      );
     }
+
+    const days = await response.json();
+
+    // Expected format:
+    // [{ date, total }, ...]
+
+    renderSalesChart(days);
+
+  } catch (error) {
+
+    console.error(
+      "Sales trend loading failed:",
+      error
+    );
+  }
+}
+
+
+// ================= HTML ESCAPE =================
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+// ================= SALES CHART =================
+
+function renderSalesChart(days) {
+
+  const chart =
+    document.getElementById("salesChart");
+
+  if (!chart) {
+    return;
   }
 
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+  const items =
+    Array.isArray(days)
+      ? days
+      : [];
+
+  const values =
+    items.map((item) =>
+      Number(
+        item.total ||
+        item.sales ||
+        0
+      )
+    );
+
+  const max =
+    Math.max(...values, 0);
+
+  const total =
+    values.reduce(
+      (sum, value) =>
+        sum + value,
+      0
+    );
+
+
+  // ================= WEEK TOTAL =================
+
+  const weekSales =
+    document.getElementById("weekSales");
+
+  if (weekSales) {
+
+    weekSales.textContent =
+      `₹${total.toLocaleString("en-IN", {
+        maximumFractionDigits: 2
+      })}`;
   }
 
-  function renderSalesChart(days) {
-    const chart = document.getElementById('salesChart');
-    if (!chart) return;
 
-    const items = Array.isArray(days) ? days : [];
-    const values = items.map(item => Number(item.total || item.sales || 0));
-
-    const max = Math.max(...values, 0);
-    const total = values.reduce((sum, value) => sum + value, 0);
-
-    const weekSales = document.getElementById('weekSales');
-    if (weekSales) weekSales.textContent =
-      `₹${total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-
-    if (!items.length) return;
-
-    chart.innerHTML = items.slice(-7).map((item, index, arr) => {
-      const value = Number(item.total || item.sales || 0);
-      const height = max > 0 ? Math.max(4, (value / max) * 96) : 0;
-      const today = index === arr.length - 1;
-      const dateObj = item.date ? new Date(item.date + 'T00:00:00') : null;
-      const label = dateObj
-        ? dateObj.toLocaleDateString('en-IN', { weekday: 'short' })
-        : (item.label || item.day || '');
-
-      return `
-        <div class="bar-col ${today ? 'is-today' : ''}">
-          <div class="bar" style="height:${height}%"></div>
-          <span class="bar-day">${today ? 'Today' : escapeHtml(label)}</span>
-        </div>`;
-    }).join('');
+  // No data
+  if (!items.length) {
+    return;
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+
+  // ================= DRAW 7 BARS =================
+
+  chart.innerHTML =
+    items
+      .slice(-7)
+      .map((item, index, arr) => {
+
+        const value =
+          Number(
+            item.total ||
+            item.sales ||
+            0
+          );
+
+        const height =
+          max > 0
+            ? Math.max(
+                4,
+                (value / max) * 96
+              )
+            : 0;
+
+        const today =
+          index === arr.length - 1;
+
+
+        const dateObj =
+          item.date
+            ? new Date(
+                item.date +
+                "T00:00:00"
+              )
+            : null;
+
+
+        const label =
+          dateObj
+            ? dateObj.toLocaleDateString(
+                "en-IN",
+                {
+                  weekday: "short"
+                }
+              )
+            : (
+                item.label ||
+                item.day ||
+                ""
+              );
+
+
+        return `
+          <div class="bar-col ${
+            today ? "is-today" : ""
+          }">
+
+            <div
+              class="bar"
+              style="height:${height}%"
+              aria-hidden="true"
+            ></div>
+
+            <span class="bar-day">
+              ${
+                today
+                  ? "Today"
+                  : escapeHtml(label)
+              }
+            </span>
+
+          </div>
+        `;
+
+      })
+      .join("");
+}
+
+
+// ================= INITIAL LOAD =================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
     loadDashboard();
     loadSalesChart();
-  });
-</script>
 
-<script>
-  // Hamburger toggle
-  const menuToggle = document.getElementById('menuToggle');
-  const mobilePanel = document.getElementById('mobilePanel');
+  }
+);
 
-  menuToggle.addEventListener('click', () => {
-    const isOpen = mobilePanel.classList.toggle('open');
-    menuToggle.classList.toggle('open', isOpen);
-    menuToggle.setAttribute('aria-expanded', isOpen);
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-  });
 
-  mobilePanel.addEventListener('click', (e) => {
-    if (e.target === mobilePanel) {
-      mobilePanel.classList.remove('open');
-      menuToggle.classList.remove('open');
-      menuToggle.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+// ================= HAMBURGER MENU =================
+
+const menuToggle =
+  document.getElementById("menuToggle");
+
+const mobilePanel =
+  document.getElementById("mobilePanel");
+
+
+if (menuToggle && mobilePanel) {
+
+  menuToggle.addEventListener(
+    "click",
+    () => {
+
+      const isOpen =
+        mobilePanel.classList.toggle(
+          "open"
+        );
+
+      menuToggle.classList.toggle(
+        "open",
+        isOpen
+      );
+
+      menuToggle.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+      );
+
+      document.body.style.overflow =
+        isOpen
+          ? "hidden"
+          : "";
+
     }
-  });
+  );
 
-  document.querySelectorAll('.mobile-sheet a').forEach(link => {
-    link.addEventListener('click', () => {
-      mobilePanel.classList.remove('open');
-      menuToggle.classList.remove('open');
-      document.body.style.overflow = '';
+
+  // Close mobile menu
+  // when clicking outside sheet
+
+  mobilePanel.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        mobilePanel
+      ) {
+
+        mobilePanel.classList.remove(
+          "open"
+        );
+
+        menuToggle.classList.remove(
+          "open"
+        );
+
+        menuToggle.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+
+        document.body.style.overflow =
+          "";
+      }
+
+    }
+  );
+
+
+  // Close menu after
+  // selecting a link
+
+  document
+    .querySelectorAll(
+      ".mobile-sheet a"
+    )
+    .forEach((link) => {
+
+      link.addEventListener(
+        "click",
+        () => {
+
+          mobilePanel.classList.remove(
+            "open"
+          );
+
+          menuToggle.classList.remove(
+            "open"
+          );
+
+          menuToggle.setAttribute(
+            "aria-expanded",
+            "false"
+          );
+
+          document.body.style.overflow =
+            "";
+
+        }
+      );
+
     });
-  });
 
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 980 && mobilePanel.classList.contains('open')) {
-      mobilePanel.classList.remove('open');
-      menuToggle.classList.remove('open');
-      document.body.style.overflow = '';
+
+  // Close menu when
+  // returning to desktop width
+
+  window.addEventListener(
+    "resize",
+    () => {
+
+      if (
+        window.innerWidth > 980 &&
+        mobilePanel.classList.contains(
+          "open"
+        )
+      ) {
+
+        mobilePanel.classList.remove(
+          "open"
+        );
+
+        menuToggle.classList.remove(
+          "open"
+        );
+
+        menuToggle.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+
+        document.body.style.overflow =
+          "";
+      }
+
     }
-  });
+  );
 
-  // ---------- Today's real date ----------
-  const todayDateEl = document.getElementById('todayDate');
-  if (todayDateEl) {
-    todayDateEl.textContent = new Date().toLocaleDateString('en-IN', {
-      weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
-    });
+}
+
+
+// ================= TODAY'S DATE =================
+
+const todayDateEl =
+  document.getElementById(
+    "todayDate"
+  );
+
+if (todayDateEl) {
+
+  todayDateEl.textContent =
+    new Date().toLocaleDateString(
+      "en-IN",
+      {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      }
+    );
+}
+
+
+// ================= TYPING ANIMATION =================
+
+const mainText =
+  "Welcome to Rajasthani Saree";
+
+const mainEl =
+  document.getElementById(
+    "typedMain"
+  );
+
+let mi = 0;
+
+
+function typeMain() {
+
+  if (!mainEl) {
+    return;
   }
 
-  // ---------- Typing animation: owner greeting ----------
-  const mainText = "Welcome to Rajasthani Saree";
-  const mainEl = document.getElementById('typedMain');
-  let mi = 0;
+  if (mi <= mainText.length) {
 
-  function typeMain(){
-    if (mi <= mainText.length){
-      mainEl.textContent = mainText.slice(0, mi);
-      mi++;
-      setTimeout(typeMain, 55);
-    }
-  }
-  typeMain();
+    mainEl.textContent =
+      mainText.slice(0, mi);
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    mainEl.textContent = mainText;
-    document.querySelector('.greeting-title .caret').style.display = 'none';
+    mi++;
+
+    setTimeout(
+      typeMain,
+      55
+    );
   }
+}
+
+
+typeMain();
+
+
+// ================= REDUCED MOTION =================
+
+if (
+  window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches
+) {
+
+  if (mainEl) {
+    mainEl.textContent =
+      mainText;
+  }
+}
 </script>
 
 </body>

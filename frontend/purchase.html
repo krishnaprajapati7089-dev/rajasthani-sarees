@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +84,6 @@ td input{width:100%;min-width:0;padding:8px}
 #purchaseItems th:nth-child(3),#purchaseItems td:nth-child(3){width:100px}
 #purchaseItems th:nth-child(4),#purchaseItems td:nth-child(4){width:150px}
 #purchaseItems th:nth-child(5),#purchaseItems td:nth-child(5){width:75px}
-#purchaseItems th:nth-child(5),#purchaseItems td:nth-child(5){width:110px}
 #purchaseItems th:nth-child(6),#purchaseItems td:nth-child(6){width:130px}
 #purchaseItems th:nth-child(7),#purchaseItems td:nth-child(7){width:130px}
 #purchaseItems th:nth-child(8),#purchaseItems td:nth-child(8){width:90px}
@@ -191,7 +191,7 @@ td input{width:100%;min-width:0;padding:8px}
     <div id="billSearchStatus" class="form-message" role="status" aria-live="polite"></div>
     <div class="table-wrapper bill-results-wrapper" id="billResultsWrapper" hidden>
       <table class="bill-results-table">
-        <thead><tr><th>Bill Number</th><th>Party Name</th><th>Invoice Number</th><th>Date</th><th>Total</th><th>Actions</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Bill Number</th><th>Party Name</th><th>Invoice Number</th><th>Date</th><th>Total</th><th>Actions</th></tr></thead>
         <tbody id="billSearchResults"></tbody>
       </table>
     </div>
@@ -305,7 +305,7 @@ function generateUniqueBillNumber() {
   ].join("");
   const time = String(Date.now()).slice(-6);
   const random = Math.floor(100 + Math.random() * 900);
-  return `PB-${stamp}-${time}-${random}`;
+  return 'P' + Math.floor(100000 + Math.random() * 900000);
 }
 
 function getDealerDiscountPercent() {
@@ -373,6 +373,7 @@ function addItem(){
     <td><input class="itemCode" placeholder="Blank = auto-generate"></td>
     <td><input class="description" placeholder="Description"></td>
     <td><input class="hsn" placeholder="HSN"></td>
+    <td><input class="category" placeholder="e.g. Silk"></td>
     <td><input class="qty" type="number" min="1" value="1" oninput="calculateTotal()"></td>
     <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP"></td>
     <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>

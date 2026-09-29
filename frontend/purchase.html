@@ -55,7 +55,7 @@ input:focus,select:focus{outline:2px solid var(--gold-light);border-color:var(--
 .preview{display:none;margin-top:18px;text-align:center}
 .preview img{max-width:100%;max-height:500px;border:1px solid var(--line);border-radius:8px}
 .table-wrapper{overflow-x:auto;overflow-y:hidden;width:100%;-webkit-overflow-scrolling:touch}
-table{width:100%;min-width:1080px;border-collapse:collapse;table-layout:fixed}
+table{width:100%;min-width:1180px;border-collapse:collapse;table-layout:fixed}
 th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
 th{font-size:12px;color:var(--ink-soft);font-weight:600;white-space:nowrap;text-align:left}
 td input{width:100%;min-width:0;padding:8px}
@@ -81,7 +81,8 @@ td input{width:100%;min-width:0;padding:8px}
 #purchaseItems th:nth-child(1),#purchaseItems td:nth-child(1){width:150px}
 #purchaseItems th:nth-child(2),#purchaseItems td:nth-child(2){width:220px}
 #purchaseItems th:nth-child(3),#purchaseItems td:nth-child(3){width:100px}
-#purchaseItems th:nth-child(4),#purchaseItems td:nth-child(4){width:75px}
+#purchaseItems th:nth-child(4),#purchaseItems td:nth-child(4){width:150px}
+#purchaseItems th:nth-child(5),#purchaseItems td:nth-child(5){width:75px}
 #purchaseItems th:nth-child(5),#purchaseItems td:nth-child(5){width:110px}
 #purchaseItems th:nth-child(6),#purchaseItems td:nth-child(6){width:130px}
 #purchaseItems th:nth-child(7),#purchaseItems td:nth-child(7){width:130px}
@@ -99,6 +100,12 @@ td input{width:100%;min-width:0;padding:8px}
 .discount-control{display:flex;align-items:center;gap:6px}
 .discount-control input{width:105px;padding:9px 10px}
 @media(max-width:600px){.bill-search-row{grid-template-columns:1fr}.bill-search-row button{width:100%;justify-content:center}}
+
+.bill-actions{display:flex;gap:8px;align-items:center;white-space:nowrap}
+.bill-action{padding:7px 11px!important;font-size:12px}
+.btn-delete{display:inline-flex;align-items:center;padding:7px 11px;background:#fff;color:#B23A2E;border:1px solid #E6B8B2;border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer}
+.btn-delete:hover{background:#FBEAE7;border-color:#B23A2E}
+.charges-row{align-items:center;gap:16px}.charges-row label{font-weight:600}.charges-row .discount-control input{width:120px}
 </style>
 </head>
 
@@ -184,7 +191,7 @@ td input{width:100%;min-width:0;padding:8px}
     <div id="billSearchStatus" class="form-message" role="status" aria-live="polite"></div>
     <div class="table-wrapper bill-results-wrapper" id="billResultsWrapper" hidden>
       <table class="bill-results-table">
-        <thead><tr><th>Bill Number</th><th>Party Name</th><th>Invoice Number</th><th>Date</th><th>Total</th></tr></thead>
+        <thead><tr><th>Bill Number</th><th>Party Name</th><th>Invoice Number</th><th>Date</th><th>Total</th><th>Actions</th><th>Actions</th></tr></thead>
         <tbody id="billSearchResults"></tbody>
       </table>
     </div>
@@ -201,6 +208,7 @@ td input{width:100%;min-width:0;padding:8px}
             <th>Item Code (barcode)</th>
             <th>Description</th>
             <th>HSN</th>
+            <th>Category</th>
             <th>Qty</th>
             <th>MRP</th>
             <th>Purchase Rate</th>
@@ -215,6 +223,7 @@ td input{width:100%;min-width:0;padding:8px}
             <td><input class="itemCode" placeholder="Blank = auto-generate"></td>
             <td><input class="description" value="Saree"></td>
             <td><input class="hsn" value="5407"></td>
+            <td><input class="category" placeholder="e.g. Silk"></td>
             <td><input class="qty" type="number" min="1" value="1" oninput="calculateTotal()"></td>
             <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP"></td>
             <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
@@ -239,7 +248,14 @@ td input{width:100%;min-width:0;padding:8px}
     <h2>4. Bill Summary</h2>
     <div class="summary-row"><span>Taxable Amount</span><strong id="taxable">₹0.00</strong></div>
     <div class="summary-row"><span>GST</span><strong id="gstTotal">₹0.00</strong></div>
-    <div class="summary-row"><span>Other Charges</span><strong>₹0.00</strong></div>
+    <div class="summary-row charges-row">
+      <label for="extraCharges">Extra / Shipping Charges</label>
+      <div class="discount-control">
+        <span>₹</span>
+        <input id="extraCharges" type="number" min="0" step="0.01" value="0"
+               inputmode="decimal" placeholder="0.00">
+      </div>
+    </div>
     <div class="summary-row discount-row">
       <label for="dealerDiscount">Dealer Discount</label>
       <div class="discount-control">
@@ -331,9 +347,14 @@ function calculateTotal(){
     if(amount) amount.textContent = '₹' + (base + tax).toFixed(2);
   });
   const grossTotal = taxable + gstTotal;
+  const extraCharges = Math.max(
+    0,
+    Number(document.getElementById('extraCharges')?.value || 0)
+  );
+  const totalBeforeDiscount = grossTotal + extraCharges;
   const discountPercent = getDealerDiscountPercent();
-  const discountAmount = grossTotal * discountPercent / 100;
-  const netTotal = Math.max(0, grossTotal - discountAmount);
+  const discountAmount = totalBeforeDiscount * discountPercent / 100;
+  const netTotal = Math.max(0, totalBeforeDiscount - discountAmount);
 
   document.getElementById('taxable').textContent = '₹' + taxable.toFixed(2);
   document.getElementById('gstTotal').textContent = '₹' + gstTotal.toFixed(2);
@@ -342,6 +363,7 @@ function calculateTotal(){
 }
 
 document.getElementById('dealerDiscount').addEventListener('input', calculateTotal);
+document.getElementById('extraCharges').addEventListener('input', calculateTotal);
 
 function addItem(){
   const tbody = document.getElementById('purchaseItems');
@@ -409,6 +431,9 @@ function collectItems(){
 
       hsn_code:
         row.querySelector('.hsn')?.value.trim() || '',
+
+      category:
+        row.querySelector('.category')?.value.trim() || '',
 
       qty,
       mrp,
@@ -496,6 +521,9 @@ async function confirmPurchase(){
     dealer_discount_percent:
       getDealerDiscountPercent(),
 
+    extra_charges:
+      Math.max(0, Number(document.getElementById('extraCharges')?.value || 0)),
+
     items
   };
 
@@ -508,10 +536,13 @@ async function confirmPurchase(){
   setPurchaseMessage('Saving purchase bill...');
 
   try {
+    const editingId = btn.dataset.editing === "true" ? btn.dataset.editId : "";
     const response = await fetch(
-      `${API_BASE_URL}/api/purchases`,
+      editingId
+        ? `${API_BASE_URL}/api/purchases/${encodeURIComponent(editingId)}`
+        : `${API_BASE_URL}/api/purchases`,
       {
-        method: 'POST',
+        method: editingId ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -586,6 +617,10 @@ async function confirmPurchase(){
     btn.disabled = false;
     btn.textContent =
       '✓ Confirm & Add to Inventory';
+    delete btn.dataset.editId;
+    delete btn.dataset.editing;
+    delete btn.dataset.editId;
+    delete btn.dataset.editing;
   }
 }
 
@@ -731,6 +766,10 @@ async function searchPurchaseBills() {
         <td>${escapeHtml(bill.invoice_number || "—")}</td>
         <td>${escapeHtml(bill.invoice_date ? String(bill.invoice_date).slice(0,10) : "—")}</td>
         <td>₹${Number(bill.grand_total ?? bill.total ?? 0).toFixed(2)}</td>
+        <td class="bill-actions">
+          <button class="btn-ghost bill-action" type="button" onclick="editPurchaseBill('${escapeHtml(bill._id)}')">Edit</button>
+          <button class="btn-delete bill-action" type="button" onclick="deletePurchaseBill('${escapeHtml(bill._id)}', '${escapeHtml(bill.unique_bill_number || bill.invoice_number || '')}')">Delete</button>
+        </td>
       </tr>
     `).join("");
 
@@ -739,6 +778,88 @@ async function searchPurchaseBills() {
   } catch (error) {
     console.error(error);
     status.textContent = "Purchase bill search failed: " + error.message;
+  }
+}
+
+
+async function editPurchaseBill(id) {
+  if (!id) return;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/purchases/${encodeURIComponent(id)}`);
+    const bill = await response.json();
+
+    if (!response.ok) throw new Error(bill.error || "Could not load purchase bill.");
+
+    document.getElementById("supplier").value = bill.supplier || "";
+    document.getElementById("supplierGstin").value = bill.supplier_gstin || "";
+    document.getElementById("invoiceNumber").value = bill.invoice_number || "";
+    document.getElementById("invoiceDate").value = bill.invoice_date
+      ? String(bill.invoice_date).slice(0,10) : "";
+    document.getElementById("supplierState").value = bill.supplier_state || "";
+    document.getElementById("reference").value = bill.reference || "";
+    document.getElementById("uniqueBillNumber").value = bill.unique_bill_number || generateUniqueBillNumber();
+    document.getElementById("dealerDiscount").value = bill.dealer_discount_percent || 0;
+    document.getElementById("extraCharges").value = bill.extra_charges || 0;
+
+    const tbody = document.getElementById("purchaseItems");
+    tbody.innerHTML = "";
+
+    (bill.items || []).forEach((item, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input class="itemCode" value="${escapeHtml(item.item_code || "")}" placeholder="Blank = auto-generate"></td>
+        <td><input class="description" value="${escapeHtml(item.description || "")}" placeholder="Description"></td>
+        <td><input class="hsn" value="${escapeHtml(item.hsn_code || "")}" placeholder="HSN"></td>
+        <td><input class="category" value="${escapeHtml(item.category || "")}" placeholder="Category"></td>
+        <td><input class="qty" type="number" min="1" value="${Number(item.qty || 1)}" oninput="calculateTotal()"></td>
+        <td><input class="mrp" type="number" min="0" step="0.01" value="${Number(item.mrp || 0)}" placeholder="MRP"></td>
+        <td><input class="rate" type="number" min="0" step="0.01" value="${Number(item.rate || 0)}" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
+        <td><input class="sellingPrice" type="number" min="0" step="0.01" value="${Number(item.selling_price || 0)}" placeholder="Selling Price"></td>
+        <td><input class="gst" type="number" min="0" step="0.01" value="${Number(item.gst_rate || 0)}" oninput="calculateTotal()"></td>
+        <td class="amount">₹${Number(item.amount || 0).toFixed(2)}</td>
+        <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    if (!bill.items || !bill.items.length) addItem();
+
+    const confirmBtn = document.getElementById("confirmBtn");
+    confirmBtn.textContent = "✓ Update Purchase Bill";
+    confirmBtn.dataset.editId = bill._id;
+    confirmBtn.dataset.editing = "true";
+
+    document.getElementById("billLookupPanel").scrollIntoView({behavior:"smooth", block:"start"});
+    setPurchaseMessage("Editing purchase bill. Review the details, then click Update Purchase Bill.");
+    calculateTotal();
+  } catch (error) {
+    console.error(error);
+    setPurchaseMessage("Could not load bill: " + error.message, "error");
+  }
+}
+
+async function deletePurchaseBill(id, billNumber) {
+  if (!id) return;
+
+  const label = billNumber || "this purchase bill";
+  if (!confirm(`Delete ${label}? This will also reverse the stock added by this purchase.`)) return;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/purchases/${encodeURIComponent(id)}`, {
+      method: "DELETE"
+    });
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.error || "Could not delete purchase bill.");
+
+    document.getElementById("billSearchStatus").textContent =
+      `Purchase bill ${label} deleted successfully. Stock was reversed.`;
+    await searchPurchaseBills();
+  } catch (error) {
+    console.error(error);
+    document.getElementById("billSearchStatus").textContent =
+      "Delete failed: " + error.message;
   }
 }
 
@@ -759,6 +880,7 @@ document.getElementById("billSearch").addEventListener("keydown", event => {
 function clearForm(){
   document.getElementById('purchaseItems').innerHTML = '';
   document.getElementById('dealerDiscount').value = '0';
+  document.getElementById('extraCharges').value = '0';
   document.getElementById('uniqueBillNumber').value = generateUniqueBillNumber();
   addItem();
   document.getElementById('successMessage').style.display = 'none';

@@ -1,297 +1,225 @@
 const mongoose = require('mongoose');
 
 
-/* =========================================================
-   PURCHASE ITEM SCHEMA
-   ========================================================= */
+// ============================================================
+// PURCHASE ITEM SCHEMA
+// ============================================================
 
-const purchaseItemSchema = new mongoose.Schema({
+const purchaseItemSchema = new mongoose.Schema(
+  {
+    item_code: {
+      type: String,
+      default: ''
+    },
 
-  // Product / barcode code
-  item_code: {
-    type: String,
-    default: ''
+    description: {
+      type: String,
+      required: true
+    },
+
+    category: {
+      type: String,
+      default: ''
+    },
+
+    hsn_code: {
+      type: String,
+      default: ''
+    },
+
+    qty: {
+      type: Number,
+      required: true,
+      default: 1
+    },
+
+    // MRP
+    mrp: {
+      type: Number,
+      default: 0
+    },
+
+    // Purchase rate before GST
+    purchase_rate: {
+      type: Number,
+      default: 0
+    },
+
+    // Selling price including GST
+    selling_price: {
+      type: Number,
+      default: 0
+    },
+
+    // Kept for compatibility with old records
+    rate: {
+      type: Number,
+      default: 0
+    },
+
+    gst_rate: {
+      type: Number,
+      required: true,
+      default: 5
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+      default: 0
+    },
+
+    product_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    }
   },
-
-  // Saree / product name
-  description: {
-    type: String,
-    required: true
-  },
-
-  // Product category
-  // Example: Silk, Cotton, Georgette, Designer
-  category: {
-    type: String,
-    default: ''
-  },
-
-  // HSN code
-  hsn_code: {
-    type: String,
-    default: ''
-  },
-
-  // Quantity purchased
-  qty: {
-    type: Number,
-    required: true,
-    default: 1,
-    min: 1
-  },
-
-  // MRP of product
-  mrp: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-
-  // Purchase price/rate paid to supplier
-  purchase_rate: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-
-  // Selling price to customer INCLUDING GST
-  selling_price: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-
-  // Keep rate for compatibility with old purchase records
-  rate: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0
-  },
-
-  // GST percentage
-  gst_rate: {
-    type: Number,
-    required: true,
-    default: 5,
-    min: 0
-  },
-
-  // Final amount for this item
-  amount: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0
-  },
-
-  // Product reference
-  product_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product'
+  {
+    _id: false
   }
-
-}, {
-  _id: false
-});
+);
 
 
-/* =========================================================
-   PURCHASE SCHEMA
-   ========================================================= */
+// ============================================================
+// PURCHASE SCHEMA
+// ============================================================
 
-const purchaseSchema = new mongoose.Schema({
+const purchaseSchema = new mongoose.Schema(
+  {
+    // Supplier / Party name
+    supplier: {
+      type: String,
+      required: true,
+      trim: true
+    },
 
-  /* -------------------------------------------------------
-     SUPPLIER / DEALER DETAILS
-     ------------------------------------------------------- */
+    supplier_gstin: {
+      type: String,
+      default: '',
+      trim: true
+    },
 
-  supplier: {
-    type: String,
-    required: true,
-    trim: true
+    // Dealer's original invoice number
+    invoice_number: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    invoice_date: {
+      type: Date,
+      default: Date.now
+    },
+
+    supplier_state: {
+      type: String,
+      default: '',
+      trim: true
+    },
+
+    reference: {
+      type: String,
+      default: '',
+      trim: true
+    },
+
+    // ========================================================
+    // OUR UNIQUE PURCHASE BILL NUMBER
+    // Example: P582431
+    // ========================================================
+
+    unique_bill_number: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      uppercase: true
+    },
+
+    // Uploaded bill image
+    bill_image_url: {
+      type: String,
+      default: ''
+    },
+
+    // ========================================================
+    // ITEMS
+    // ========================================================
+
+    items: {
+      type: [purchaseItemSchema],
+      default: []
+    },
+
+    // ========================================================
+    // AMOUNTS
+    // ========================================================
+
+    taxable_amount: {
+      type: Number,
+      default: 0
+    },
+
+    gst_total: {
+      type: Number,
+      default: 0
+    },
+
+    // Extra / shipping / transport charges
+    extra_charges: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+
+    // Dealer discount percentage
+    dealer_discount_percent: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+
+    // Actual discount amount
+    dealer_discount_amount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+
+    // Final amount after extra charges and discount
+    grand_total: {
+      type: Number,
+      default: 0
+    }
   },
-
-  supplier_gstin: {
-    type: String,
-    default: '',
-    trim: true
-  },
-
-  invoice_number: {
-    type: String,
-    required: true,
-    trim: true
-  },
-
-  invoice_date: {
-    type: Date,
-    default: Date.now
-  },
-
-  supplier_state: {
-    type: String,
-    default: '',
-    trim: true
-  },
-
-  reference: {
-    type: String,
-    default: '',
-    trim: true
-  },
-
-
-  /* -------------------------------------------------------
-     UNIQUE PURCHASE BILL NUMBER
-     
-     Example:
-     P582431
-     
-     The frontend will generate a 6-digit number
-     with the P prefix.
-     ------------------------------------------------------- */
-
-  unique_bill_number: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true,
-    trim: true
-  },
-
-
-  /* -------------------------------------------------------
-     UPLOADED BILL IMAGE
-     ------------------------------------------------------- */
-
-  bill_image_url: {
-    type: String,
-    default: ''
-  },
-
-
-  /* -------------------------------------------------------
-     PURCHASE ITEMS
-     ------------------------------------------------------- */
-
-  items: {
-    type: [purchaseItemSchema],
-    default: []
-  },
-
-
-  /* -------------------------------------------------------
-     TAXABLE AMOUNT
-     ------------------------------------------------------- */
-
-  taxable_amount: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-
-
-  /* -------------------------------------------------------
-     TOTAL GST
-     ------------------------------------------------------- */
-
-  gst_total: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-
-
-  /* -------------------------------------------------------
-     EXTRA / SHIPPING CHARGES
-     
-     Example:
-     Shipping = ₹150
-     ------------------------------------------------------- */
-
-  extra_charges: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-
-
-  /* -------------------------------------------------------
-     DEALER DISCOUNT
-     
-     Example:
-     5 = 5% discount
-     ------------------------------------------------------- */
-
-  dealer_discount_percent: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 100
-  },
-
-
-  /* -------------------------------------------------------
-     ACTUAL DISCOUNT AMOUNT
-     
-     Example:
-     Total before discount = ₹10,000
-     Discount = 5%
-     Discount amount = ₹500
-     ------------------------------------------------------- */
-
-  dealer_discount_amount: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-
-
-  /* -------------------------------------------------------
-     FINAL BILL TOTAL
-     
-     Calculated by the backend:
-     
-     Taxable Amount
-     + GST
-     + Extra Charges
-     - Dealer Discount
-     = Grand Total
-     ------------------------------------------------------- */
-
-  grand_total: {
-    type: Number,
-    default: 0,
-    min: 0
+  {
+    timestamps: true
   }
-
-}, {
-  timestamps: true
-});
+);
 
 
-/* =========================================================
-   DATABASE INDEXES
-   ========================================================= */
+// ============================================================
+// INDEXES
+// ============================================================
 
-// Search by supplier / party name
 purchaseSchema.index({
   supplier: 1
 });
 
-// Search by invoice number
 purchaseSchema.index({
   invoice_number: 1
 });
 
-// unique_bill_number already has:
-// unique: true
-// index: true
+purchaseSchema.index({
+  unique_bill_number: 1
+});
 
 
-/* =========================================================
-   EXPORT MODEL
-   ========================================================= */
+// ============================================================
+// MODEL
+// ============================================================
 
-module.exports = mongoose.model('Purchase', purchaseSchema);
+module.exports = mongoose.model(
+  'Purchase',
+  purchaseSchema
+);

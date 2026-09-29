@@ -7,70 +7,85 @@ const mongoose = require('mongoose');
 
 const purchaseItemSchema = new mongoose.Schema({
 
+  // Product / barcode code
   item_code: {
     type: String,
     default: ''
   },
 
+  // Saree / product name
   description: {
     type: String,
     required: true
   },
 
-  // Category of the saree/product
+  // Product category
+  // Example: Silk, Cotton, Georgette, Designer
   category: {
     type: String,
     default: ''
   },
 
+  // HSN code
   hsn_code: {
     type: String,
     default: ''
   },
 
+  // Quantity purchased
   qty: {
     type: Number,
     required: true,
-    default: 1
+    default: 1,
+    min: 1
   },
 
   // MRP of product
   mrp: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
 
-  // Purchase price/rate from supplier
+  // Purchase price/rate paid to supplier
   purchase_rate: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
 
   // Selling price to customer INCLUDING GST
   selling_price: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
 
-  // Keep rate for compatibility with existing purchase records
+  // Keep rate for compatibility with old purchase records
   rate: {
     type: Number,
     required: true,
-    default: 0
+    default: 0,
+    min: 0
   },
 
+  // GST percentage
   gst_rate: {
     type: Number,
     required: true,
-    default: 5
+    default: 5,
+    min: 0
   },
 
+  // Final amount for this item
   amount: {
     type: Number,
     required: true,
-    default: 0
+    default: 0,
+    min: 0
   },
 
+  // Product reference
   product_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product'
@@ -93,17 +108,20 @@ const purchaseSchema = new mongoose.Schema({
 
   supplier: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
 
   supplier_gstin: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
 
   invoice_number: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
 
   invoice_date: {
@@ -113,27 +131,33 @@ const purchaseSchema = new mongoose.Schema({
 
   supplier_state: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
 
   reference: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
 
 
   /* -------------------------------------------------------
-     UNIQUE BILL NUMBER
+     UNIQUE PURCHASE BILL NUMBER
      
      Example:
-     PB-260929-123456-582
+     P582431
+     
+     The frontend will generate a 6-digit number
+     with the P prefix.
      ------------------------------------------------------- */
 
   unique_bill_number: {
     type: String,
     required: true,
     unique: true,
-    index: true
+    index: true,
+    trim: true
   },
 
 
@@ -151,26 +175,36 @@ const purchaseSchema = new mongoose.Schema({
      PURCHASE ITEMS
      ------------------------------------------------------- */
 
-  items: [purchaseItemSchema],
+  items: {
+    type: [purchaseItemSchema],
+    default: []
+  },
 
 
   /* -------------------------------------------------------
-     BILL CALCULATION
+     TAXABLE AMOUNT
      ------------------------------------------------------- */
 
   taxable_amount: {
     type: Number,
-    default: 0
-  },
-
-  gst_total: {
-    type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
 
 
   /* -------------------------------------------------------
-     EXTRA / SHIPPING / OTHER CHARGES
+     TOTAL GST
+     ------------------------------------------------------- */
+
+  gst_total: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+
+
+  /* -------------------------------------------------------
+     EXTRA / SHIPPING CHARGES
      
      Example:
      Shipping = ₹150
@@ -187,13 +221,14 @@ const purchaseSchema = new mongoose.Schema({
      DEALER DISCOUNT
      
      Example:
-     Discount = 5%
+     5 = 5% discount
      ------------------------------------------------------- */
 
   dealer_discount_percent: {
     type: Number,
     default: 0,
-    min: 0
+    min: 0,
+    max: 100
   },
 
 
@@ -216,9 +251,10 @@ const purchaseSchema = new mongoose.Schema({
   /* -------------------------------------------------------
      FINAL BILL TOTAL
      
-     Formula used by frontend/backend:
+     Calculated by the backend:
      
-     Gross Total
+     Taxable Amount
+     + GST
      + Extra Charges
      - Dealer Discount
      = Grand Total
@@ -226,12 +262,32 @@ const purchaseSchema = new mongoose.Schema({
 
   grand_total: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   }
 
 }, {
   timestamps: true
 });
+
+
+/* =========================================================
+   DATABASE INDEXES
+   ========================================================= */
+
+// Search by supplier / party name
+purchaseSchema.index({
+  supplier: 1
+});
+
+// Search by invoice number
+purchaseSchema.index({
+  invoice_number: 1
+});
+
+// unique_bill_number already has:
+// unique: true
+// index: true
 
 
 /* =========================================================

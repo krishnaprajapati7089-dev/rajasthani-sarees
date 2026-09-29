@@ -14,7 +14,7 @@
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--maroon);flex-shrink:0}.brand-text{display:flex;flex-direction:column;line-height:1}
 .brand-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;letter-spacing:.5px;color:var(--maroon);white-space:nowrap}.brand-sub{font-size:10.5px;letter-spacing:1.4px;color:var(--gold);margin-top:3px;font-weight:500}
 .primary-nav{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}.nav-link{display:flex;align-items:center;padding:10px 16px;font-size:14.5px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-radius:8px;white-space:nowrap}.nav-link:hover,.nav-link.is-active{color:var(--maroon);background:#FBF3E4}
-.header-actions{display:flex;align-items:center;gap:10px}.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--maroon);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}.btn-primary:hover{background:var(--maroon-dark)}
+.header-actions{display:flex;align-items:center;gap:10px}.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--maroon);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}.btn-primary:hover{background:var(--maroon-dark)}.current-page-action{display:none}
 .btn-ghost{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer;text-decoration:none}
 .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--maroon-dark)}
 .menu-toggle{display:none;width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer}.menu-toggle span{display:block;width:18px;height:2px;background:var(--maroon);margin:auto;position:relative}.menu-toggle span:before,.menu-toggle span:after{content:"";position:absolute;width:18px;height:2px;background:var(--maroon);left:0}.menu-toggle span:before{top:-6px}.menu-toggle span:after{top:6px}
@@ -26,7 +26,7 @@
 .mobile-divider{height:1px;background:var(--line);margin:10px 4px}.mobile-actions{padding:6px 4px}.mobile-actions .btn-primary{width:100%;justify-content:center}
 @media(max-width:980px){.primary-nav,.header-actions .hide-xs{display:none}.menu-toggle{display:block}.mobile-panel{position:fixed;top:var(--header-h);left:0;right:0;bottom:0;background:rgba(43,18,16,.35);z-index:999;padding:12px 16px}.mobile-panel.open{display:block}.mobile-sheet{background:#fff;padding:10px 16px 25px;border-radius:0 0 12px 12px}.mobile-sheet .nav-link{width:100%;margin:3px 0}}
 @media(max-width:700px){.kpi-row{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}.page-inner{padding:28px 16px}.brand-sub{display:none}}
-@media(max-width:480px){.kpi-row{grid-template-columns:1fr}.page-header{align-items:flex-start;flex-direction:column}.btn-primary .label{display:none}}
+@media(max-width:480px){.kpi-row{grid-template-columns:1fr}.page-header{align-items:flex-start;flex-direction:column}.btn-primary .label{display:none}.invoice-status{width:100%;margin-right:0}.product-action-btn{min-width:88px}}
 
 .product-results{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:#fff;display:none;overflow:hidden}
 .product-result{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:#fff;text-align:left;cursor:pointer;font:inherit;color:var(--ink)}
@@ -35,12 +35,12 @@
 .product-result-name{font-weight:600}
 .product-result-meta{font-size:12px;color:var(--ink-soft)}
 .form-message{margin-top:10px;font-size:13px;color:var(--ink-soft)}
-.save-status{margin-top:12px;font-size:13px;font-weight:600}
+.invoice-status{font-size:13px;color:var(--ink-soft);margin-right:auto}.invoice-status strong{color:var(--maroon)}.save-status{margin-top:12px;font-size:13px;font-weight:600}
 .save-status.success{color:#1E7A4C}
 .save-status.error{color:#B23A2E}
 
 /* --- Barcode / QR scanner --- */
-.scan-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.scan-btn,.product-action-btn{min-width:90px;justify-content:center}.scan-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
 .scan-btn:hover{border-color:var(--gold);background:#FBF3E4}
 .scanner-modal{position:fixed;inset:0;background:rgba(43,18,16,.55);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px}
 .scanner-modal.open{display:flex}
@@ -74,7 +74,7 @@
       </svg>
       <span class="brand-text">
         <span class="brand-name">Rajastani&nbsp;Saree</span>
-        <span class="brand-sub">BILLING &amp; INVENTORY</span>
+        <span class="brand-sub">Billing &amp; Inventory</span>
       </span>
     </a>
 
@@ -89,7 +89,7 @@
     <div class="header-actions">
       <button class="icon-btn hide-xs" aria-label="Search" title="Search">⌕</button>
       <button class="icon-btn hide-xs" aria-label="Notifications" title="Notifications">♢</button>
-      <a class="btn-primary" href="billing.html">＋ <span class="label">New Bill</span></a>
+      <a class="btn-primary current-page-action" href="billing.html" aria-current="page" aria-label="New Bill — current page">＋ <span class="label">New Bill</span></a>
       <div class="avatar" title="Store Manager">SM</div>
       <button class="icon-btn hide-xs" onclick="rsLogout()" title="Logout">⏻</button>
       <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
@@ -111,7 +111,7 @@
   </div>
 </div>
 <main><div class="page-inner">
-<div class="page-header"><div><p class="section-label">SALES</p><h1>New Bill</h1></div><div>Invoice <strong id="invoicePreview">Generated on save</strong></div></div>
+<div class="page-header"><div><p class="section-label">Sales</p><h1>New Bill</h1></div></div>
 <section class="panel">
 <h2>Customer</h2>
 <div class="form-row">
@@ -134,17 +134,17 @@
 <h2>Add Product</h2>
 <div style="display:flex;gap:10px;flex-wrap:wrap">
   <input id="productSearch" placeholder="Search product or scan barcode" autocomplete="off" style="flex:1;min-width:180px">
-  <button class="scan-btn" type="button" onclick="openScanner()" title="Scan barcode or QR code with camera">
+  <button class="scan-btn product-action-btn" type="button" onclick="openScanner()" title="Scan barcode or QR code with camera">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 8V5a1 1 0 011-1h3M4 16v3a1 1 0 001 1h3M20 8V5a1 1 0 00-1-1h-3M20 16v3a1 1 0 01-1 1h-3M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     Scan
   </button>
-  <button class="btn-primary" type="button" onclick="addSelectedProduct()">Add</button>
+  <button class="btn-primary product-action-btn" type="button" onclick="addSelectedProduct()">Add</button>
 </div>
 <div id="productResults" class="product-results"></div>
 <div id="productMessage" class="form-message">Search your inventory, or scan a barcode/QR code, to add a product.</div>
 </section>
 <section class="panel"><h2>Bill Items</h2><p class="form-message">MRP comes from Inventory. Type a Selling Price or a Discount % to change what you actually charge — the other field updates to match.</p><div class="table-wrapper"><table><thead><tr><th>Product</th><th>Qty</th><th>MRP</th><th>Selling Price</th><th>Discount %</th><th>Total</th></tr></thead><tbody id="billItems"></tbody></table></div></section>
-<section class="panel" style="max-width:520px;margin-left:auto"><div style="display:flex;justify-content:space-between;padding:8px 0">Subtotal <strong id="subtotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;color:var(--ink-soft)">GST included in selling price <strong id="gst">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);font-size:20px">Total Payable <strong id="grandTotal">₹0</strong></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn-ghost" onclick="clearBill()">Clear</button><button class="btn-primary" type="button" onclick="saveInvoice()">Save Bill</button><button class="btn-primary" type="button" onclick="window.print()">Print</button></div><div id="saveStatus" class="save-status"></div></section>
+<section class="panel" style="max-width:520px;margin-left:auto"><div style="display:flex;justify-content:space-between;padding:8px 0">Subtotal <strong id="subtotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;color:var(--ink-soft)">GST included in selling price <strong id="gst">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);font-size:20px">Total Payable <strong id="grandTotal">₹0</strong></div><div style="display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap"><div class="invoice-status">Invoice <strong id="invoicePreview">Generated on save</strong></div><button class="btn-ghost" onclick="clearBill()">Clear</button><button class="btn-primary" type="button" onclick="saveInvoice()">Save Bill</button><button class="btn-ghost" type="button" onclick="window.print()">Print</button></div><div id="saveStatus" class="save-status"></div></section>
 </div></main>
 
 <!-- Barcode / QR scanner modal -->

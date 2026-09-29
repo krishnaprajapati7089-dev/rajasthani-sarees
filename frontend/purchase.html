@@ -41,25 +41,25 @@ body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink)}
 .page-header h1{font-family:'Playfair Display',serif;color:var(--maroon);font-size:34px;margin:4px 0}
 .section-label{font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--ink-soft);margin:0 0 8px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}
-.panel h2{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 18px;font-size:20px}
+.step-heading{position:relative;z-index:2}.panel h2{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 18px;font-size:20px}
 .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .form-group{display:flex;flex-direction:column;gap:7px}
 .form-group label{font-size:13px;font-weight:600;color:var(--ink-soft)}
 input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--ink)}
 input:focus,select:focus{outline:2px solid var(--gold-light);border-color:var(--gold)}
-.upload-box{border:2px dashed var(--gold-light);border-radius:12px;padding:35px;text-align:center;background:#FFFDF9;cursor:pointer}
-.upload-box:hover{background:#FBF3E4;border-color:var(--gold)}
+.upload-box{display:block;border:3px dashed var(--gold);border-radius:12px;padding:38px;text-align:center;background:#FFF9EE;cursor:pointer;position:relative;z-index:1;transition:background .15s ease,border-color .15s ease}
+.upload-box:hover{background:#FBF3E4;border-color:var(--maroon)}.upload-box:focus-within{outline:2px solid var(--gold-light);outline-offset:3px}
 .upload-icon{font-size:34px;color:var(--maroon);margin-bottom:8px}
-.upload-title{font-weight:600;color:var(--maroon)}
-.upload-sub{font-size:13px;color:var(--ink-soft);margin-top:5px}
+.upload-title{font-weight:700;font-size:16px;color:var(--maroon)}
+.upload-sub{font-size:13px;color:var(--ink-soft);margin-top:7px}
 .preview{display:none;margin-top:18px;text-align:center}
 .preview img{max-width:100%;max-height:500px;border:1px solid var(--line);border-radius:8px}
-.table-wrapper{overflow:auto}
-table{width:100%;border-collapse:collapse}
-th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px}
-th{font-size:12px;color:var(--ink-soft);font-weight:600}
-td input{min-width:95px;padding:8px}
-.summary{max-width:440px;margin-left:auto}
+.table-wrapper{overflow-x:auto;overflow-y:hidden;width:100%;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:1080px;border-collapse:collapse;table-layout:fixed}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+th{font-size:12px;color:var(--ink-soft);font-weight:600;white-space:nowrap;text-align:left}
+td input{width:100%;min-width:0;padding:8px}
+.summary{max-width:560px;width:100%;margin:0 auto}
 .summary-row{display:flex;justify-content:space-between;padding:8px 0}
 .summary-total{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line);font-size:20px;color:var(--maroon)}
 .actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
@@ -76,7 +76,29 @@ td input{min-width:95px;padding:8px}
 .label-card .lc-code{font-size:11px;color:var(--ink-soft);margin-top:2px;font-family:'Courier New',monospace}
 
 @media(max-width:900px){.primary-nav{display:none}.form-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.form-grid{grid-template-columns:1fr}.page-inner{padding:25px 16px}.page-header{align-items:flex-start;flex-direction:column}.brand-sub{display:none}}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.page-inner{padding:25px 16px}.page-header{align-items:flex-start;flex-direction:column}.brand-sub{display:none}.upload-box{padding:30px 18px}.summary{max-width:none}}
+
+#purchaseItems th:nth-child(1),#purchaseItems td:nth-child(1){width:150px}
+#purchaseItems th:nth-child(2),#purchaseItems td:nth-child(2){width:220px}
+#purchaseItems th:nth-child(3),#purchaseItems td:nth-child(3){width:100px}
+#purchaseItems th:nth-child(4),#purchaseItems td:nth-child(4){width:75px}
+#purchaseItems th:nth-child(5),#purchaseItems td:nth-child(5){width:110px}
+#purchaseItems th:nth-child(6),#purchaseItems td:nth-child(6){width:130px}
+#purchaseItems th:nth-child(7),#purchaseItems td:nth-child(7){width:130px}
+#purchaseItems th:nth-child(8),#purchaseItems td:nth-child(8){width:90px}
+#purchaseItems th:nth-child(9),#purchaseItems td:nth-child(9){width:110px}
+#purchaseItems th:nth-child(10),#purchaseItems td:nth-child(10){width:60px}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.bill-search-row{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:10px;align-items:center}
+.bill-search-row input{height:42px}
+.bill-results-wrapper{margin-top:16px}
+.bill-results-table{min-width:720px}
+.bill-results-table tbody tr:hover{background:#FBF3E4}
+.discount-row{align-items:center;gap:16px}
+.discount-control{display:flex;align-items:center;gap:6px}
+.discount-control input{width:105px;padding:9px 10px}
+@media(max-width:600px){.bill-search-row{grid-template-columns:1fr}.bill-search-row button{width:100%;justify-content:center}}
 </style>
 </head>
 
@@ -87,7 +109,7 @@ td input{min-width:95px;padding:8px}
     <a href="dashboard.html" class="brand">
       <span class="brand-text">
         <span class="brand-name">Rajastani Saree</span>
-        <span class="brand-sub">BILLING &amp; INVENTORY</span>
+        <span class="brand-sub">Billing &amp; Inventory</span>
       </span>
     </a>
     <nav class="primary-nav" aria-label="Primary">
@@ -109,7 +131,7 @@ td input{min-width:95px;padding:8px}
 
   <div class="page-header">
     <div>
-      <p class="section-label">PURCHASE &amp; STOCK ENTRY</p>
+      <p class="section-label">Purchase &amp; Stock Entry</p>
       <h1>Upload Purchase Bill</h1>
       <p style="color:var(--ink-soft);margin:0">
         Upload your supplier invoice, verify the items, and add the purchased stock to inventory.
@@ -122,7 +144,7 @@ td input{min-width:95px;padding:8px}
 
   <!-- Upload -->
   <section class="panel">
-    <h2>1. Upload Supplier Bill</h2>
+    <h2 class="step-heading">1. Upload Supplier Bill</h2>
     <label class="upload-box" for="billFile">
       <div class="upload-icon">↑</div>
       <div class="upload-title">Click to upload purchase bill</div>
@@ -145,6 +167,26 @@ td input{min-width:95px;padding:8px}
       <div class="form-group"><label>Invoice Date</label><input id="invoiceDate" type="date"></div>
       <div class="form-group"><label>Supplier State</label><input id="supplierState" placeholder="e.g. Gujarat"></div>
       <div class="form-group"><label>Purchase Order / Reference</label><input id="reference" placeholder="Optional"></div>
+      <div class="form-group"><label for="uniqueBillNumber">Unique Bill Number</label><input id="uniqueBillNumber" readonly aria-describedby="uniqueBillHelp"></div>
+      <div class="form-group"><span id="uniqueBillHelp" class="form-message" style="margin:0">Generated automatically for this purchase bill.</span></div>
+    </div>
+  </section>
+
+  <!-- Saved purchase bill lookup -->
+  <section class="panel" id="billLookupPanel">
+    <h2>Find Saved Purchase Bill</h2>
+    <div class="bill-search-row">
+      <label class="sr-only" for="billSearch">Search purchase bills by party name or unique bill number</label>
+      <input id="billSearch" type="search" placeholder="Search by party name or unique bill number..." autocomplete="off">
+      <button class="btn-primary" type="button" onclick="searchPurchaseBills()">Search</button>
+      <button class="btn-ghost" type="button" onclick="clearBillSearch()">Clear</button>
+    </div>
+    <div id="billSearchStatus" class="form-message" role="status" aria-live="polite"></div>
+    <div class="table-wrapper bill-results-wrapper" id="billResultsWrapper" hidden>
+      <table class="bill-results-table">
+        <thead><tr><th>Bill Number</th><th>Party Name</th><th>Invoice Number</th><th>Date</th><th>Total</th></tr></thead>
+        <tbody id="billSearchResults"></tbody>
+      </table>
     </div>
   </section>
 
@@ -198,7 +240,15 @@ td input{min-width:95px;padding:8px}
     <div class="summary-row"><span>Taxable Amount</span><strong id="taxable">₹0.00</strong></div>
     <div class="summary-row"><span>GST</span><strong id="gstTotal">₹0.00</strong></div>
     <div class="summary-row"><span>Other Charges</span><strong>₹0.00</strong></div>
-    <div class="summary-total"><span>Total</span><strong id="grandTotal">₹0.00</strong></div>
+    <div class="summary-row discount-row">
+      <label for="dealerDiscount">Dealer Discount</label>
+      <div class="discount-control">
+        <input id="dealerDiscount" type="number" min="0" max="100" step="0.01" value="0" inputmode="decimal">
+        <span>%</span>
+      </div>
+    </div>
+    <div class="summary-row"><span>Discount Amount</span><strong id="dealerDiscountAmount">₹0.00</strong></div>
+    <div class="summary-total"><span>Net Total</span><strong id="grandTotal">₹0.00</strong></div>
     <div id="purchaseMessage" class="form-message"></div>
     <div class="actions">
       <button class="btn-ghost" onclick="clearForm()">Clear</button>
@@ -228,6 +278,23 @@ const fileInput = document.getElementById('billFile');
 const preview = document.getElementById('preview');
 const previewImage = document.getElementById('previewImage');
 let currentLabels = [];
+
+
+function generateUniqueBillNumber() {
+  const now = new Date();
+  const stamp = [
+    String(now.getFullYear()).slice(-2),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0")
+  ].join("");
+  const time = String(Date.now()).slice(-6);
+  const random = Math.floor(100 + Math.random() * 900);
+  return `PB-${stamp}-${time}-${random}`;
+}
+
+function getDealerDiscountPercent() {
+  return Math.min(100, Math.max(0, Number(document.getElementById("dealerDiscount")?.value || 0)));
+}
 
 document.getElementById('invoiceDate').value = new Date().toISOString().slice(0,10);
 
@@ -263,10 +330,18 @@ function calculateTotal(){
     const amount = row.querySelector('.amount');
     if(amount) amount.textContent = '₹' + (base + tax).toFixed(2);
   });
+  const grossTotal = taxable + gstTotal;
+  const discountPercent = getDealerDiscountPercent();
+  const discountAmount = grossTotal * discountPercent / 100;
+  const netTotal = Math.max(0, grossTotal - discountAmount);
+
   document.getElementById('taxable').textContent = '₹' + taxable.toFixed(2);
   document.getElementById('gstTotal').textContent = '₹' + gstTotal.toFixed(2);
-  document.getElementById('grandTotal').textContent = '₹' + (taxable + gstTotal).toFixed(2);
+  document.getElementById('dealerDiscountAmount').textContent = '₹' + discountAmount.toFixed(2);
+  document.getElementById('grandTotal').textContent = '₹' + netTotal.toFixed(2);
 }
+
+document.getElementById('dealerDiscount').addEventListener('input', calculateTotal);
 
 function addItem(){
   const tbody = document.getElementById('purchaseItems');
@@ -414,6 +489,12 @@ async function confirmPurchase(){
 
     reference:
       document.getElementById('reference').value.trim(),
+
+    unique_bill_number:
+      document.getElementById('uniqueBillNumber').value,
+
+    dealer_discount_percent:
+      getDealerDiscountPercent(),
 
     items
   };
@@ -612,8 +693,73 @@ function printAllLabels(){
   w.document.close();
 }
 
+
+async function searchPurchaseBills() {
+  const query = document.getElementById("billSearch").value.trim();
+  const status = document.getElementById("billSearchStatus");
+  const wrapper = document.getElementById("billResultsWrapper");
+  const tbody = document.getElementById("billSearchResults");
+
+  if (!query) {
+    status.textContent = "Enter a party name or unique bill number.";
+    wrapper.hidden = true;
+    tbody.innerHTML = "";
+    return;
+  }
+
+  status.textContent = "Searching...";
+  wrapper.hidden = true;
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/purchases/search?q=${encodeURIComponent(query)}`
+    );
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.error || "Could not search purchase bills.");
+
+    if (!Array.isArray(data) || !data.length) {
+      status.textContent = `No purchase bill found for "${query}".`;
+      tbody.innerHTML = "";
+      return;
+    }
+
+    tbody.innerHTML = data.map(bill => `
+      <tr>
+        <td><strong>${escapeHtml(bill.unique_bill_number || "—")}</strong></td>
+        <td>${escapeHtml(bill.supplier || bill.party_name || "—")}</td>
+        <td>${escapeHtml(bill.invoice_number || "—")}</td>
+        <td>${escapeHtml(bill.invoice_date ? String(bill.invoice_date).slice(0,10) : "—")}</td>
+        <td>₹${Number(bill.grand_total ?? bill.total ?? 0).toFixed(2)}</td>
+      </tr>
+    `).join("");
+
+    wrapper.hidden = false;
+    status.textContent = `${data.length} purchase bill(s) found.`;
+  } catch (error) {
+    console.error(error);
+    status.textContent = "Purchase bill search failed: " + error.message;
+  }
+}
+
+function clearBillSearch() {
+  document.getElementById("billSearch").value = "";
+  document.getElementById("billSearchStatus").textContent = "";
+  document.getElementById("billResultsWrapper").hidden = true;
+  document.getElementById("billSearchResults").innerHTML = "";
+}
+
+document.getElementById("billSearch").addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    searchPurchaseBills();
+  }
+});
+
 function clearForm(){
   document.getElementById('purchaseItems').innerHTML = '';
+  document.getElementById('dealerDiscount').value = '0';
+  document.getElementById('uniqueBillNumber').value = generateUniqueBillNumber();
   addItem();
   document.getElementById('successMessage').style.display = 'none';
   document.getElementById('labelsPanel').style.display = 'none';
@@ -621,6 +767,7 @@ function clearForm(){
   calculateTotal();
 }
 
+document.getElementById('uniqueBillNumber').value = generateUniqueBillNumber();
 calculateTotal();
 </script>
 

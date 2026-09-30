@@ -9,72 +9,62 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --maroon:#5E1620;
-  --maroon-dark:#3E0E15;
-  --gold:#C9A24A;
-  --gold-light:#E7D6A2;
-  --cream:#FBF8F2;
-  --ink:#2B1210;
-  --ink-soft:#6B5C56;
-  --line:#E9DFCD;
-  --header-h:72px;
-}
+:root{--emerald:#0B6B57;--emerald-dark:#064B3F;--emerald-deep:#073F35;--champagne:#D6B56B;--champagne-light:#F0DFAE;--ivory:#F7F5EF;--white:#FFFFFF;--graphite:#17211F;--graphite-soft:#66736F;--line:#DDE5E1;--mint:#EAF5F1;--header-h:72px}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink)}
+body{font-family:'Inter',sans-serif;background:var(--ivory);color:var(--graphite)}
 .site-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(94,22,32,.04)}
 .header-inner{max-width:1280px;margin:auto;height:100%;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--maroon);flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--emerald);flex-shrink:0}
 .brand-text{display:flex;flex-direction:column;line-height:1}
-.brand-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;letter-spacing:.5px;color:var(--maroon)}
-.brand-sub{font-size:10.5px;letter-spacing:1.4px;color:var(--gold);margin-top:3px;font-weight:500}
+.brand-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;letter-spacing:.5px;color:var(--emerald)}
+.brand-sub{font-size:10.5px;letter-spacing:1.4px;color:var(--champagne);margin-top:3px;font-weight:500}
 .primary-nav{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}
-.nav-link{display:flex;align-items:center;padding:10px 16px;font-size:14.5px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-radius:8px}
-.nav-link:hover,.nav-link.is-active{color:var(--maroon);background:#FBF3E4}
+.nav-link{display:flex;align-items:center;padding:10px 16px;font-size:14.5px;font-weight:500;color:var(--graphite-soft);text-decoration:none;border-radius:8px}
+.nav-link:hover,.nav-link.is-active{color:var(--emerald);background:var(--mint)}
 .header-actions{display:flex;align-items:center;gap:10px}
-.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--maroon);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}
-.btn-primary:hover{background:var(--maroon-dark)}
+.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--emerald);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}
+.btn-primary:hover{background:var(--emerald-dark)}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed}
-.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--maroon-dark)}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--champagne-light),var(--champagne));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--emerald-dark)}
 .page-inner{max-width:1280px;margin:auto;padding:38px 24px}
 .page-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:24px}
-.page-header h1{font-family:'Playfair Display',serif;color:var(--maroon);font-size:34px;margin:4px 0}
-.section-label{font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--ink-soft);margin:0 0 8px}
+.page-header h1{font-family:'Playfair Display',serif;color:var(--emerald);font-size:34px;margin:4px 0}
+.section-label{font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--graphite-soft);margin:0 0 8px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}
-.step-heading{position:relative;z-index:2}.panel h2{font-family:'Playfair Display',serif;color:var(--maroon);margin:0 0 18px;font-size:20px}
+.step-heading{position:relative;z-index:2}.panel h2{font-family:'Playfair Display',serif;color:var(--emerald);margin:0 0 18px;font-size:20px}
 .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .form-group{display:flex;flex-direction:column;gap:7px}
-.form-group label{font-size:13px;font-weight:600;color:var(--ink-soft)}
-input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--ink)}
-input:focus,select:focus{outline:2px solid var(--gold-light);border-color:var(--gold)}
-.upload-box{display:block;border:3px dashed var(--gold);border-radius:12px;padding:38px;text-align:center;background:#FFF9EE;cursor:pointer;position:relative;z-index:1;transition:background .15s ease,border-color .15s ease}
-.upload-box:hover{background:#FBF3E4;border-color:var(--maroon)}.upload-box:focus-within{outline:2px solid var(--gold-light);outline-offset:3px}
-.upload-icon{font-size:34px;color:var(--maroon);margin-bottom:8px}
-.upload-title{font-weight:700;font-size:16px;color:var(--maroon)}
-.upload-sub{font-size:13px;color:var(--ink-soft);margin-top:7px}
+.form-group label{font-size:13px;font-weight:600;color:var(--graphite-soft)}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--graphite)}
+input:focus,select:focus{outline:2px solid var(--champagne-light);border-color:var(--champagne)}
+.upload-box{display:block;border:3px dashed var(--champagne);border-radius:12px;padding:38px;text-align:center;background:#F8FBF9;cursor:pointer;position:relative;z-index:1;transition:background .15s ease,border-color .15s ease}
+.upload-box:hover{background:var(--mint);border-color:var(--emerald)}.upload-box:focus-within{outline:2px solid var(--champagne-light);outline-offset:3px}
+.upload-icon{font-size:34px;color:var(--emerald);margin-bottom:8px}
+.upload-title{font-weight:700;font-size:16px;color:var(--emerald)}
+.upload-sub{font-size:13px;color:var(--graphite-soft);margin-top:7px}
 .preview{display:none;margin-top:18px;text-align:center}
 .preview img{max-width:100%;max-height:500px;border:1px solid var(--line);border-radius:8px}
 .table-wrapper{overflow-x:auto;overflow-y:hidden;width:100%;-webkit-overflow-scrolling:touch}
 table{width:100%;min-width:1180px;border-collapse:collapse;table-layout:fixed}
 th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
-th{font-size:12px;color:var(--ink-soft);font-weight:600;white-space:nowrap;text-align:left}
+th{font-size:12px;color:var(--graphite-soft);font-weight:600;white-space:nowrap;text-align:left}
 td input{width:100%;min-width:0;padding:8px}
 .summary{max-width:560px;width:100%;margin:0 auto}
 .summary-row{display:flex;justify-content:space-between;padding:8px 0}
-.summary-total{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line);font-size:20px;color:var(--maroon)}
+.summary-total{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line);font-size:20px;color:var(--emerald)}
 .actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
-.btn-ghost{display:inline-flex;align-items:center;padding:10px 18px;background:#fff;color:var(--maroon);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer}
-.status{display:none;padding:12px 14px;border-radius:8px;background:#E7F5ED;color:#1E7A4C;font-size:13px;margin-bottom:18px}
+.btn-ghost{display:inline-flex;align-items:center;padding:10px 18px;background:#fff;color:var(--emerald);border:1px solid var(--line);border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer}
+.status{display:none;padding:12px 14px;border-radius:8px;background:#E8F6F1;color:var(--emerald-dark);font-size:13px;margin-bottom:18px}
 .status.error{background:#FBEAE7;color:#B23A2E}
-.form-message{margin-top:8px;font-size:13px;color:var(--ink-soft)}
+.form-message{margin-top:8px;font-size:13px;color:var(--graphite-soft)}
 
 /* printable labels panel */
 .labels-grid{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px}
-.label-card{width:160px;border:1px dashed var(--line);border-radius:10px;padding:12px;text-align:center;background:#FFFDF9}
+.label-card{width:160px;border:1px dashed var(--line);border-radius:10px;padding:12px;text-align:center;background:#FCFEFD}
 .label-card img{width:120px;height:120px}
 .label-card .lc-name{font-weight:700;font-size:12.5px;margin-top:8px}
-.label-card .lc-code{font-size:11px;color:var(--ink-soft);margin-top:2px;font-family:'Courier New',monospace}
+.label-card .lc-code{font-size:11px;color:var(--graphite-soft);margin-top:2px;font-family:'Courier New',monospace}
 
 @media(max-width:900px){.primary-nav{display:none}.form-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr}.page-inner{padding:25px 16px}.page-header{align-items:flex-start;flex-direction:column}.brand-sub{display:none}.upload-box{padding:30px 18px}.summary{max-width:none}}
@@ -85,17 +75,15 @@ td input{width:100%;min-width:0;padding:8px}
 #purchaseItems th:nth-child(4),#purchaseItems td:nth-child(4){width:150px}
 #purchaseItems th:nth-child(5),#purchaseItems td:nth-child(5){width:75px}
 #purchaseItems th:nth-child(6),#purchaseItems td:nth-child(6){width:130px}
-#purchaseItems th:nth-child(7),#purchaseItems td:nth-child(7){width:130px}
-#purchaseItems th:nth-child(8),#purchaseItems td:nth-child(8){width:90px}
-#purchaseItems th:nth-child(9),#purchaseItems td:nth-child(9){width:110px}
-#purchaseItems th:nth-child(10),#purchaseItems td:nth-child(10){width:60px}
+#purchaseItems th:nth-child(7),#purchaseItems td:nth-child(7){width:150px}
+#purchaseItems th:nth-child(8),#purchaseItems td:nth-child(8){width:110px}
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .bill-search-row{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:10px;align-items:center}
 .bill-search-row input{height:42px}
 .bill-results-wrapper{margin-top:16px}
 .bill-results-table{min-width:720px}
-.bill-results-table tbody tr:hover{background:#FBF3E4}
+.bill-results-table tbody tr:hover{background:var(--mint)}
 .discount-row{align-items:center;gap:16px}
 .discount-control{display:flex;align-items:center;gap:6px}
 .discount-control input{width:105px;padding:9px 10px}
@@ -106,6 +94,42 @@ td input{width:100%;min-width:0;padding:8px}
 .btn-delete{display:inline-flex;align-items:center;padding:7px 11px;background:#fff;color:#B23A2E;border:1px solid #E6B8B2;border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer}
 .btn-delete:hover{background:#FBEAE7;border-color:#B23A2E}
 .charges-row{align-items:center;gap:16px}.charges-row label{font-weight:600}.charges-row .discount-control input{width:120px}
+
+
+/* Total GST input */
+.total-gst-row{
+  background:linear-gradient(90deg,rgba(16,80,64,.045),rgba(201,162,74,.08));
+  border-radius:10px;
+  padding:10px 12px;
+}
+.total-gst-row label{
+  font-weight:700;
+  color:var(--emerald);
+}
+.total-gst-row input{
+  font-weight:700;
+  border-color:var(--champagne);
+}
+.total-gst-row input:focus{
+  box-shadow:0 0 0 4px rgba(201,162,74,.16);
+}
+
+/* NEW PREMIUM EMERALD + CHAMPAGNE THEME */
+body{overflow-x:hidden;background:radial-gradient(circle at 15% 0%,rgba(214,181,107,.10),transparent 28%),var(--ivory)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 20%,rgba(214,181,107,.035),transparent 70%);animation:ambientGlow 9s ease-in-out infinite alternate;z-index:-1}
+.site-header{background:rgba(255,255,255,.92);backdrop-filter:blur(14px);box-shadow:0 8px 30px rgba(7,63,53,.07)}
+.brand-name{transition:letter-spacing .3s ease,text-shadow .3s ease}.brand:hover .brand-name{letter-spacing:1px;text-shadow:0 0 18px rgba(214,181,107,.35)}
+.nav-link{position:relative;transition:color .25s ease,background .25s ease,transform .25s ease}.nav-link:hover{transform:translateY(-2px)}
+.nav-link.is-active:after{content:"";position:absolute;left:18px;right:18px;bottom:4px;height:2px;background:linear-gradient(90deg,var(--emerald),var(--champagne));border-radius:99px;animation:navLine .35s ease}
+.btn-primary{box-shadow:0 8px 18px rgba(11,107,87,.18);transition:transform .25s ease,box-shadow .25s ease,background .25s ease}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(11,107,87,.25);background:var(--emerald-dark)}
+.btn-ghost{transition:transform .25s ease,background .25s ease,border-color .25s ease,box-shadow .25s ease}.btn-ghost:hover{transform:translateY(-2px);background:var(--mint);border-color:var(--champagne);box-shadow:0 8px 18px rgba(7,63,53,.08)}
+.page-header{animation:fadeUp .65s cubic-bezier(.2,.8,.2,1) both}.panel{box-shadow:0 10px 28px rgba(7,63,53,.055);transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;animation:fadeUp .7s cubic-bezier(.2,.8,.2,1) both}.panel:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(7,63,53,.10);border-color:rgba(214,181,107,.55)}
+input,select{transition:border-color .25s ease,box-shadow .25s ease,transform .2s ease}input:hover,select:hover{border-color:#B9D2CA}input:focus,select:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px rgba(11,107,87,.10);transform:translateY(-1px)}
+.upload-box{transition:transform .3s ease,background .3s ease,border-color .3s ease,box-shadow .3s ease}.upload-box:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(11,107,87,.10);border-color:var(--emerald)}
+th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background .2s ease,transform .2s ease}tbody tr:hover{background:var(--mint);transform:scale(1.002)}
+.summary-total{color:var(--emerald);background:linear-gradient(90deg,transparent,rgba(214,181,107,.08),transparent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}@keyframes navLine{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}@keyframes ambientGlow{from{opacity:.55;transform:translateX(-2%)}to{opacity:1;transform:translateX(2%)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 
@@ -140,7 +164,7 @@ td input{width:100%;min-width:0;padding:8px}
     <div>
       <p class="section-label">Purchase &amp; Stock Entry</p>
       <h1>Upload Purchase Bill</h1>
-      <p style="color:var(--ink-soft);margin:0">
+      <p style="color:var(--graphite-soft);margin:0">
         Upload your supplier invoice, verify the items, and add the purchased stock to inventory.
         New sarees get a printable barcode/QR label automatically.
       </p>
@@ -200,7 +224,7 @@ td input{width:100%;min-width:0;padding:8px}
   <!-- Items -->
   <section class="panel">
     <h2>3. Purchased Items</h2>
-    <p class="form-message">Enter MRP, Purchase Rate, and final Selling Price separately. Selling Price is the customer price and already includes GST.</p>
+    <p class="form-message">Enter the MRP, which is also used as the Selling Price. GST is entered once on the total amount in the Bill Summary below.</p>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -212,8 +236,6 @@ td input{width:100%;min-width:0;padding:8px}
             <th>Qty</th>
             <th>MRP</th>
             <th>Purchase Rate</th>
-            <th>Selling Price</th>
-            <th>GST %</th>
             <th>Amount</th>
             <th></th>
           </tr>
@@ -225,10 +247,8 @@ td input{width:100%;min-width:0;padding:8px}
             <td><input class="hsn" value="5407"></td>
             <td><input class="category" placeholder="e.g. Silk"></td>
             <td><input class="qty" type="number" min="1" value="1" oninput="calculateTotal()"></td>
-            <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP"></td>
+            <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP / Selling Price"></td>
             <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
-            <td><input class="sellingPrice" type="number" min="0" step="0.01" value="0" placeholder="Selling Price"></td>
-            <td><input class="gst" type="number" min="0" step="0.01" value="5" oninput="calculateTotal()"></td>
             <td class="amount">₹0.00</td>
             <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
           </tr>
@@ -236,9 +256,9 @@ td input{width:100%;min-width:0;padding:8px}
       </table>
     </div>
     <p class="form-message">
-      <strong>MRP:</strong> printed maximum retail price.
+      <strong>MRP:</strong> printed maximum retail price and customer selling price.
       <strong>Purchase Rate:</strong> price paid to supplier.
-      <strong>Selling Price:</strong> final customer price, including GST.
+      <strong>GST:</strong> enter the total GST amount once in Bill Summary.
     </p>
     <button class="btn-ghost" style="margin-top:15px" onclick="addItem()">＋ Add Item Row</button>
   </section>
@@ -247,7 +267,15 @@ td input{width:100%;min-width:0;padding:8px}
   <section class="panel summary">
     <h2>4. Bill Summary</h2>
     <div class="summary-row"><span>Taxable Amount</span><strong id="taxable">₹0.00</strong></div>
-    <div class="summary-row"><span>GST</span><strong id="gstTotal">₹0.00</strong></div>
+    <div class="summary-row total-gst-row">
+      <label for="totalGstAmount">GST on Total Amount</label>
+      <div class="discount-control">
+        <span>₹</span>
+        <input id="totalGstAmount" type="number" min="0" step="0.01" value="0"
+               inputmode="decimal" placeholder="Enter GST amount">
+      </div>
+    </div>
+    <div class="summary-row"><span>GST Entered</span><strong id="gstTotal">₹0.00</strong></div>
     <div class="summary-row charges-row">
       <label for="extraCharges">Extra / Shipping Charges</label>
       <div class="discount-control">
@@ -334,36 +362,50 @@ function escapeHtml(value){
 }
 
 function calculateTotal(){
-  let taxable = 0, gstTotal = 0;
+  let taxable = 0;
+
   document.querySelectorAll('#purchaseItems tr').forEach(row=>{
     const qty = Number(row.querySelector('.qty')?.value || 0);
     const rate = Number(row.querySelector('.rate')?.value || 0);
-    const gst = Number(row.querySelector('.gst')?.value || 0);
     const base = qty * rate;
-    const tax = base * gst / 100;
+
     taxable += base;
-    gstTotal += tax;
+
     const amount = row.querySelector('.amount');
-    if(amount) amount.textContent = '₹' + (base + tax).toFixed(2);
+    if(amount) amount.textContent = '₹' + base.toFixed(2);
   });
-  const grossTotal = taxable + gstTotal;
+
+  const gstAmount = Math.max(
+    0,
+    Number(document.getElementById('totalGstAmount')?.value || 0)
+  );
+
   const extraCharges = Math.max(
     0,
     Number(document.getElementById('extraCharges')?.value || 0)
   );
-  const totalBeforeDiscount = grossTotal + extraCharges;
+
+  const totalBeforeDiscount = taxable + gstAmount + extraCharges;
   const discountPercent = getDealerDiscountPercent();
   const discountAmount = totalBeforeDiscount * discountPercent / 100;
   const netTotal = Math.max(0, totalBeforeDiscount - discountAmount);
 
-  document.getElementById('taxable').textContent = '₹' + taxable.toFixed(2);
-  document.getElementById('gstTotal').textContent = '₹' + gstTotal.toFixed(2);
-  document.getElementById('dealerDiscountAmount').textContent = '₹' + discountAmount.toFixed(2);
-  document.getElementById('grandTotal').textContent = '₹' + netTotal.toFixed(2);
+  document.getElementById('taxable').textContent =
+    '₹' + taxable.toFixed(2);
+
+  document.getElementById('gstTotal').textContent =
+    '₹' + gstAmount.toFixed(2);
+
+  document.getElementById('dealerDiscountAmount').textContent =
+    '₹' + discountAmount.toFixed(2);
+
+  document.getElementById('grandTotal').textContent =
+    '₹' + netTotal.toFixed(2);
 }
 
 document.getElementById('dealerDiscount').addEventListener('input', calculateTotal);
 document.getElementById('extraCharges').addEventListener('input', calculateTotal);
+document.getElementById('totalGstAmount').addEventListener('input', calculateTotal);
 
 function addItem(){
   const tbody = document.getElementById('purchaseItems');
@@ -371,19 +413,18 @@ function addItem(){
 
   row.innerHTML = `
     <td><input class="itemCode" placeholder="Blank = auto-generate"></td>
-    <td><input class="description" placeholder="Description"></td>
-    <td><input class="hsn" placeholder="HSN"></td>
+    <td><input class="description" placeholder="Supplier name"></td>
+    <td><input class="hsn" value="5407" placeholder="HSN"></td>
     <td><input class="category" placeholder="e.g. Silk"></td>
     <td><input class="qty" type="number" min="1" value="1" oninput="calculateTotal()"></td>
-    <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP"></td>
+    <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP / Selling Price"></td>
     <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
-    <td><input class="sellingPrice" type="number" min="0" step="0.01" value="0" placeholder="Selling Price"></td>
-    <td><input class="gst" type="number" min="0" step="0.01" value="5" oninput="calculateTotal()"></td>
     <td class="amount">₹0.00</td>
     <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
   `;
 
   tbody.appendChild(row);
+  syncDescriptionsToSupplier();
 }
 
 function removeItem(button){
@@ -418,12 +459,6 @@ function collectItems(){
     const purchaseRate =
       Number(row.querySelector('.rate')?.value) || 0;
 
-    const sellingPrice =
-      Number(row.querySelector('.sellingPrice')?.value) || 0;
-
-    const gstRate =
-      Number(row.querySelector('.gst')?.value) || 0;
-
     items.push({
       item_code:
         row.querySelector('.itemCode')?.value.trim() || '',
@@ -431,17 +466,25 @@ function collectItems(){
       description,
 
       hsn_code:
-        row.querySelector('.hsn')?.value.trim() || '',
+        row.querySelector('.hsn')?.value.trim() || '5407',
 
       category:
         row.querySelector('.category')?.value.trim() || '',
 
       qty,
+
       mrp,
+
       purchase_rate: purchaseRate,
+
       rate: purchaseRate,
-      selling_price: sellingPrice,
-      gst_rate: gstRate
+
+      // MRP is the selling price.
+      selling_price: mrp,
+
+      // This is replaced below with an effective total GST rate
+      // so the existing backend can store the entered total GST.
+      gst_rate: 0
     });
   });
 
@@ -482,22 +525,46 @@ async function confirmPurchase(){
   }
 
   for (const item of items) {
-    if (item.selling_price <= 0) {
+    if (item.mrp <= 0) {
       setPurchaseMessage(
-        `Please enter a Selling Price for "${item.description}".`,
+        `Please enter the MRP / Selling Price for "${item.description}".`,
         'error'
       );
       return;
     }
 
-    if (item.mrp > 0 && item.selling_price > item.mrp) {
+    if (item.purchase_rate < 0) {
       setPurchaseMessage(
-        `Selling Price cannot be greater than MRP for "${item.description}".`,
+        `Please enter a valid Purchase Rate for "${item.description}".`,
         'error'
       );
       return;
     }
   }
+
+  const taxableTotal = items.reduce(
+    (sum, item) => sum + (Number(item.qty) * Number(item.purchase_rate)),
+    0
+  );
+
+  const totalGstAmount = Math.max(
+    0,
+    Number(document.getElementById('totalGstAmount')?.value || 0)
+  );
+
+  /*
+    The current backend calculates GST from gst_rate for each item.
+    Because GST is now entered once on the total amount, calculate one
+    effective rate that produces the exact entered GST total.
+  */
+  const effectiveGstRate =
+    taxableTotal > 0
+      ? (totalGstAmount / taxableTotal) * 100
+      : 0;
+
+  items.forEach(item => {
+    item.gst_rate = effectiveGstRate;
+  });
 
   const payload = {
     supplier,
@@ -524,6 +591,9 @@ async function confirmPurchase(){
 
     extra_charges:
       Math.max(0, Number(document.getElementById('extraCharges')?.value || 0)),
+
+    total_gst_amount:
+      Math.max(0, Number(document.getElementById('totalGstAmount')?.value || 0)),
 
     items
   };
@@ -588,6 +658,9 @@ async function confirmPurchase(){
         'error'
       );
     }
+
+    // Prepare the page immediately for a completely new purchase bill.
+    resetForNewPurchase();
 
     window.scrollTo({
       top: 0,
@@ -678,7 +751,7 @@ async function showLabelsForProducts(products){
           ${escapeHtml(l.barcode)}
         </div>
         ${l.price ? `
-          <div style="font-size:12px;font-weight:700;margin-top:3px;color:var(--maroon)">
+          <div style="font-size:12px;font-weight:700;margin-top:3px;color:var(--emerald)">
             Selling ₹${l.price.toLocaleString('en-IN')}
           </div>
         ` : ''}
@@ -716,7 +789,24 @@ function buildLabelSheetHtml(labels){
     .label-code{font-size:11px;color:#555;letter-spacing:1px;margin-top:2px;font-family:'Courier New',monospace}
     .label-price{font-size:12.5px;font-weight:700;margin-top:3px;color:#5E1620}
     @media print{ body{padding:0} }
-  </style></head><body>
+  
+/* NEW PREMIUM EMERALD + CHAMPAGNE THEME */
+body{overflow-x:hidden;background:radial-gradient(circle at 15% 0%,rgba(214,181,107,.10),transparent 28%),var(--ivory)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 20%,rgba(214,181,107,.035),transparent 70%);animation:ambientGlow 9s ease-in-out infinite alternate;z-index:-1}
+.site-header{background:rgba(255,255,255,.92);backdrop-filter:blur(14px);box-shadow:0 8px 30px rgba(7,63,53,.07)}
+.brand-name{transition:letter-spacing .3s ease,text-shadow .3s ease}.brand:hover .brand-name{letter-spacing:1px;text-shadow:0 0 18px rgba(214,181,107,.35)}
+.nav-link{position:relative;transition:color .25s ease,background .25s ease,transform .25s ease}.nav-link:hover{transform:translateY(-2px)}
+.nav-link.is-active:after{content:"";position:absolute;left:18px;right:18px;bottom:4px;height:2px;background:linear-gradient(90deg,var(--emerald),var(--champagne));border-radius:99px;animation:navLine .35s ease}
+.btn-primary{box-shadow:0 8px 18px rgba(11,107,87,.18);transition:transform .25s ease,box-shadow .25s ease,background .25s ease}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(11,107,87,.25);background:var(--emerald-dark)}
+.btn-ghost{transition:transform .25s ease,background .25s ease,border-color .25s ease,box-shadow .25s ease}.btn-ghost:hover{transform:translateY(-2px);background:var(--mint);border-color:var(--champagne);box-shadow:0 8px 18px rgba(7,63,53,.08)}
+.page-header{animation:fadeUp .65s cubic-bezier(.2,.8,.2,1) both}.panel{box-shadow:0 10px 28px rgba(7,63,53,.055);transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;animation:fadeUp .7s cubic-bezier(.2,.8,.2,1) both}.panel:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(7,63,53,.10);border-color:rgba(214,181,107,.55)}
+input,select{transition:border-color .25s ease,box-shadow .25s ease,transform .2s ease}input:hover,select:hover{border-color:#B9D2CA}input:focus,select:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px rgba(11,107,87,.10);transform:translateY(-1px)}
+.upload-box{transition:transform .3s ease,background .3s ease,border-color .3s ease,box-shadow .3s ease}.upload-box:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(11,107,87,.10);border-color:var(--emerald)}
+th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background .2s ease,transform .2s ease}tbody tr:hover{background:var(--mint);transform:scale(1.002)}
+.summary-total{color:var(--emerald);background:linear-gradient(90deg,transparent,rgba(214,181,107,.08),transparent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}@keyframes navLine{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}@keyframes ambientGlow{from{opacity:.55;transform:translateX(-2%)}to{opacity:1;transform:translateX(2%)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style></head><body>
     <div class="label-sheet">${cards}</div>
     <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 300); };<\/script>
   </body></html>`;
@@ -802,6 +892,7 @@ async function editPurchaseBill(id) {
     document.getElementById("uniqueBillNumber").value = bill.unique_bill_number || generateUniqueBillNumber();
     document.getElementById("dealerDiscount").value = bill.dealer_discount_percent || 0;
     document.getElementById("extraCharges").value = bill.extra_charges || 0;
+    document.getElementById("totalGstAmount").value = bill.gst_total || 0;
 
     const tbody = document.getElementById("purchaseItems");
     tbody.innerHTML = "";
@@ -811,13 +902,11 @@ async function editPurchaseBill(id) {
       row.innerHTML = `
         <td><input class="itemCode" value="${escapeHtml(item.item_code || "")}" placeholder="Blank = auto-generate"></td>
         <td><input class="description" value="${escapeHtml(item.description || "")}" placeholder="Description"></td>
-        <td><input class="hsn" value="${escapeHtml(item.hsn_code || "")}" placeholder="HSN"></td>
+        <td><input class="hsn" value="${escapeHtml(item.hsn_code || "5407")}" placeholder="HSN"></td>
         <td><input class="category" value="${escapeHtml(item.category || "")}" placeholder="Category"></td>
         <td><input class="qty" type="number" min="1" value="${Number(item.qty || 1)}" oninput="calculateTotal()"></td>
         <td><input class="mrp" type="number" min="0" step="0.01" value="${Number(item.mrp || 0)}" placeholder="MRP"></td>
-        <td><input class="rate" type="number" min="0" step="0.01" value="${Number(item.rate || 0)}" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
-        <td><input class="sellingPrice" type="number" min="0" step="0.01" value="${Number(item.selling_price || 0)}" placeholder="Selling Price"></td>
-        <td><input class="gst" type="number" min="0" step="0.01" value="${Number(item.gst_rate || 0)}" oninput="calculateTotal()"></td>
+        <td><input class="rate" type="number" min="0" step="0.01" value="${Number(item.rate || item.purchase_rate || 0)}" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
         <td class="amount">₹${Number(item.amount || 0).toFixed(2)}</td>
         <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
       `;
@@ -878,6 +967,61 @@ document.getElementById("billSearch").addEventListener("keydown", event => {
   }
 });
 
+function resetForNewPurchase(){
+  const formIds = [
+    'supplier',
+    'supplierGstin',
+    'invoiceNumber',
+    'supplierState',
+    'reference'
+  ];
+
+  formIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  document.getElementById('invoiceDate').value =
+    new Date().toISOString().slice(0,10);
+
+  document.getElementById('uniqueBillNumber').value =
+    generateUniqueBillNumber();
+
+  document.getElementById('dealerDiscount').value = '0';
+  document.getElementById('extraCharges').value = '0';
+  document.getElementById('totalGstAmount').value = '0';
+
+  const tbody = document.getElementById('purchaseItems');
+  tbody.innerHTML = '';
+
+  addItem();
+
+  const confirmBtn = document.getElementById('confirmBtn');
+  delete confirmBtn.dataset.editId;
+  delete confirmBtn.dataset.editing;
+  confirmBtn.textContent = '✓ Confirm & Add to Inventory';
+
+  document.getElementById('labelsPanel').style.display = 'none';
+
+  setPurchaseMessage(
+    'Purchase saved. The form is ready for a new bill.'
+  );
+
+  calculateTotal();
+}
+
+
+function syncDescriptionsToSupplier(){
+  const supplier =
+    document.getElementById('supplier')?.value.trim() || '';
+
+  document.querySelectorAll('#purchaseItems .description')
+    .forEach(input => {
+      input.value = supplier;
+    });
+}
+
+
 function clearForm(){
   document.getElementById('purchaseItems').innerHTML = '';
   document.getElementById('dealerDiscount').value = '0';
@@ -891,6 +1035,9 @@ function clearForm(){
 }
 
 document.getElementById('uniqueBillNumber').value = generateUniqueBillNumber();
+
+document.getElementById('supplier').addEventListener('input', syncDescriptionsToSupplier);
+
 calculateTotal();
 </script>
 

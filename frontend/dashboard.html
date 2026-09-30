@@ -3,816 +3,957 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — Rajastani Saree</title>
+<title>Rajastani Saree — Billing &amp; Inventory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --maroon: #5E1620;
-  --maroon-dark: #3E0E15;
-  --maroon-light: #8B3A47;
-  --gold: #C9A24A;
-  --gold-light: #E7D6A2;
-  --gold-lighter: #F5EFE0;
-  --cream: #FBF8F2;
-  --ink: #2B1210;
-  --ink-soft: #6B5C56;
-  --line: #E9DFCD;
-  --header-h: 72px;
-  --transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  --transition-fast: all 0.15s ease;
+
+:root{
+  --maroon:#123C35;
+  --maroon-2:#1B5A4E;
+  --maroon-dark:#092A25;
+  --gold:#C7A15A;
+  --gold-2:#F0D9A2;
+  --cream:#F3F1EB;
+  --paper:#FFFDF8;
+  --ink:#17221F;
+  --muted:#6C7773;
+  --line:rgba(18,60,53,.10);
+  --line-strong:rgba(18,60,53,.17);
+  --success:#197A5B;
+  --danger:#A63D45;
+  --shadow-sm:0 6px 22px rgba(16,42,37,.07);
+  --shadow-md:0 18px 46px rgba(16,42,37,.11);
+  --shadow-lg:0 30px 75px rgba(16,42,37,.17);
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:22px;
+  --radius-xl:28px;
+  --header-h:76px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --fs-xs:12px;
+  --fs-sm:14px;
+  --fs-md:16px;
+  --fs-lg:21px;
+  --fs-xl:28px;
+  --fs-2xl:40px;
 }
-
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
-body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #FBF8F2 0%, #F5EFE0 100%);
-  color: var(--ink);
-  min-height: 100vh;
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;padding:0}
+body{
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 90% 0%,rgba(199,161,90,.15),transparent 28rem),
+    radial-gradient(circle at 5% 45%,rgba(27,90,78,.07),transparent 30rem),
+    linear-gradient(180deg,#faf9f5 0%,var(--cream) 100%);
+  color:var(--ink);
+  min-height:100vh;
 }
-
-/* HEADER */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  height: var(--header-h);
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFFDF9 100%);
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 8px 32px rgba(94, 22, 32, 0.08);
-  backdrop-filter: blur(10px);
+body:before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background-image:radial-gradient(rgba(18,60,53,.040) .7px,transparent .7px);
+  background-size:18px 18px;
+  mask-image:linear-gradient(to bottom,black,transparent 75%);
 }
+a{color:inherit}
+button,input{font:inherit}
+button{outline:none}
+::selection{background:rgba(201,162,74,.35);color:var(--maroon-dark)}
 
-.header-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  height: 100%;
-  padding: 0 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+.site-header{
+  position:sticky;top:0;z-index:1000;height:var(--header-h);
+  background:rgba(250,249,245,.86);
+  backdrop-filter:blur(20px) saturate(150%);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  border-bottom:1px solid rgba(100,23,34,.09);
+  box-shadow:0 8px 30px rgba(16,42,37,.06);
 }
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  text-decoration: none;
-  color: var(--maroon);
-  flex-shrink: 0;
-  transition: var(--transition-fast);
+.header-inner{
+  max-width:1360px;margin:auto;height:100%;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:24px
 }
-
-.brand:hover { transform: translateY(-2px); }
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
+.brand svg{filter:drop-shadow(0 5px 10px rgba(201,162,74,.22));transition:transform .45s var(--ease)}
+.brand:hover svg{transform:rotate(-7deg) scale(1.08)}
+.brand-text{display:flex;flex-direction:column;line-height:1}
+.brand-name{
+  font-family:"Playfair Display",serif;font-weight:700;font-size:20px;
+  letter-spacing:.4px;color:var(--maroon);white-space:nowrap
 }
+.brand-sub{font-size:10px;letter-spacing:1.8px;color:var(--gold);margin-top:5px;font-weight:700}
 
-.brand-name {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: 0.5px;
-  color: var(--maroon);
-  white-space: nowrap;
+.primary-nav{display:flex;align-items:center;gap:5px;flex:1;justify-content:center}
+.nav-link{
+  position:relative;display:flex;align-items:center;gap:7px;padding:11px 15px;
+  font-size:13px;font-weight:650;color:var(--muted);text-decoration:none;
+  border-radius:12px;white-space:nowrap;transition:all .25s var(--ease)
 }
-
-.brand-sub {
-  font-size: 10px;
-  letter-spacing: 1.6px;
-  color: var(--gold);
-  margin-top: 2px;
-  font-weight: 600;
-  text-transform: uppercase;
+.nav-link:before{
+  content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(201,162,74,.12),rgba(100,23,34,.04));
+  opacity:0;transform:scale(.92);transition:.25s var(--ease)
 }
-
-.primary-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  justify-content: center;
+.nav-link:hover{color:var(--maroon);transform:translateY(-1px)}
+.nav-link:hover:before{opacity:1;transform:scale(1)}
+.nav-link.is-active{color:var(--maroon);font-weight:750}
+.nav-link.is-active:after{
+  content:"";position:absolute;left:18px;right:18px;bottom:1px;height:3px;
+  background:linear-gradient(90deg,var(--gold),var(--maroon));
+  border-radius:10px;box-shadow:0 2px 9px rgba(201,162,74,.35)
 }
+.nav-link>*{position:relative;z-index:1}
 
-.nav-link {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink-soft);
-  text-decoration: none;
-  border-radius: 10px;
-  white-space: nowrap;
-  transition: var(--transition-fast);
-  overflow: hidden;
+.header-actions{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.icon-btn,.menu-toggle{
+  width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);background:rgba(255,255,255,.72);
+  color:var(--muted);border-radius:13px;cursor:pointer;position:relative;
+  transition:all .25s var(--ease);text-decoration:none
 }
-
-.nav-link:hover {
-  color: var(--maroon);
-  background: var(--gold-lighter);
-  transform: translateY(-2px);
+.icon-btn:hover,.menu-toggle:hover{
+  color:var(--maroon);border-color:rgba(201,162,74,.7);
+  background:#fff;transform:translateY(-2px);box-shadow:var(--shadow-sm)
 }
-
-.nav-link.is-active {
-  color: var(--maroon);
-  font-weight: 600;
-  background: linear-gradient(135deg, var(--gold-lighter), var(--cream));
-  box-shadow: inset 0 2px 8px rgba(201, 162, 74, 0.2);
+.icon-btn:active,.menu-toggle:active{transform:translateY(0) scale(.96)}
+.badge-dot{
+  position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;
+  background:#e03b45;border:2px solid #fff;box-shadow:0 0 0 4px rgba(224,59,69,.10);
+  animation:pulseDot 2s infinite
 }
-
-.nav-link.is-active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 18px;
-  right: 18px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--gold), var(--maroon));
-  border-radius: 3px 3px 0 0;
+.btn-primary{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 18px;background:linear-gradient(135deg,#1D6A5B,#0F4038);
+  color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:13px;
+  font-size:13px;font-weight:750;cursor:pointer;white-space:nowrap;text-decoration:none;
+  box-shadow:0 9px 20px rgba(9,42,37,.22);
+  transition:all .28s var(--ease);position:relative;overflow:hidden
 }
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+.btn-primary:before{
+  content:"";position:absolute;inset:-2px -40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+  transform:translateX(-70%) skewX(-18deg);transition:transform .65s var(--ease)
 }
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 15px 30px rgba(9,42,37,.30)}
+.btn-primary:hover:before{transform:translateX(70%) skewX(-18deg)}
+.btn-primary:active{transform:translateY(0) scale(.98)}
+.avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(145deg,#f2e3b6,#c9a24a);
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Playfair Display",serif;font-weight:700;font-size:13px;
+  color:var(--maroon-dark);cursor:pointer;border:3px solid #fff;
+  box-shadow:0 7px 18px rgba(100,23,34,.12);transition:.3s var(--ease)
+}
+.avatar:hover{transform:translateY(-2px) rotate(3deg);box-shadow:0 12px 25px rgba(100,23,34,.18)}
+.menu-toggle{display:none}
+.menu-toggle span,.menu-toggle span:before,.menu-toggle span:after{
+  display:block;width:19px;height:2px;background:var(--maroon);position:relative;transition:.25s
+}
+.menu-toggle span:before,.menu-toggle span:after{content:"";position:absolute;left:0}
+.menu-toggle span:before{top:-6px}.menu-toggle span:after{top:6px}
+.menu-toggle.open span{background:transparent}
+.menu-toggle.open span:before{top:0;transform:rotate(45deg)}
+.menu-toggle.open span:after{top:0;transform:rotate(-45deg)}
 
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  border: 1.5px solid var(--line);
-  background: linear-gradient(135deg, #FFF 0%, var(--cream) 100%);
-  color: var(--ink-soft);
-  cursor: pointer;
+.mobile-panel{
+  display:none;position:fixed;top:var(--header-h);left:0;right:0;bottom:0;
+  background:rgba(35,13,17,.42);z-index:999;opacity:0;pointer-events:none;
+  backdrop-filter:blur(7px);transition:opacity .25s
+}
+.mobile-panel.open{opacity:1;pointer-events:auto}
+.mobile-sheet{
+  background:rgba(255,253,249,.98);max-height:100%;overflow-y:auto;
+  padding:16px;border-bottom:1px solid var(--line);transform:translateY(-12px);
+  transition:transform .3s var(--ease);box-shadow:var(--shadow-lg)
+}
+.mobile-panel.open .mobile-sheet{transform:translateY(0)}
+.mobile-sheet .nav-link{width:100%;padding:14px 13px;justify-content:space-between}
+.mobile-sheet .nav-link.is-active:after{display:none}
+.mobile-sheet .nav-link.is-active{background:#fbf3e4}
+.mobile-divider{height:1px;background:var(--line);margin:10px 4px}
+.mobile-actions{display:flex;flex-direction:column;gap:10px;padding:7px 4px 0}
+.mobile-actions .btn-primary{width:100%;padding:14px}
+.mobile-purchase-link{justify-content:center;margin-top:10px}
+
+main{overflow:hidden}
+.page-inner{max-width:1360px;margin:auto;padding:0 28px}
+.greeting-banner{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 78% -10%,rgba(240,217,162,.24),transparent 27rem),
+    radial-gradient(circle at 100% 100%,rgba(199,161,90,.15),transparent 22rem),
+    linear-gradient(135deg,#0C332E 0%,#123C35 48%,#174C42 100%);
+  border-bottom:1px solid rgba(240,217,162,.16)
+}
+.greeting-banner:after{
+  content:"";position:absolute;right:-100px;top:-150px;width:440px;height:440px;border-radius:50%;
+  border:1px solid rgba(201,162,74,.16);box-shadow:0 0 0 40px rgba(201,162,74,.035),0 0 0 80px rgba(201,162,74,.025);
+  pointer-events:none
+}
+.greeting-inner{
+  max-width:1360px;margin:auto;padding:56px 28px 62px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:30px;flex-wrap:wrap;
+  position:relative;z-index:1
+}
+.greeting-date{
+  display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:800;
+  letter-spacing:.8px;color:#F0D9A2;background:rgba(240,217,162,.10);
+  border:1px solid rgba(240,217,162,.22);padding:7px 12px;border-radius:99px;margin-bottom:16px;
+  animation:fadeUp .55s var(--ease) both
+}
+.greeting-title{
+  font-family:"Playfair Display",serif;font-weight:700;font-size:clamp(32px,4vw,var(--fs-2xl));
+  line-height:1.08;color:#F7E9C5;margin:0 0 10px;letter-spacing:-.8px;
+  min-height:44px;animation:fadeUp .6s .05s var(--ease) both
+}
+.greeting-sub{
+  font-size:15px;line-height:1.7;color:rgba(255,255,255,.72);margin:0;max-width:610px;
+  animation:fadeUp .65s .1s var(--ease) both
+}
+.greeting-actions{display:flex;gap:10px;flex-wrap:wrap;animation:fadeUp .65s .16s var(--ease) both}
+.btn-large{padding:14px 21px}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 19px;background:rgba(255,255,255,.08);
+  color:#F7E9C5;border:1px solid var(--line-strong);border-radius:13px;font-size:13px;
+  font-weight:750;cursor:pointer;text-decoration:none;white-space:nowrap;
+  transition:all .28s var(--ease);box-shadow:0 4px 15px rgba(0,0,0,.08)
+}
+.btn-ghost:hover{border-color:rgba(201,162,74,.65);background:#fff;transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.btn-ghost:active{transform:scale(.98)}
+
+.quick-actions{
+  max-width:1360px;margin:-30px auto 0;padding:0 28px;display:grid;
+  grid-template-columns:repeat(4,1fr);gap:15px;position:relative;z-index:3
+}
+.action-tile{
+  min-height:92px;background:rgba(255,253,248,.94);border:1px solid var(--line);
+  border-radius:19px;padding:18px;display:flex;align-items:center;gap:14px;
+  text-decoration:none;box-shadow:var(--shadow-md);transition:all .32s var(--ease);
+  position:relative;overflow:hidden
+}
+.action-tile:after{
+  content:"";position:absolute;inset:auto -20% -80% -20%;height:110px;
+  background:radial-gradient(ellipse,rgba(201,162,74,.16),transparent 70%);
+  opacity:0;transition:.35s
+}
+.action-tile:hover{transform:translateY(-6px);border-color:rgba(201,162,74,.55);box-shadow:0 24px 50px rgba(47,18,22,.13)}
+.action-tile:hover:after{opacity:1}
+.action-icon{
+  width:46px;height:46px;flex-shrink:0;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#fff8e8,#ead5a0);color:var(--maroon);
+  border:1px solid rgba(201,162,74,.2);transition:.3s var(--ease);position:relative;z-index:1
+}
+.action-tile:hover .action-icon{transform:scale(1.08) rotate(-4deg)}
+.action-tile.primary{background:linear-gradient(135deg,#1D6A5B,#0B332D);border-color:#174F45}
+.action-tile.primary .action-icon{background:rgba(255,255,255,.13);color:#fff;border-color:rgba(255,255,255,.12)}
+.action-tile.primary .action-title{color:#fff}.action-tile.primary .action-sub{color:rgba(255,255,255,.68)}
+.action-tile.primary:hover{box-shadow:0 24px 55px rgba(94,22,32,.30);border-color:rgba(232,207,138,.35)}
+.action-title{display:block;font-size:14px;font-weight:800;color:var(--ink);position:relative;z-index:1}
+.action-sub{display:block;font-size:11px;color:var(--muted);margin-top:4px;position:relative;z-index:1}
+
+.kpi-section{padding:42px 0 6px}
+.section-label{
+  display:flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;color:var(--muted);margin:0 0 15px
+}
+.section-label:after{content:"";height:1px;background:var(--line);flex:1}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.kpi-card{
+  background:rgba(255,255,255,.84);border:1px solid var(--line);border-radius:19px;
+  padding:20px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);
+  transition:all .3s var(--ease);animation:fadeUp .55s var(--ease) both
+}
+.kpi-card:nth-child(2){animation-delay:.06s}.kpi-card:nth-child(3){animation-delay:.12s}.kpi-card:nth-child(4){animation-delay:.18s}
+.kpi-card:before{
+  content:"";position:absolute;right:-38px;top:-38px;width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,162,74,.13),transparent 68%);transition:.4s
+}
+.kpi-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-md);border-color:rgba(201,162,74,.42)}
+.kpi-card:hover:before{transform:scale(1.35)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px;position:relative}
+.currency-icon{
+  font-family: Inter, Arial, sans-serif;
   font-size: 18px;
-  transition: var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-}
-
-.icon-btn:hover {
-  border-color: var(--gold);
-  color: var(--maroon);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(201, 162, 74, 0.2);
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-light) 100%);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  text-decoration: none;
-  transition: var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(94, 22, 32, 0.2);
-}
-
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(94, 22, 32, 0.3);
-}
-
-.avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Playfair Display', serif;
   font-weight: 700;
-  font-size: 15px;
-  color: var(--maroon-dark);
-  cursor: pointer;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(201, 162, 74, 0.2);
-  transition: var(--transition-fast);
-}
-
-.avatar:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(201, 162, 74, 0.3);
-}
-
-/* MAIN */
-main { overflow-x: hidden; animation: fadeIn 0.6s ease-out; }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.page-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 32px;
-}
-
-/* GREETING */
-.greeting-banner {
-  background: linear-gradient(135deg, #FFFDF9 0%, var(--gold-lighter) 50%, var(--cream) 100%);
-  border-bottom: 2px solid var(--line);
-  position: relative;
-  overflow: hidden;
-}
-
-.greeting-banner::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(201, 162, 74, 0.15), transparent);
-  animation: float 20s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(30px, -30px); }
-}
-
-.greeting-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 48px 32px 40px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
-}
-
-.greeting-date {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: var(--maroon);
-  background: linear-gradient(135deg, var(--cream), var(--gold-lighter));
-  padding: 8px 16px;
-  border-radius: 50px;
-  margin-bottom: 12px;
-  border: 1px solid var(--line);
-  animation: slideUp 0.6s ease-out 0.1s both;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.greeting-title {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-size: 48px;
-  line-height: 1.1;
-  background: linear-gradient(135deg, var(--maroon), var(--maroon-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0 0 8px;
-  animation: slideUp 0.6s ease-out 0.2s both;
-}
-
-.greeting-sub {
-  font-size: 16px;
-  color: var(--ink-soft);
-  margin: 0;
-  max-width: 600px;
-  animation: slideUp 0.6s ease-out 0.3s both;
-}
-
-.greeting-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  animation: slideUp 0.6s ease-out 0.4s both;
-}
-
-/* QUICK ACTIONS */
-.quick-actions {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 32px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  transform: translateY(-40px);
-  position: relative;
-  z-index: 10;
-}
-
-.action-tile {
-  background: linear-gradient(135deg, #FFF 0%, var(--cream) 100%);
-  border: 1.5px solid var(--line);
-  border-radius: 16px;
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  text-decoration: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-  animation: scaleIn 0.5s ease-out forwards;
-  animation-delay: calc(var(--index) * 0.1s);
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.action-tile:hover {
-  transform: translateY(-8px);
-  border-color: var(--gold);
-  box-shadow: 0 16px 32px rgba(94, 22, 32, 0.12);
-}
-
-.action-tile.primary {
-  background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-light) 100%);
-  border-color: var(--maroon-light);
-}
-
-.action-tile.primary .action-icon {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
-
-.action-tile.primary .action-title { color: #fff; }
-.action-tile.primary .action-sub { color: rgba(255, 255, 255, 0.85); }
-
-.action-icon {
-  width: 52px;
-  height: 52px;
-  flex-shrink: 0;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--gold-lighter), var(--gold-light));
-  color: var(--maroon);
-  font-size: 24px;
-  transition: var(--transition-fast);
-}
-
-.action-tile:hover .action-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.action-title {
-  display: block;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ink);
-  margin: 0;
-}
-
-.action-sub {
-  display: block;
-  font-size: 13px;
-  color: var(--ink-soft);
-  margin-top: 4px;
-}
-
-/* KPI */
-.kpi-section { padding: 60px 0 20px; }
-
-.section-label {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: var(--gold);
-  text-transform: uppercase;
-  margin: 0 0 24px;
-  display: block;
-}
-
-.kpi-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
-
-.kpi-card {
-  background: linear-gradient(135deg, #FFF 0%, var(--cream) 100%);
-  border: 1.5px solid var(--line);
-  border-radius: 16px;
-  padding: 28px;
-  position: relative;
-  overflow: hidden;
-  transition: var(--transition);
-  animation: slideUp 0.6s ease-out forwards;
-  animation-delay: calc(var(--index) * 0.08s);
-}
-
-.kpi-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, var(--gold-lighter), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.kpi-card:hover {
-  transform: translateY(-8px);
-  border-color: var(--gold);
-  box-shadow: 0 16px 32px rgba(94, 22, 32, 0.12);
-}
-
-.kpi-card:hover::before { opacity: 0.3; }
-
-.kpi-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  position: relative;
-  z-index: 1;
-}
-
-.kpi-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--gold-lighter), var(--gold-light));
-  color: var(--maroon);
-  font-size: 20px;
-  transition: var(--transition-fast);
-}
-
-.kpi-card:hover .kpi-icon {
-  transform: scale(1.1) rotate(-5deg);
-}
-
-.kpi-trend {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.kpi-trend.up {
-  color: #1E7A4C;
-  background: linear-gradient(135deg, #E7F5ED, #D4EBE0);
-  border: 1px solid #1E7A4C;
-}
-
-.kpi-trend.down {
-  color: #B23A2E;
-  background: linear-gradient(135deg, #FBEAE7, #F5D4CE);
-  border: 1px solid #B23A2E;
-}
-
-.kpi-trend.flat {
-  color: var(--ink-soft);
-  background: linear-gradient(135deg, #F1EEE7, #E8E0D6);
-}
-
-.kpi-value {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-size: 32px;
-  background: linear-gradient(135deg, var(--maroon), var(--maroon-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   line-height: 1;
-  margin-bottom: 8px;
-  position: relative;
-  z-index: 1;
+}
+.kpi-icon{
+  width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#fff8e9,#f0dfb4);color:var(--maroon);border:1px solid rgba(201,162,74,.17)
+}
+.kpi-trend{font-size:10px;font-weight:800;padding:5px 9px;border-radius:99px}
+.kpi-trend.up{color:var(--success);background:#E7F4EF}.kpi-trend.down{color:var(--danger);background:#F8E9E9}
+.kpi-trend.flat{color:var(--muted);background:#F0F1ED}
+.kpi-value{
+  font-family:"Playfair Display",serif;font-weight:700;font-size:29px;color:var(--maroon);
+  line-height:1;margin-bottom:8px;position:relative;letter-spacing:-.5px
+}
+.kpi-label{font-size:12px;color:var(--muted);font-weight:600;position:relative}
+
+.dashboard-grid{
+  padding:28px 0 76px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(340px,1fr);
+  gap:18px;align-items:start
+}
+.panel{
+  background:rgba(255,254,250,.92);border:1px solid var(--line);border-radius:22px;padding:24px;
+  box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:box-shadow .3s var(--ease)
+}
+.panel:hover{box-shadow:var(--shadow-md)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px}
+.panel-head h2{
+  font-family:"Playfair Display",serif;font-size:20px;font-weight:700;color:var(--maroon);
+  margin:0;letter-spacing:-.2px
+}
+.panel-link{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;
+  color:var(--gold);text-decoration:none;padding:7px 9px;border-radius:9px;transition:.25s
+}
+.panel-link:hover{background:#F7F0DE;color:var(--maroon)}
+.panel-link>span{font-size:17px;line-height:1;transition:.25s}.panel-link:hover>span{transform:translateX(3px)}
+.chart-total{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+.chart-total .amount{font-family:"Playfair Display",serif;font-size:28px;font-weight:700;color:var(--ink)}
+.chart-total .period{font-size:11px;color:var(--muted)}
+.bar-chart{
+  display:flex;align-items:flex-end;gap:13px;height:190px;margin-top:25px;padding:0 3px 2px;
+  border-bottom:1px solid var(--line);position:relative
+}
+.bar-chart:before{
+  content:"";position:absolute;left:0;right:0;top:25%;height:1px;background:rgba(100,23,34,.045);
+  box-shadow:0 47px 0 rgba(100,23,34,.045),0 94px 0 rgba(100,23,34,.045)
+}
+.bar-col{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:9px;height:100%;
+  justify-content:flex-end;min-width:0;position:relative;z-index:1
+}
+.bar{
+  width:100%;max-width:42px;min-height:3px;border-radius:10px 10px 4px 4px;
+  background:linear-gradient(180deg,#F0D9A2,#B98B43);position:relative;
+  transform-origin:bottom;animation:barGrow .85s var(--ease) both;box-shadow:0 5px 12px rgba(201,162,74,.16)
+}
+.bar:after{
+  content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,rgba(255,255,255,.28),transparent 45%,rgba(100,23,34,.06))
+}
+.bar-col:hover .bar{filter:saturate(1.12);transform:scaleX(1.08)}
+.bar-col.is-today .bar{background:linear-gradient(180deg,#4E9A86,#123C35);box-shadow:0 7px 18px rgba(18,60,53,.25)}
+.bar-day{font-size:10px;color:var(--muted);font-weight:650}.bar-col.is-today .bar-day{color:var(--maroon);font-weight:800}
+
+.bill-row,.stock-row{
+  display:flex;align-items:center;justify-content:space-between;padding:13px 0;
+  border-bottom:1px solid var(--line);gap:15px;transition:.22s var(--ease)
+}
+.bill-row:hover,.stock-row:hover{padding-left:7px;padding-right:7px;background:linear-gradient(90deg,rgba(251,243,228,.35),transparent);border-radius:11px}
+.bill-row:last-child,.stock-row:last-child{border-bottom:none;padding-bottom:0}
+.bill-row:first-child,.stock-row:first-child{padding-top:0}
+.bill-id,.stock-name{font-size:13px;font-weight:800;color:var(--ink)}
+.bill-meta,.stock-meta{font-size:10px;color:var(--muted);margin-top:4px}
+.bill-amount{font-size:13px;font-weight:800;color:var(--maroon);text-align:right}
+.bill-status{display:block;font-size:10px;margin-top:4px;text-align:right;font-weight:700}
+.bill-status.paid{color:var(--success)}.bill-status.due{color:var(--danger)}
+.stock-count{
+  font-size:10px;font-weight:800;padding:6px 10px;border-radius:99px;
+  background:#F8E9E9;color:var(--danger);white-space:nowrap;border:1px solid rgba(181,47,56,.08)
+}
+.stock-count.ok{background:#E8F4EF;color:var(--success);border-color:rgba(24,121,78,.10)}
+.side-stack{display:flex;flex-direction:column;gap:18px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes barGrow{from{transform:scaleY(0);opacity:.2}to{transform:scaleY(1);opacity:1}}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 3px rgba(224,59,69,.08)}50%{box-shadow:0 0 0 7px rgba(224,59,69,.02)}}
+
+@media (max-width:1100px){
+  .primary-nav{gap:0}.nav-link{padding:10px 10px;font-size:12px}
+  .quick-actions,.kpi-row{grid-template-columns:repeat(2,1fr)}
+  .dashboard-grid{grid-template-columns:1fr}
+}
+@media (max-width:980px){
+  .primary-nav{display:none}.menu-toggle{display:flex}.mobile-panel{display:block}
+  .header-actions .nav-only-desktop{display:none}
+}
+@media (max-width:640px){
+  :root{--header-h:68px}
+  .header-inner{padding:0 15px;gap:10px}.page-inner{padding:0 15px}
+  .brand-name{font-size:18px}.brand-sub{display:none}
+  .icon-btn.hide-xs{display:none}.avatar{width:39px;height:39px}.menu-toggle{width:39px;height:39px}
+  .btn-primary span.label{display:none}.btn-primary{padding:10px 12px}
+  .greeting-inner{padding:42px 15px 50px}.greeting-title{font-size:32px}
+  .greeting-sub{font-size:13px}.greeting-actions{width:100%}.greeting-actions .btn-ghost{width:100%;justify-content:center}
+  .quick-actions{grid-template-columns:1fr;margin-top:18px;padding:0 15px}
+  .action-tile{min-height:78px}.kpi-section{padding-top:32px}
+  .kpi-row{grid-template-columns:1fr}.dashboard-grid{padding-bottom:50px}
+  .panel{padding:18px;border-radius:18px}.bar-chart{height:155px;gap:8px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-.kpi-label {
-  font-size: 13px;
-  color: var(--ink-soft);
-  position: relative;
-  z-index: 1;
+
+/* ===== PREMIUM RAJASTHANI SAREE ZOOM-OUT TEXT ===== */
+.greeting-title{
+  overflow:hidden;
+  perspective:900px;
 }
 
-/* DASHBOARD GRID */
-.dashboard-grid {
-  padding: 40px 0 80px;
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 24px;
-  align-items: start;
+#typedMain{
+  display:inline-block;
+  transform:scale(1.35);
+  opacity:0;
+  filter:blur(5px);
+  transform-origin:center center;
+  will-change:transform,opacity,filter;
+  animation:brandZoomOut 1.25s cubic-bezier(.16,1,.3,1) .15s forwards;
 }
 
-.panel {
-  background: linear-gradient(135deg, #FFF 0%, var(--cream) 100%);
-  border: 1.5px solid var(--line);
-  border-radius: 16px;
-  padding: 28px;
-  transition: var(--transition);
-  animation: slideUp 0.6s ease-out forwards;
+@keyframes brandZoomOut{
+  0%{
+    transform:scale(1.35);
+    opacity:0;
+    filter:blur(5px);
+  }
+  30%{
+    opacity:1;
+    filter:blur(1.5px);
+  }
+  68%{
+    transform:scale(.98);
+    opacity:1;
+    filter:blur(0);
+  }
+  100%{
+    transform:scale(1);
+    opacity:1;
+    filter:blur(0);
+  }
 }
 
-.panel:hover {
-  border-color: var(--gold);
-  box-shadow: 0 16px 32px rgba(94, 22, 32, 0.12);
+@media (prefers-reduced-motion:reduce){
+  #typedMain{
+    animation:none!important;
+    transform:scale(1)!important;
+    opacity:1!important;
+    filter:none!important;
+  }
 }
 
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1.5px solid var(--line);
+/* ===== FULL-SCREEN PREMIUM LOGO INTRO ===== */
+.brand-intro{
+  position:fixed;inset:0;z-index:10000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:24px;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(240,217,162,.16),transparent 24rem),
+    radial-gradient(circle at 50% 100%,rgba(27,90,78,.30),transparent 35rem),
+    linear-gradient(135deg,#0B3029 0%,#123C35 52%,#174C42 100%);
+  opacity:1;visibility:visible;transform:scale(1);
+  transition:opacity .75s cubic-bezier(.16,1,.3,1),
+             visibility .75s,transform 1.25s cubic-bezier(.16,1,.3,1);
+}
+.brand-intro:before{
+  content:"";position:absolute;width:min(75vw,700px);height:min(75vw,700px);
+  border:1px solid rgba(240,217,162,.14);border-radius:50%;
+  box-shadow:0 0 0 35px rgba(240,217,162,.035),0 0 0 75px rgba(240,217,162,.025);
+  animation:introRing 2.2s cubic-bezier(.16,1,.3,1) forwards;
+}
+.brand-intro-glow{
+  position:absolute;width:280px;height:280px;border-radius:50%;
+  background:rgba(240,217,162,.14);filter:blur(70px);
+  animation:introGlow 2.1s ease-out forwards;
+}
+.brand-intro-logo{
+  position:relative;z-index:2;width:180px;height:180px;
+  display:flex;align-items:center;justify-content:center;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.13),transparent 42%),rgba(255,255,255,.035);
+  border:1px solid rgba(240,217,162,.28);
+  box-shadow:0 0 0 10px rgba(240,217,162,.025),0 25px 80px rgba(0,0,0,.28),inset 0 0 35px rgba(240,217,162,.05);
+  animation:introLogoIn 1.15s cubic-bezier(.16,1,.3,1) both;
+}
+.brand-intro-logo svg{
+  width:115px;height:115px;
+  filter:drop-shadow(0 0 10px rgba(240,217,162,.45)) drop-shadow(0 12px 22px rgba(0,0,0,.25));
+  animation:introLogoFloat 2s ease-in-out .8s infinite alternate;
+}
+.brand-intro-name{
+  position:relative;z-index:2;font-family:"Playfair Display",serif;
+  font-size:clamp(22px,4vw,42px);font-weight:700;letter-spacing:7px;
+  color:#F0D9A2;text-align:center;text-shadow:0 5px 25px rgba(0,0,0,.3);
+  animation:introNameIn 1s cubic-bezier(.16,1,.3,1) .25s both;
+}
+.brand-intro.is-exiting{
+  opacity:0;transform:scale(2.8);pointer-events:none;
+}
+.brand-intro.is-hidden{visibility:hidden;display:none}
+
+@keyframes introLogoIn{
+  0%{opacity:0;transform:scale(.45) rotate(-8deg);filter:blur(10px)}
+  65%{opacity:1;transform:scale(1.04) rotate(1deg);filter:blur(0)}
+  100%{opacity:1;transform:scale(1) rotate(0);filter:blur(0)}
+}
+@keyframes introLogoFloat{
+  from{transform:translateY(-4px)}to{transform:translateY(4px)}
+}
+@keyframes introNameIn{
+  0%{opacity:0;transform:translateY(18px);letter-spacing:14px;filter:blur(5px)}
+  100%{opacity:1;transform:translateY(0);letter-spacing:7px;filter:blur(0)}
+}
+@keyframes introRing{
+  0%{transform:scale(.35);opacity:0}45%{opacity:1}100%{transform:scale(1);opacity:.8}
+}
+@keyframes introGlow{
+  0%{transform:scale(.35);opacity:0}55%{opacity:.8}100%{transform:scale(1.3);opacity:.25}
+}
+@media (max-width:640px){
+  .brand-intro-logo{width:145px;height:145px}
+  .brand-intro-logo svg{width:92px;height:92px}
+  .brand-intro-name{font-size:20px;letter-spacing:4px}
+}
+@media (prefers-reduced-motion:reduce){
+  .brand-intro{transition:none}
+  .brand-intro-logo,.brand-intro-logo svg,.brand-intro-name,
+  .brand-intro:before,.brand-intro-glow{animation:none!important}
 }
 
-.panel-head h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--maroon), var(--maroon-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0;
+
+/* ===== CONSISTENT EMERALD HERO ===== */
+.greeting-banner{
+  background:
+    radial-gradient(circle at 78% -10%,rgba(240,217,162,.22),transparent 27rem),
+    radial-gradient(circle at 100% 100%,rgba(199,161,90,.14),transparent 22rem),
+    linear-gradient(135deg,#0B3029 0%,#123C35 48%,#174C42 100%) !important;
+  border-bottom:1px solid rgba(240,217,162,.16) !important;
 }
 
-.panel-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gold);
-  text-decoration: none;
-  transition: var(--transition-fast);
+.greeting-banner:after{
+  border-color:rgba(240,217,162,.14) !important;
 }
 
-.panel-link:hover {
-  color: var(--maroon);
-  gap: 10px;
+/* ===== PREMIUM INTERACTION SYSTEM ===== */
+button,
+.btn-primary,
+.btn-ghost,
+.icon-btn,
+.menu-toggle,
+.action-tile,
+.panel-link,
+.nav-link,
+.avatar{
+  -webkit-tap-highlight-color:transparent;
 }
 
-.chart-total {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 8px;
+button,
+.btn-primary,
+.btn-ghost,
+.icon-btn,
+.menu-toggle{
+  transition:
+    transform .25s cubic-bezier(.2,.8,.2,1),
+    box-shadow .25s cubic-bezier(.2,.8,.2,1),
+    border-color .25s ease,
+    background .25s ease,
+    color .25s ease;
 }
 
-.chart-total .amount {
-  font-family: 'Playfair Display', serif;
-  font-size: 36px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--maroon), var(--maroon-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+button:hover,
+.btn-primary:hover,
+.btn-ghost:hover,
+.icon-btn:hover,
+.menu-toggle:hover{
+  transform:translateY(-3px);
 }
 
-.chart-total .period {
-  font-size: 13px;
-  color: var(--ink-soft);
+button:active,
+.btn-primary:active,
+.btn-ghost:active,
+.icon-btn:active,
+.menu-toggle:active{
+  transform:translateY(0) scale(.96);
 }
 
-.bar-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  height: 180px;
-  margin-top: 28px;
-  padding: 0 2px;
+/* Strong premium button shine */
+.btn-primary,
+.btn-ghost{
+  overflow:hidden;
 }
 
-.bar-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  height: 100%;
-  justify-content: flex-end;
-  animation: slideUp 0.6s ease-out forwards;
-  animation-delay: calc(var(--index) * 0.06s);
+.btn-primary:after,
+.btn-ghost:after{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:45%;
+  left:-65%;
+  transform:skewX(-18deg);
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.22),
+    transparent
+  );
+  transition:left .55s cubic-bezier(.2,.8,.2,1);
+  pointer-events:none;
 }
 
-.bar {
-  width: 100%;
-  max-width: 38px;
-  border-radius: 8px 8px 4px 4px;
-  background: linear-gradient(180deg, var(--gold-light), var(--gold));
-  position: relative;
-  overflow: hidden;
-  transition: var(--transition-fast);
-  box-shadow: 0 4px 12px rgba(201, 162, 74, 0.2);
+.btn-primary:hover:after,
+.btn-ghost:hover:after{
+  left:125%;
 }
 
-.bar-col:hover .bar {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(201, 162, 74, 0.3);
+/* ===== ALL ACTION TILES ===== */
+.action-tile{
+  cursor:pointer;
+}
+.action-tile:hover{
+  transform:translateY(-7px) scale(1.012);
+  box-shadow:0 25px 52px rgba(16,42,37,.15);
+}
+.action-tile:active{
+  transform:translateY(-1px) scale(.985);
 }
 
-.bar-col.is-today .bar {
-  background: linear-gradient(180deg, #9B2C3B, var(--maroon));
-  box-shadow: 0 4px 12px rgba(94, 22, 32, 0.3);
+/* ===== KPI CARDS ===== */
+.kpi-card{
+  cursor:default;
+}
+.kpi-card:hover{
+  transform:translateY(-6px);
 }
 
-.bar-day {
-  font-size: 12px;
-  color: var(--ink-soft);
-  font-weight: 500;
+/* ===== PANELS ===== */
+.panel-link{
+  transition:
+    transform .22s ease,
+    background .22s ease,
+    color .22s ease,
+    padding .22s ease;
+}
+.panel-link:hover{
+  transform:translateX(3px);
 }
 
-.bar-col.is-today .bar-day {
-  color: var(--maroon);
-  font-weight: 700;
+/* ===== SALES BARS ===== */
+.bar{
+  cursor:pointer;
+  transition:
+    transform .28s cubic-bezier(.2,.8,.2,1),
+    filter .28s ease,
+    box-shadow .28s ease;
+}
+.bar:hover{
+  transform:scaleX(1.14) translateY(-3px);
+  filter:brightness(1.08) saturate(1.15);
+  box-shadow:0 10px 24px rgba(18,60,53,.24);
+}
+.bar-col:hover .bar-day{
+  color:var(--maroon);
+  font-weight:800;
+  transform:translateY(-2px);
+}
+.bar-day{
+  transition:color .22s ease,transform .22s ease;
 }
 
-.bill-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-  transition: var(--transition-fast);
+/* ===== BILL / STOCK ROW HOVER ===== */
+.bill-row,
+.stock-row{
+  cursor:default;
+  transition:
+    transform .22s ease,
+    background .22s ease,
+    padding .22s ease,
+    box-shadow .22s ease;
+}
+.bill-row:hover,
+.stock-row:hover{
+  transform:translateX(3px);
+  box-shadow:inset 3px 0 0 var(--gold);
 }
 
-.bill-row:last-child { border-bottom: none; padding-bottom: 0; }
-.bill-row:first-of-type { padding-top: 0; }
-
-.bill-row:hover {
-  background: linear-gradient(90deg, transparent, var(--gold-lighter));
-  padding-left: 8px;
-  margin-left: -8px;
-  padding-right: 8px;
-  margin-right: -8px;
-  border-radius: 8px;
+/* ===== NAV HOVER ===== */
+.nav-link:hover{
+  transform:translateY(-2px);
 }
 
-.bill-id {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--maroon);
+/* ===== MOBILE TOUCH FRIENDLY ===== */
+@media (max-width:640px){
+  .btn-primary,
+  .btn-ghost,
+  .icon-btn,
+  .menu-toggle{
+    min-height:44px;
+  }
+
+  .action-tile{
+    min-height:82px;
+  }
+
+  .bar{
+    max-width:34px;
+  }
+
+  .greeting-banner{
+    background:
+      radial-gradient(circle at 80% 0%,rgba(240,217,162,.18),transparent 20rem),
+      linear-gradient(145deg,#0B3029,#123C35 65%,#174C42) !important;
+  }
 }
 
-.bill-meta {
-  font-size: 12px;
-  color: var(--ink-soft);
-  margin-top: 3px;
+/* Disable hover movement on devices without a hover pointer. */
+@media (hover:none){
+  .action-tile:hover,
+  .kpi-card:hover,
+  .btn-primary:hover,
+  .btn-ghost:hover,
+  .icon-btn:hover,
+  .menu-toggle:hover,
+  .nav-link:hover{
+    transform:none;
+  }
 }
 
-.bill-amount {
-  font-size: 15px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--maroon), var(--maroon-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: right;
+
+/* ===== RECENT BILL VIEW POPUP ===== */
+.bill-row.bill-clickable{
+  cursor:pointer;
+  position:relative;
+}
+.bill-row.bill-clickable::after{
+  content:'View bill';
+  position:absolute;
+  right:0;
+  top:50%;
+  transform:translateY(-50%) translateX(8px);
+  opacity:0;
+  pointer-events:none;
+  padding:6px 10px;
+  border-radius:999px;
+  background:var(--maroon);
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.02em;
+  transition:opacity .2s ease,transform .2s ease;
+}
+.bill-row.bill-clickable:hover::after{
+  opacity:1;
+  transform:translateY(-50%) translateX(0);
+}
+.bill-row.bill-clickable:hover{
+  padding-right:82px;
 }
 
-.bill-status {
-  display: block;
-  font-size: 11px;
-  margin-top: 3px;
-  text-align: right;
-  font-weight: 600;
+.bill-modal{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  background:rgba(5,24,21,.68);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .25s ease,visibility .25s ease;
+}
+.bill-modal.is-open{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+.bill-modal-card{
+  width:min(920px,100%);
+  max-height:min(92vh,900px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:var(--paper);
+  border:1px solid rgba(199,161,90,.28);
+  border-radius:24px;
+  box-shadow:0 30px 90px rgba(0,0,0,.3);
+  transform:translateY(18px) scale(.97);
+  transition:transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.bill-modal.is-open .bill-modal-card{
+  transform:translateY(0) scale(1);
+}
+.bill-modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:18px 20px;
+  background:linear-gradient(135deg,#0B3029,#123C35 55%,#174C42);
+  color:#fff;
+}
+.bill-modal-title-wrap{min-width:0}
+.bill-modal-kicker{
+  margin:0 0 4px;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  color:var(--gold-2);
+  font-weight:800;
+}
+.bill-modal-title{
+  margin:0;
+  font-size:20px;
+  font-weight:900;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.bill-modal-close{
+  width:40px;
+  height:40px;
+  flex:0 0 40px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:12px;
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  font-size:22px;
+  cursor:pointer;
+  transition:transform .2s ease,background .2s ease;
+}
+.bill-modal-close:hover{transform:rotate(4deg) scale(1.05);background:rgba(255,255,255,.18)}
+.bill-modal-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  padding:14px 20px;
+  background:#fffdf8;
+  border-bottom:1px solid rgba(23,34,31,.08);
+}
+.bill-summary-item{
+  padding:10px 12px;
+  border:1px solid rgba(23,34,31,.08);
+  border-radius:12px;
+  background:#fff;
+}
+.bill-summary-label{
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  font-weight:800;
+}
+.bill-summary-value{
+  margin-top:4px;
+  font-size:13px;
+  font-weight:850;
+  color:var(--ink);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.bill-modal-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  padding:12px 20px;
+  border-bottom:1px solid rgba(23,34,31,.08);
+  background:#fff;
+}
+.bill-view-button,.bill-newtab-button{
+  border:0;
+  min-height:40px;
+  padding:0 16px;
+  border-radius:12px;
+  font:inherit;
+  font-size:12px;
+  font-weight:850;
+  cursor:pointer;
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
+}
+.bill-view-button{
+  background:linear-gradient(135deg,#123C35,#1B5A4E);
+  color:#fff;
+  box-shadow:0 8px 20px rgba(18,60,53,.18);
+}
+.bill-newtab-button{
+  background:#f3f1eb;
+  color:var(--ink);
+}
+.bill-view-button:hover,.bill-newtab-button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 24px rgba(0,0,0,.12);
+}
+.bill-invoice-frame-wrap{
+  position:relative;
+  flex:1;
+  min-height:420px;
+  background:#e9e7e0;
+}
+.bill-invoice-frame{
+  display:block;
+  width:100%;
+  height:58vh;
+  min-height:420px;
+  border:0;
+  background:#fff;
+}
+.bill-frame-placeholder{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:700;
+  pointer-events:none;
+}
+.bill-modal:not(.has-invoice) .bill-invoice-frame{visibility:hidden}
+.bill-modal.has-invoice .bill-frame-placeholder{display:none}
+@media(max-width:700px){
+  .bill-modal{padding:10px}
+  .bill-modal-card{border-radius:18px;max-height:96vh}
+  .bill-modal-summary{grid-template-columns:1fr 1fr;padding:10px 12px}
+  .bill-modal-actions{padding:10px 12px;flex-wrap:wrap}
+  .bill-view-button,.bill-newtab-button{flex:1;min-width:130px}
+  .bill-invoice-frame{height:62vh;min-height:360px}
+  .bill-row.bill-clickable::after{display:none}
+  .bill-row.bill-clickable:hover{padding-right:0}
+}
+@media(hover:none){
+  .bill-view-button:hover,.bill-newtab-button:hover,.bill-modal-close:hover{transform:none}
 }
 
-.bill-status.paid { color: #1E7A4C; }
-.bill-status.due { color: #B23A2E; }
-
-.stock-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-  transition: var(--transition-fast);
-}
-
-.stock-row:last-child { border-bottom: none; padding-bottom: 0; }
-.stock-row:first-of-type { padding-top: 0; }
-
-.stock-row:hover {
-  background: linear-gradient(90deg, transparent, var(--gold-lighter));
-  padding-left: 8px;
-  margin-left: -8px;
-  padding-right: 8px;
-  margin-right: -8px;
-  border-radius: 8px;
-}
-
-.stock-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--maroon);
-}
-
-.stock-meta {
-  font-size: 12px;
-  color: var(--ink-soft);
-  margin-top: 3px;
-}
-
-.stock-count {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #FBEAE7, #F5D4CE);
-  color: #B23A2E;
-  white-space: nowrap;
-  border: 1px solid #B23A2E;
-}
-
-.stock-count.ok {
-  background: linear-gradient(135deg, var(--gold-lighter), var(--gold-light));
-  color: var(--maroon);
-  border-color: var(--gold);
-}
-
-.side-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .dashboard-grid { grid-template-columns: 1fr; }
-  .quick-actions { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .greeting-inner { padding: 40px 24px 32px; }
-  .greeting-title { font-size: 36px; }
-}
-
-@media (max-width: 768px) {
-  .kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .greeting-title { font-size: 28px; }
-  .page-inner, .greeting-inner, .quick-actions { padding-left: 20px; padding-right: 20px; }
-  .header-inner { padding: 0 20px; }
-}
-
-@media (max-width: 480px) {
-  .kpi-row { grid-template-columns: 1fr; }
-  .greeting-title { font-size: 24px; }
-  .quick-actions { gap: 16px; transform: translateY(-20px); }
-  .action-tile { flex-direction: column; text-align: center; }
-}
 </style>
 </head>
 <body>
+<!-- ===== PREMIUM LOGO INTRO ===== -->
+<div id="brandIntro" class="brand-intro" aria-label="Rajasthani Saree">
+  <div class="brand-intro-glow"></div>
+  <div class="brand-intro-logo" aria-hidden="true">
+    <svg width="150" height="150" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3"
+        stroke="#F0D9A2" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="17" cy="19" r="6.5" fill="#F0D9A2" fill-opacity="0.12" stroke="#F0D9A2" stroke-width="1.6"/>
+      <circle cx="17" cy="19" r="2.3" fill="#F0D9A2"/>
+    </svg>
+  </div>
+  <div class="brand-intro-name">RAJASTHANI SAREE</div>
+</div>
+
 
 <header class="site-header">
   <div class="header-inner">
-    <a href="dashboard.html" class="brand">
-      <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3" stroke="#C9A24A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <a href="dashboard.html" class="brand" aria-label="Rajastani Saree home">
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3" stroke="#C9A24A" stroke-width="2" stroke-linecap="round"/>
         <circle cx="17" cy="19" r="6.5" fill="#C9A24A" fill-opacity="0.12" stroke="#C9A24A" stroke-width="1.6"/>
         <circle cx="17" cy="19" r="2.3" fill="#C9A24A"/>
       </svg>
       <span class="brand-text">
-        <span class="brand-name">Rajastani Saree</span>
-        <span class="brand-sub">Billing & Inventory</span>
+        <span class="brand-name">Rajastani&nbsp;Saree</span>
+        <span class="brand-sub">Billing &amp; Inventory</span>
       </span>
     </a>
 
-    <nav class="primary-nav">
+    <nav class="primary-nav" aria-label="Primary">
       <a href="dashboard.html" class="nav-link is-active">Dashboard</a>
       <a href="billing.html" class="nav-link">New Bill</a>
       <a href="inventory.html" class="nav-link">Inventory</a>
@@ -821,122 +962,197 @@ main { overflow-x: hidden; animation: fadeIn 0.6s ease-out; }
     </nav>
 
     <div class="header-actions">
-      <button class="icon-btn" aria-label="Search">🔍</button>
-      <button class="icon-btn" aria-label="Notifications">🔔</button>
-      <a class="btn-primary" href="billing.html">
-        <span>➕</span>
-        <span>New Bill</span>
+      <a href="reports.html" class="icon-btn hide-xs nav-only-desktop" aria-label="Reports" title="Reports">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </a>
-      <div class="avatar">MS</div>
+      <a href="inventory.html" class="icon-btn hide-xs" aria-label="Low stock alerts" title="Low stock alerts">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M10.3 3.9L2.7 18a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="badge-dot" id="headerAlertDot" style="display:none"></span>
+      </a>
+
+      <div class="avatar" title="Meera Sharma, Store Manager">MS</div>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+      </button>
     </div>
+
   </div>
 </header>
 
+<div class="mobile-panel" id="mobilePanel">
+  <div class="mobile-sheet">
+    <a href="dashboard.html" class="nav-link is-active">Dashboard</a>
+    <a href="billing.html" class="nav-link">New Bill</a>
+    <a href="inventory.html" class="nav-link">Inventory</a>
+    <a href="purchase.html" class="nav-link">Purchase Bill</a>
+    <a href="reports.html" class="nav-link">Reports</a>
+    <div class="mobile-divider"></div>
+    <div class="mobile-actions">
+      <a href="billing.html" class="btn-primary">＋ New Bill</a>
+      <a href="purchase.html" class="btn-ghost mobile-purchase-link">Upload Purchase Bill</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RECENT BILL VIEW MODAL ===== -->
+<div id="billViewModal" class="bill-modal" aria-hidden="true">
+  <div class="bill-modal-card" role="dialog" aria-modal="true" aria-labelledby="billModalTitle">
+    <div class="bill-modal-head">
+      <div class="bill-modal-title-wrap">
+        <p class="bill-modal-kicker">Recent bill</p>
+        <h3 id="billModalTitle" class="bill-modal-title">Bill</h3>
+      </div>
+      <button type="button" class="bill-modal-close" id="billModalClose" aria-label="Close bill preview">×</button>
+    </div>
+
+    <div class="bill-modal-summary">
+      <div class="bill-summary-item">
+        <div class="bill-summary-label">Customer</div>
+        <div class="bill-summary-value" id="billModalCustomer">—</div>
+      </div>
+      <div class="bill-summary-item">
+        <div class="bill-summary-label">Total</div>
+        <div class="bill-summary-value" id="billModalTotal">₹0</div>
+      </div>
+      <div class="bill-summary-item">
+        <div class="bill-summary-label">Status</div>
+        <div class="bill-summary-value" id="billModalStatus">—</div>
+      </div>
+    </div>
+
+    <div class="bill-modal-actions">
+      <button type="button" class="bill-newtab-button" id="billNewTabButton">↗ Open in new tab</button>
+      <button type="button" class="bill-view-button" id="billViewButton">View Bill</button>
+    </div>
+
+    <div class="bill-invoice-frame-wrap">
+      <div class="bill-frame-placeholder" id="billFramePlaceholder">Click “View Bill” to load the invoice.</div>
+      <iframe id="billInvoiceFrame" class="bill-invoice-frame" title="Bill invoice preview"></iframe>
+    </div>
+  </div>
+</div>
+
 <main>
+
   <section class="greeting-banner">
     <div class="greeting-inner">
       <div>
         <span class="greeting-date">
-          <span>📅</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <span id="todayDate">—</span>
         </span>
-        <h1 class="greeting-title">Welcome back! 👋</h1>
-        <p class="greeting-sub">Here's how the shop is doing today — quick actions below, full insights waiting.</p>
+        <h1 class="greeting-title" aria-label="Welcome to Rajasthani Saree"><span id="typedMain" aria-hidden="true"></span></h1>
+        <p class="greeting-sub">Here's how the shop is doing today — quick actions on the right, full numbers below.</p>
       </div>
 
       <div class="greeting-actions">
-        <a href="billing.html" class="btn-primary">
-          <span>➕</span> New Bill
-        </a>
-        <a href="purchase.html" class="btn-primary" style="background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%); color: var(--maroon);">
-          <span>📦</span> Add Stock
-        </a>
+        <a href="purchase.html" class="btn-ghost">Add Stock</a>
       </div>
     </div>
   </section>
 
   <div class="quick-actions">
-    <a href="billing.html" class="action-tile primary" style="--index: 0">
-      <span class="action-icon">🛒</span>
+    <a href="billing.html" class="action-tile primary">
+      <span class="action-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M9 2h6l1 4H8l1-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 6h12l1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L6 6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
       <span>
-        <span class="action-title">Create Bill</span>
+        <span class="action-title">New Bill</span>
         <span class="action-sub">Start a new sale</span>
       </span>
     </a>
 
-    <a href="purchase.html" class="action-tile" style="--index: 1">
-      <span class="action-icon">📦</span>
+    <a href="purchase.html" class="action-tile">
+      <span class="action-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M21 7l-9-4-9 4 9 4 9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 11v10" stroke="currentColor" stroke-width="2"/></svg>
+      </span>
       <span>
         <span class="action-title">Add Stock</span>
-        <span class="action-sub">Receive sarees</span>
+        <span class="action-sub">Receive new sarees</span>
       </span>
     </a>
 
-    <a href="reports.html" class="action-tile" style="--index: 2">
-      <span class="action-icon">📊</span>
+    <a href="reports.html" class="action-tile">
+      <span class="action-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 19V9M12 19V5M20 19v-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </span>
       <span>
         <span class="action-title">Sales Report</span>
-        <span class="action-sub">Today & this month</span>
+        <span class="action-sub">Today &amp; this month</span>
       </span>
     </a>
 
-    <a href="inventory.html" class="action-tile" style="--index: 3">
-      <span class="action-icon">⚠️</span>
+    <a href="inventory.html" class="action-tile">
+      <span class="action-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M10.3 3.9L2.7 18a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
       <span>
         <span class="action-title">Low Stock</span>
-        <span class="action-sub" id="quickLowStock">0 items</span>
+        <span class="action-sub" id="quickLowStock">0 items need reorder</span>
       </span>
     </a>
   </div>
 
   <div class="page-inner">
+
     <section class="kpi-section">
-      <span class="section-label">📈 Today at a glance</span>
+      <p class="section-label">Today at a glance</p>
 
       <div class="kpi-row">
-        <div class="kpi-card" style="--index: 0">
+        <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-icon">💰</span>
+            <span class="kpi-icon currency-icon" aria-hidden="true">₹</span>
             <span class="kpi-trend flat" id="salesTrend">—</span>
           </div>
           <div class="kpi-value" id="todaySales">₹0</div>
           <div class="kpi-label">Today's sales</div>
         </div>
 
-        <div class="kpi-card" style="--index: 1">
+        <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-icon">🧾</span>
+            <span class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 2h6l1 4H8l1-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 6h12l1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L6 6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </span>
             <span class="kpi-trend flat" id="billsTrend">—</span>
           </div>
           <div class="kpi-value" id="billsToday">0</div>
-          <div class="kpi-label">Bills created</div>
+          <div class="kpi-label">Bills created today</div>
         </div>
 
-        <div class="kpi-card" style="--index: 2">
+        <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-icon">📦</span>
+            <span class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 7l-9-4-9 4 9 4 9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </span>
             <span class="kpi-trend flat" id="stockPiecesTrend">0 pcs</span>
           </div>
           <div class="kpi-value" id="stockValue">₹0</div>
-          <div class="kpi-label">Stock value</div>
+          <div class="kpi-label">Stock value on hand</div>
         </div>
 
-        <div class="kpi-card" style="--index: 3">
+        <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-icon">⚠️</span>
+            <span class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M10.3 3.9L2.7 18a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </span>
             <span class="kpi-trend flat" id="stockTrend">—</span>
           </div>
           <div class="kpi-value" id="lowStockCount">0</div>
-          <div class="kpi-label">Low stock items</div>
+          <div class="kpi-label">Items low on stock</div>
         </div>
       </div>
     </section>
 
     <section class="dashboard-grid">
+
       <div class="panel">
         <div class="panel-head">
           <h2>Daily sales — last 7 days</h2>
-          <a href="reports.html" class="panel-link">Full report →</a>
+          <a href="reports.html" class="panel-link">Full report <span aria-hidden="true">›</span></a>
         </div>
 
         <div class="chart-total">
@@ -945,13 +1161,13 @@ main { overflow-x: hidden; animation: fadeIn 0.6s ease-out; }
         </div>
 
         <div class="bar-chart" id="salesChart">
-          <div class="bar-col" style="--index: 0"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
-          <div class="bar-col" style="--index: 1"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
-          <div class="bar-col" style="--index: 2"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
-          <div class="bar-col" style="--index: 3"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
-          <div class="bar-col" style="--index: 4"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
-          <div class="bar-col" style="--index: 5"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
-          <div class="bar-col is-today" style="--index: 6"><div class="bar" style="height:0%"></div><span class="bar-day">Today</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col"><div class="bar" style="height:0%"></div><span class="bar-day">—</span></div>
+          <div class="bar-col is-today"><div class="bar" style="height:0%"></div><span class="bar-day">Today</span></div>
         </div>
       </div>
 
@@ -959,13 +1175,17 @@ main { overflow-x: hidden; animation: fadeIn 0.6s ease-out; }
         <div class="panel">
           <div class="panel-head">
             <h2>Recent bills</h2>
-            <a href="reports.html" class="panel-link">View all →</a>
+            <a href="reports.html" class="panel-link">View all <span aria-hidden="true">›</span></a>
           </div>
+
           <div id="recentBills">
             <div class="bill-row">
               <div>
                 <div class="bill-id">Loading...</div>
                 <div class="bill-meta">Loading recent bills...</div>
+              </div>
+              <div>
+                <div class="bill-amount">₹0</div>
               </div>
             </div>
           </div>
@@ -974,132 +1194,809 @@ main { overflow-x: hidden; animation: fadeIn 0.6s ease-out; }
         <div class="panel">
           <div class="panel-head">
             <h2>Low stock alerts</h2>
-            <a href="inventory.html" class="panel-link">Manage →</a>
+            <a href="inventory.html" class="panel-link">Manage <span aria-hidden="true">›</span></a>
           </div>
+
           <div id="lowStockList">
             <div class="stock-row">
               <div>
                 <div class="stock-name">No low-stock items</div>
-                <div class="stock-meta">Your inventory is fine.</div>
+                <div class="stock-meta">Your inventory is currently empty or above reorder level.</div>
               </div>
-              <span class="stock-count ok">✓</span>
+              <span class="stock-count ok">0 left</span>
             </div>
           </div>
         </div>
       </div>
+
     </section>
+
   </div>
 </main>
-
 <script>
+  // ================= API CONFIG =================
+// Live Node/Express backend on Render
 const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
 
+
+// ================= DASHBOARD DATA =================
 async function loadDashboard() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+    const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Dashboard API returned ${response.status}`);
+    }
+
     const data = await response.json();
 
     const money = (value) =>
-      `₹${Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+      `₹${Number(value || 0).toLocaleString("en-IN", {
+        maximumFractionDigits: 2
+      })}`;
 
     const setText = (id, value) => {
       const el = document.getElementById(id);
-      if (el) el.textContent = value;
+      if (el) {
+        el.textContent = value;
+      }
     };
 
+    // ================= KPI DATA =================
+
     setText("todaySales", money(data.today_sales));
-    setText("billsToday", Number(data.bills_today || 0).toLocaleString("en-IN"));
+
+    setText(
+      "billsToday",
+      Number(data.bills_today || 0).toLocaleString("en-IN")
+    );
+
     setText("stockValue", money(data.stock_value));
-    setText("stockPiecesTrend", `${Number(data.stock_pieces || 0).toLocaleString("en-IN")} pcs`);
-    setText("lowStockCount", Number(data.low_stock_count || 0).toLocaleString("en-IN"));
-    setText("quickLowStock", `${Number(data.low_stock_count || 0)} items`);
+
+    setText(
+      "stockPiecesTrend",
+      `${Number(data.stock_pieces || 0).toLocaleString("en-IN")} pcs`
+    );
+
+    setText(
+      "lowStockCount",
+      Number(data.low_stock_count || 0).toLocaleString("en-IN")
+    );
+
+    setText(
+      "quickLowStock",
+      `${Number(data.low_stock_count || 0).toLocaleString("en-IN")} items need reorder`
+    );
+
+
+    // ================= HEADER LOW-STOCK DOT =================
+
+    const headerDot = document.getElementById("headerAlertDot");
+
+    if (headerDot) {
+      headerDot.style.display =
+        Number(data.low_stock_count || 0) > 0
+          ? "block"
+          : "none";
+    }
+
+
+    // ================= KPI STATUS =================
+
     setText("salesTrend", "—");
     setText("billsTrend", "—");
 
+    setText(
+      "stockTrend",
+      Number(data.low_stock_count || 0) > 0
+        ? "Reorder"
+        : "OK"
+    );
+
     const stockTrend = document.getElementById("stockTrend");
+
     if (stockTrend) {
-      stockTrend.className = `kpi-trend ${Number(data.low_stock_count || 0) > 0 ? "down" : "flat"}`;
-      stockTrend.textContent = Number(data.low_stock_count || 0) > 0 ? "Reorder" : "OK";
+      stockTrend.className =
+        `kpi-trend ${
+          Number(data.low_stock_count || 0) > 0
+            ? "down"
+            : "flat"
+        }`;
     }
+
+
+    // ================= RECENT BILLS =================
 
     const billsEl = document.getElementById("recentBills");
-    const bills = Array.isArray(data.recent_bills) ? data.recent_bills : [];
 
-    if (bills.length) {
-      billsEl.innerHTML = bills.map((bill) => {
-        const customer = bill.customer_name || "Walk-in";
-        const invoice = bill.invoice_no || bill._id || "Bill";
-        const amount = Number(bill.grand_total || 0);
-        const isPaid = String(bill.payment_status || "Paid").toUpperCase() === "PAID";
+    const bills = Array.isArray(data.recent_bills)
+      ? data.recent_bills
+      : [];
 
-        return `<div class="bill-row">
-          <div><div class="bill-id">#${invoice}</div><div class="bill-meta">${customer}</div></div>
-          <div><div class="bill-amount">${money(amount)}</div>
-          <span class="bill-status ${isPaid ? "paid" : "due"}">${isPaid ? "Paid" : "Due"}</span></div></div>`;
-      }).join("");
+    if (billsEl) {
+
+      // No bills
+      if (!bills.length) {
+
+        billsEl.innerHTML = `
+          <div class="bill-row">
+            <div>
+              <div class="bill-id">No bills yet</div>
+              <div class="bill-meta">
+                Create your first bill to see it here.
+              </div>
+            </div>
+
+            <div>
+              <div class="bill-amount">₹0</div>
+            </div>
+          </div>
+        `;
+
+      } else {
+
+        // Display recent bills
+        billsEl.innerHTML = bills
+          .map((bill) => {
+
+            const customer =
+              bill.customer_name ||
+              "Walk-in customer";
+
+            const invoice =
+              bill.invoice_no ||
+              bill.invoice_number ||
+              bill._id ||
+              "Bill";
+
+            const amount =
+              Number(bill.grand_total || 0);
+
+            const statusRaw =
+              String(
+                bill.payment_status ||
+                bill.paymentStatus ||
+                bill.status ||
+                "ACTIVE"
+              ).toUpperCase();
+
+            const isPaid =
+              statusRaw === "PAID" ||
+              statusRaw === "ACTIVE";
+
+            const statusText =
+              statusRaw === "PAID"
+                ? "Paid"
+                : statusRaw === "DUE" ||
+                  statusRaw === "UNPAID"
+                ? "Due"
+                : statusRaw;
+
+            const billId = bill._id || bill.id || "";
+
+            return `
+              <div class="bill-row bill-clickable" data-bill-id="${escapeHtml(billId)}" onclick="openRecentBill(this.dataset.billId)">
+
+                <div>
+                  <div class="bill-id">
+                    #${escapeHtml(invoice)}
+                  </div>
+
+                  <div class="bill-meta">
+                    ${escapeHtml(customer)}
+                  </div>
+                </div>
+
+                <div>
+                  <div class="bill-amount">
+                    ${money(amount)}
+                  </div>
+
+                  <span class="bill-status ${
+                    isPaid ? "paid" : "due"
+                  }">
+                    ${escapeHtml(statusText)}
+                  </span>
+                </div>
+
+              </div>
+            `;
+          })
+          .join("");
+      }
     }
 
-    const stockEl = document.getElementById("lowStockList");
-    const lowStock = Array.isArray(data.low_stock) ? data.low_stock.slice(0, 5) : [];
 
-    if (lowStock.length) {
-      stockEl.innerHTML = lowStock.map((product) =>
-        `<div class="stock-row"><div><div class="stock-name">${product.name || "Product"}</div>
-        <div class="stock-meta">Reorder: ${Number(product.reorder_level || 0)}</div></div>
-        <span class="stock-count">${Number(product.stock_qty || 0)} left</span></div>`
-      ).join("");
+    // ================= LOW STOCK PRODUCTS =================
+
+    const stockEl =
+      document.getElementById("lowStockList");
+
+    // Dashboard intentionally displays only
+    // the first 5 low-stock products.
+    // The complete list remains available
+    // on inventory.html.
+
+    const lowStock =
+      Array.isArray(data.low_stock)
+        ? data.low_stock.slice(0, 5)
+        : [];
+
+    if (stockEl) {
+
+      // No low-stock products
+      if (!lowStock.length) {
+
+        stockEl.innerHTML = `
+          <div class="stock-row">
+
+            <div>
+              <div class="stock-name">
+                No low-stock items
+              </div>
+
+              <div class="stock-meta">
+                Your inventory is currently empty
+                or above reorder level.
+              </div>
+            </div>
+
+            <span class="stock-count ok">
+              OK
+            </span>
+
+          </div>
+        `;
+
+      } else {
+
+        // Display maximum 5 products
+        stockEl.innerHTML = lowStock
+          .map((product) => {
+
+            return `
+              <div class="stock-row">
+
+                <div>
+
+                  <div class="stock-name">
+                    ${escapeHtml(
+                      product.name ||
+                      "Unnamed product"
+                    )}
+                  </div>
+
+                  <div class="stock-meta">
+                    Reorder level:
+                    ${Number(
+                      product.reorder_level || 0
+                    )}
+                  </div>
+
+                </div>
+
+                <span class="stock-count">
+                  ${Number(
+                    product.stock_qty || 0
+                  )} left
+                </span>
+
+              </div>
+            `;
+          })
+          .join("");
+      }
     }
 
-    loadSalesChart();
   } catch (error) {
-    console.error(error);
+
+    console.error(
+      "Dashboard loading failed:",
+      error
+    );
   }
 }
+
+
+// ================= 7-DAY SALES CHART =================
+
+// /api/dashboard does not contain sales-trend data.
+// The chart uses:
+// /api/reports/sales-trend?days=7
 
 async function loadSalesChart() {
+
   try {
-    const response = await fetch(`${API_BASE_URL}/api/reports/sales-trend?days=7`);
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/reports/sales-trend?days=7`
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `sales-trend API returned ${response.status}`
+      );
+    }
+
     const days = await response.json();
 
-    const chart = document.getElementById("salesChart");
-    const items = Array.isArray(days) ? days : [];
-    const values = items.map(item => Number(item.total || 0));
-    const max = Math.max(...values, 0);
-    const total = values.reduce((sum, v) => sum + v, 0);
+    // Expected format:
+    // [{ date, total }, ...]
 
-    const weekSales = document.getElementById("weekSales");
-    if (weekSales) {
-      weekSales.textContent = `₹${total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
-    }
+    renderSalesChart(days);
 
-    if (items.length && chart) {
-      chart.innerHTML = items.slice(-7).map((item, index, arr) => {
-        const value = Number(item.total || 0);
-        const height = max > 0 ? Math.max(4, (value / max) * 96) : 0;
-        const today = index === arr.length - 1;
-
-        return `<div class="bar-col ${today ? "is-today" : ""}" style="--index: ${index}">
-          <div class="bar" style="height:${height}%"></div>
-          <span class="bar-day">${today ? "Today" : (item.label || item.day || "")}</span></div>`;
-      }).join("");
-    }
   } catch (error) {
-    console.error(error);
+
+    console.error(
+      "Sales trend loading failed:",
+      error
+    );
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadDashboard();
 
-  const todayDateEl = document.getElementById("todayDate");
-  if (todayDateEl) {
-    todayDateEl.textContent = new Date().toLocaleDateString("en-IN", {
-      weekday: "long",
-      day: "2-digit",
-      month: "long"
-    });
+// ================= HTML ESCAPE =================
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+// ================= SALES CHART =================
+
+function renderSalesChart(days) {
+
+  const chart =
+    document.getElementById("salesChart");
+
+  if (!chart) {
+    return;
   }
+
+  const items =
+    Array.isArray(days)
+      ? days
+      : [];
+
+  const values =
+    items.map((item) =>
+      Number(
+        item.total ||
+        item.sales ||
+        0
+      )
+    );
+
+  const max =
+    Math.max(...values, 0);
+
+  const total =
+    values.reduce(
+      (sum, value) =>
+        sum + value,
+      0
+    );
+
+
+  // ================= WEEK TOTAL =================
+
+  const weekSales =
+    document.getElementById("weekSales");
+
+  if (weekSales) {
+
+    weekSales.textContent =
+      `₹${total.toLocaleString("en-IN", {
+        maximumFractionDigits: 2
+      })}`;
+  }
+
+
+  // No data
+  if (!items.length) {
+    return;
+  }
+
+
+  // ================= DRAW 7 BARS =================
+
+  chart.innerHTML =
+    items
+      .slice(-7)
+      .map((item, index, arr) => {
+
+        const value =
+          Number(
+            item.total ||
+            item.sales ||
+            0
+          );
+
+        const height =
+          max > 0
+            ? Math.max(
+                4,
+                (value / max) * 96
+              )
+            : 0;
+
+        const today =
+          index === arr.length - 1;
+
+
+        const dateObj =
+          item.date
+            ? new Date(
+                item.date +
+                "T00:00:00"
+              )
+            : null;
+
+
+        const label =
+          dateObj
+            ? dateObj.toLocaleDateString(
+                "en-IN",
+                {
+                  weekday: "short"
+                }
+              )
+            : (
+                item.label ||
+                item.day ||
+                ""
+              );
+
+
+        return `
+          <div class="bar-col ${
+            today ? "is-today" : ""
+          }">
+
+            <div
+              class="bar"
+              style="height:${height}%"
+              aria-hidden="true"
+            ></div>
+
+            <span class="bar-day">
+              ${
+                today
+                  ? "Today"
+                  : escapeHtml(label)
+              }
+            </span>
+
+          </div>
+        `;
+
+      })
+      .join("");
+}
+
+
+// ================= INITIAL LOAD =================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    loadDashboard();
+    loadSalesChart();
+
+  }
+);
+
+
+// ================= HAMBURGER MENU =================
+
+const menuToggle =
+  document.getElementById("menuToggle");
+
+const mobilePanel =
+  document.getElementById("mobilePanel");
+
+
+if (menuToggle && mobilePanel) {
+
+  menuToggle.addEventListener(
+    "click",
+    () => {
+
+      const isOpen =
+        mobilePanel.classList.toggle(
+          "open"
+        );
+
+      menuToggle.classList.toggle(
+        "open",
+        isOpen
+      );
+
+      menuToggle.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+      );
+
+      document.body.style.overflow =
+        isOpen
+          ? "hidden"
+          : "";
+
+    }
+  );
+
+
+  // Close mobile menu
+  // when clicking outside sheet
+
+  mobilePanel.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        mobilePanel
+      ) {
+
+        mobilePanel.classList.remove(
+          "open"
+        );
+
+        menuToggle.classList.remove(
+          "open"
+        );
+
+        menuToggle.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+
+        document.body.style.overflow =
+          "";
+      }
+
+    }
+  );
+
+
+  // Close menu after
+  // selecting a link
+
+  document
+    .querySelectorAll(
+      ".mobile-sheet a"
+    )
+    .forEach((link) => {
+
+      link.addEventListener(
+        "click",
+        () => {
+
+          mobilePanel.classList.remove(
+            "open"
+          );
+
+          menuToggle.classList.remove(
+            "open"
+          );
+
+          menuToggle.setAttribute(
+            "aria-expanded",
+            "false"
+          );
+
+          document.body.style.overflow =
+            "";
+
+        }
+      );
+
+    });
+
+
+  // Close menu when
+  // returning to desktop width
+
+  window.addEventListener(
+    "resize",
+    () => {
+
+      if (
+        window.innerWidth > 980 &&
+        mobilePanel.classList.contains(
+          "open"
+        )
+      ) {
+
+        mobilePanel.classList.remove(
+          "open"
+        );
+
+        menuToggle.classList.remove(
+          "open"
+        );
+
+        menuToggle.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+
+        document.body.style.overflow =
+          "";
+      }
+
+    }
+  );
+
+}
+
+
+// ================= TODAY'S DATE =================
+
+const todayDateEl =
+  document.getElementById(
+    "todayDate"
+  );
+
+if (todayDateEl) {
+
+  todayDateEl.textContent =
+    new Date().toLocaleDateString(
+      "en-IN",
+      {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      }
+    );
+}
+
+
+// ================= PREMIUM BRAND ZOOM-OUT ANIMATION =================
+
+const mainText = "Welcome to Rajasthani Saree";
+const mainEl = document.getElementById("typedMain");
+
+if (mainEl) {
+  mainEl.textContent = mainText;
+}
+
+// Respect reduced-motion accessibility preference.
+if (
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches
+) {
+  if (mainEl) {
+    mainEl.style.animation = "none";
+    mainEl.style.transform = "scale(1)";
+    mainEl.style.opacity = "1";
+    mainEl.style.filter = "none";
+  }
+}
+// ===== FULL-SCREEN PREMIUM LOGO INTRO =====
+(function initBrandIntro(){
+  const intro = document.getElementById("brandIntro");
+  if (!intro) return;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const exitDelay = reduceMotion ? 350 : 1900;
+  const exitDuration = reduceMotion ? 250 : 1250;
+
+  window.setTimeout(() => {
+    intro.classList.add("is-exiting");
+    window.setTimeout(() => {
+      intro.classList.add("is-hidden");
+      document.body.classList.add("intro-complete");
+    }, exitDuration);
+  }, exitDelay);
+})();
+
+
+// ================= RECENT BILL POPUP / INVOICE VIEW =================
+
+let activeRecentBillId = "";
+
+function openRecentBill(id) {
+  if (!id) {
+    alert("This bill does not have a valid bill ID.");
+    return;
+  }
+
+  activeRecentBillId = String(id);
+
+  const modal = document.getElementById("billViewModal");
+  const title = document.getElementById("billModalTitle");
+  const customer = document.getElementById("billModalCustomer");
+  const total = document.getElementById("billModalTotal");
+  const status = document.getElementById("billModalStatus");
+  const frame = document.getElementById("billInvoiceFrame");
+
+  if (!modal) return;
+
+  const row = document.querySelector(
+    `.bill-row[data-bill-id="${CSS.escape(String(id))}"]`
+  );
+
+  const rowInvoice = row?.querySelector(".bill-id")?.textContent?.trim() || "Bill";
+  const rowCustomer = row?.querySelector(".bill-meta")?.textContent?.trim() || "Walk-in customer";
+  const rowAmount = row?.querySelector(".bill-amount")?.textContent?.trim() || "₹0";
+  const rowStatus = row?.querySelector(".bill-status")?.textContent?.trim() || "—";
+
+  title.textContent = rowInvoice;
+  customer.textContent = rowCustomer;
+  total.textContent = rowAmount;
+  status.textContent = rowStatus;
+
+  frame.src = "";
+  modal.classList.remove("has-invoice");
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function loadRecentBillInvoice() {
+  if (!activeRecentBillId) return;
+
+  const modal = document.getElementById("billViewModal");
+  const frame = document.getElementById("billInvoiceFrame");
+  if (!modal || !frame) return;
+
+  const invoiceUrl = `${API_BASE_URL}/api/bills/${encodeURIComponent(activeRecentBillId)}/invoice`;
+  frame.src = invoiceUrl;
+  modal.classList.add("has-invoice");
+}
+
+function openRecentBillInNewTab() {
+  if (!activeRecentBillId) return;
+
+  const invoiceUrl = `${API_BASE_URL}/api/bills/${encodeURIComponent(activeRecentBillId)}/invoice`;
+  window.open(invoiceUrl, "_blank", "noopener,noreferrer");
+}
+
+function closeRecentBill() {
+  const modal = document.getElementById("billViewModal");
+  const frame = document.getElementById("billInvoiceFrame");
+
+  if (!modal) return;
+
+  modal.classList.remove("is-open", "has-invoice");
+  modal.setAttribute("aria-hidden", "true");
+  if (frame) frame.src = "";
+  activeRecentBillId = "";
+  document.body.style.overflow = "";
+}
+
+const billModalClose = document.getElementById("billModalClose");
+const billViewButton = document.getElementById("billViewButton");
+const billNewTabButton = document.getElementById("billNewTabButton");
+const billViewModal = document.getElementById("billViewModal");
+
+if (billModalClose) billModalClose.addEventListener("click", closeRecentBill);
+if (billViewButton) billViewButton.addEventListener("click", loadRecentBillInvoice);
+if (billNewTabButton) billNewTabButton.addEventListener("click", openRecentBillInNewTab);
+
+if (billViewModal) {
+  billViewModal.addEventListener("click", (event) => {
+    if (event.target === billViewModal) closeRecentBill();
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeRecentBill();
 });
+
+
 </script>
 
 </body>

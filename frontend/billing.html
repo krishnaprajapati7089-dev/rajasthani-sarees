@@ -60,6 +60,295 @@
 .discount-cell{display:flex;align-items:center;gap:4px}
 .reset-price{border:0;background:none;color:var(--ink-soft);cursor:pointer;font-size:11px;text-decoration:underline;padding:0;margin-top:4px}
 .reset-price:hover{color:var(--maroon)}
+
+/* =========================================================
+   RAJASTHANI SAREE — PREMIUM EMERALD / CHAMPAGNE THEME
+   Matching the premium dashboard
+   ========================================================= */
+:root{
+  --maroon:#123C35;
+  --maroon-2:#1B5A4E;
+  --maroon-dark:#092A25;
+  --gold:#C7A15A;
+  --gold-light:#F0D9A2;
+  --cream:#F3F1EB;
+  --paper:#FFFDF8;
+  --ink:#17221F;
+  --ink-soft:#6C7773;
+  --line:#E5DED0;
+  --header-h:72px;
+  --success:#197A5B;
+  --danger:#A63D45;
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at 8% 0%,rgba(199,161,90,.08),transparent 25rem),
+    var(--cream);
+  color:var(--ink);
+}
+.site-header{
+  background:rgba(255,253,248,.94);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(199,161,90,.22);
+  box-shadow:0 8px 30px rgba(9,42,37,.06);
+}
+.brand{color:var(--maroon)}
+.brand-name{color:var(--maroon)}
+.brand-sub{color:var(--gold)}
+.nav-link{
+  transition:transform .22s ease,background .22s ease,color .22s ease,box-shadow .22s ease;
+}
+.nav-link:hover{
+  color:var(--maroon);
+  background:rgba(199,161,90,.12);
+  transform:translateY(-2px);
+  box-shadow:0 7px 18px rgba(9,42,37,.08);
+}
+.nav-link.is-active{
+  color:var(--maroon);
+  background:linear-gradient(135deg,rgba(199,161,90,.16),rgba(240,217,162,.08));
+}
+.icon-btn,.menu-toggle{
+  transition:transform .22s ease,border-color .22s ease,background .22s ease,box-shadow .22s ease;
+}
+.icon-btn:hover,.menu-toggle:hover{
+  transform:translateY(-2px);
+  border-color:rgba(199,161,90,.65);
+  background:#fffaf0;
+  box-shadow:0 8px 18px rgba(9,42,37,.10);
+}
+.btn-primary,.btn-ghost,.scan-btn{
+  position:relative;
+  overflow:hidden;
+  transition:transform .22s ease,box-shadow .22s ease,background .22s ease,border-color .22s ease;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#123C35,#1B5A4E);
+  box-shadow:0 7px 18px rgba(9,42,37,.14);
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg,#174C42,#236658);
+  transform:translateY(-3px);
+  box-shadow:0 12px 25px rgba(9,42,37,.20);
+}
+.btn-ghost,.scan-btn{
+  background:rgba(255,253,248,.9);
+  color:var(--maroon);
+}
+.btn-ghost:hover,.scan-btn:hover{
+  background:#fff8e9;
+  border-color:var(--gold);
+  transform:translateY(-3px);
+  box-shadow:0 10px 22px rgba(9,42,37,.10);
+}
+.btn-primary:active,.btn-ghost:active,.scan-btn:active,.icon-btn:active,.menu-toggle:active{
+  transform:translateY(-1px) scale(.98);
+}
+.btn-primary::after,.btn-ghost::after,.scan-btn::after{
+  content:"";
+  position:absolute;
+  top:-80%;
+  left:-110%;
+  width:60%;
+  height:260%;
+  transform:rotate(24deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+  transition:left .55s ease;
+  pointer-events:none;
+}
+.btn-primary:hover::after,.btn-ghost:hover::after,.scan-btn:hover::after{
+  left:145%;
+}
+.avatar{
+  box-shadow:0 6px 18px rgba(199,161,90,.22);
+  transition:transform .22s ease,box-shadow .22s ease;
+}
+.avatar:hover{
+  transform:translateY(-2px) rotate(2deg);
+  box-shadow:0 10px 24px rgba(199,161,90,.30);
+}
+.page-inner{padding-top:40px}
+.page-header h1{
+  color:var(--maroon);
+  animation:pageTitleIn .65s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes pageTitleIn{
+  from{opacity:0;transform:translateY(16px) scale(.98);filter:blur(4px)}
+  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+.panel{
+  background:rgba(255,253,248,.92);
+  border:1px solid rgba(229,222,208,.95);
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(9,42,37,.055);
+  transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;
+  animation:panelIn .65s ease both;
+}
+.panel:hover{
+  transform:translateY(-2px);
+  box-shadow:0 16px 38px rgba(9,42,37,.085);
+  border-color:rgba(199,161,90,.35);
+}
+.panel:nth-of-type(2){animation-delay:.06s}
+.panel:nth-of-type(3){animation-delay:.12s}
+.panel:nth-of-type(4){animation-delay:.18s}
+@keyframes panelIn{
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.panel h2{
+  color:var(--maroon);
+  position:relative;
+}
+.panel h2::after{
+  content:"";
+  display:block;
+  width:34px;
+  height:2px;
+  margin-top:8px;
+  border-radius:2px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+}
+input,select{
+  background:#fff;
+  border-color:#ded6c7;
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+input:hover,select:hover{
+  border-color:rgba(199,161,90,.65);
+}
+input:focus,select:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 4px rgba(199,161,90,.14);
+  transform:translateY(-1px);
+}
+.product-results{
+  box-shadow:0 14px 30px rgba(9,42,37,.10);
+  animation:dropIn .22s ease both;
+}
+@keyframes dropIn{
+  from{opacity:0;transform:translateY(-5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.product-result{
+  transition:background .18s ease,transform .18s ease,padding-left .18s ease;
+}
+.product-result:hover{
+  background:linear-gradient(90deg,#fff8e9,#fffdf8);
+  transform:translateX(3px);
+  padding-left:16px;
+}
+table tbody tr{
+  transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+table tbody tr:hover{
+  background:rgba(199,161,90,.055);
+  transform:translateX(2px);
+  box-shadow:inset 3px 0 0 var(--gold);
+}
+th{
+  color:var(--maroon);
+  background:rgba(243,241,235,.65);
+}
+.price-input,.discount-input{
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+.price-input:hover,.discount-input:hover{
+  border-color:var(--gold);
+}
+.price-input:focus,.discount-input:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(199,161,90,.13);
+  transform:translateY(-1px);
+}
+.reset-price{
+  transition:color .18s ease,transform .18s ease;
+}
+.reset-price:hover{
+  color:var(--maroon);
+  transform:translateX(2px);
+}
+.mrp-value{color:var(--ink-soft)}
+.save-status.success{color:var(--success)}
+.save-status.error{color:var(--danger)}
+.invoice-status strong{color:var(--maroon)}
+.scanner-modal{
+  background:rgba(9,42,37,.70);
+  backdrop-filter:blur(6px);
+}
+.scanner-box{
+  border:1px solid rgba(199,161,90,.30);
+  box-shadow:0 25px 70px rgba(0,0,0,.28);
+  animation:modalIn .3s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes modalIn{
+  from{opacity:0;transform:translateY(18px) scale(.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media (hover:none){
+  .panel:hover,.nav-link:hover,.btn-primary:hover,.btn-ghost:hover,.scan-btn:hover,
+  .icon-btn:hover,.menu-toggle:hover,.avatar:hover,table tbody tr:hover{
+    transform:none;
+  }
+}
+
+
+.qty-btn{
+  min-width:34px;
+  height:32px;
+  padding:4px 9px !important;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.remove-item-btn{
+  border:0;
+  background:transparent;
+  color:var(--danger);
+  cursor:pointer;
+  padding:5px 0;
+  font-size:11px;
+  font-weight:600;
+  transition:color .18s ease,transform .18s ease;
+}
+.remove-item-btn:hover{
+  color:#7f2029;
+  transform:translateX(3px);
+}
+
+
+@keyframes savePulse{
+  0%{box-shadow:0 0 0 0 rgba(25,122,91,.35)}
+  70%{box-shadow:0 0 0 10px rgba(25,122,91,0)}
+  100%{box-shadow:0 0 0 0 rgba(25,122,91,0)}
+}
+
+
+/* Bill Items — colored header bar only */
+#billItems{
+  border-collapse:separate;
+  border-spacing:0;
+}
+#billItems thead th{
+  background:linear-gradient(135deg,#123C35,#1B5A4E);
+  color:#F0D9A2;
+  padding:12px 10px;
+  border-bottom:0;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.25px;
+}
+#billItems thead th:first-child{
+  border-radius:9px 0 0 9px;
+}
+#billItems thead th:last-child{
+  border-radius:0 9px 9px 0;
+}
+
 </style>
 </head>
 <body>
@@ -90,7 +379,6 @@
       <button class="icon-btn hide-xs" aria-label="Search" title="Search">⌕</button>
       <button class="icon-btn hide-xs" aria-label="Notifications" title="Notifications">♢</button>
       <a class="btn-primary current-page-action" href="billing.html" aria-current="page" aria-label="New Bill — current page">＋ <span class="label">New Bill</span></a>
-      <div class="avatar" title="Store Manager">SM</div>
       <button class="icon-btn hide-xs" onclick="rsLogout()" title="Logout">⏻</button>
       <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
     </div>
@@ -143,7 +431,7 @@
 <div id="productResults" class="product-results"></div>
 <div id="productMessage" class="form-message">Search your inventory, or scan a barcode/QR code, to add a product.</div>
 </section>
-<section class="panel"><h2>Bill Items</h2><p class="form-message">MRP comes from Inventory. Type a Selling Price or a Discount % to change what you actually charge — the other field updates to match.</p><div class="table-wrapper"><table><thead><tr><th>Product</th><th>Qty</th><th>MRP</th><th>Selling Price</th><th>Discount %</th><th>Total</th></tr></thead><tbody id="billItems"></tbody></table></div></section>
+<section class="panel"><h2>Bill Items</h2><div class="table-wrapper"><table><thead><tr><th>Product</th><th>Qty</th><th>MRP</th><th>Selling Price</th><th>Discount %</th><th>Total</th></tr></thead><tbody id="billItems"></tbody></table></div></section>
 <section class="panel" style="max-width:520px;margin-left:auto"><div style="display:flex;justify-content:space-between;padding:8px 0">Subtotal <strong id="subtotal">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;color:var(--ink-soft)">GST included in selling price <strong id="gst">₹0</strong></div><div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);font-size:20px">Total Payable <strong id="grandTotal">₹0</strong></div><div style="display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap"><div class="invoice-status">Invoice <strong id="invoicePreview">Generated on save</strong></div><button class="btn-ghost" onclick="clearBill()">Clear</button><button class="btn-primary" type="button" onclick="saveInvoice()">Save Bill</button><button class="btn-ghost" type="button" onclick="window.print()">Print</button></div><div id="saveStatus" class="save-status"></div></section>
 </div></main>
 
@@ -416,11 +704,11 @@ function renderBill() {
           </td>
           <td>
             <div style="display:flex;align-items:center;gap:7px">
-              <button type="button" class="btn-ghost" style="padding:5px 9px" onclick="changeQty(${index},-1)">−</button>
+              <button type="button" class="btn-ghost qty-btn" style="padding:5px 9px" onclick="changeQty(${index},-1)">−</button>
               <strong>${item.qty}</strong>
-              <button type="button" class="btn-ghost" style="padding:5px 9px" onclick="changeQty(${index},1)">+</button>
+              <button type="button" class="btn-ghost qty-btn" style="padding:5px 9px" onclick="changeQty(${index},1)">+</button>
             </div>
-            <button type="button" style="border:0;background:none;color:#B23A2E;cursor:pointer;padding:5px 0;font-size:11px" onclick="removeItem(${index})">Remove</button>
+            <button type="button" class="remove-item-btn" onclick="removeItem(${index})">Remove</button>
           </td>
           <td><span class="mrp-value">${money(item.mrp)}</span></td>
           <td>
@@ -518,20 +806,24 @@ async function saveInvoice() {
       `Bill ${data.invoice_no} saved to MongoDB successfully. Total: ${money(data.grand_total)}`;
     document.getElementById("saveStatus").className = "save-status success";
 
-    // Stock was decremented by the backend, so clear the current bill.
-    items = [];
-    selectedProduct = null;
-    productSearch.value = "";
-    productResults.innerHTML = "";
-    productResults.style.display = "none";
-    renderBill();
+    // Open the backend-generated printable invoice first.
+    // Then refresh the billing page so it is immediately ready for a new bill.
+    if (data._id) {
+      window.open(
+        `${API_BASE_URL}/api/bills/` + encodeURIComponent(data._id) + "/invoice",
+        "_blank"
+      );
+    }
 
     alert(`Bill ${data.invoice_no} saved successfully in MongoDB.`);
 
-    // Open the backend-generated printable invoice.
-    if (data._id) {
-      window.open(`${API_BASE_URL}/api/bills/` + encodeURIComponent(data._id) + "/invoice", "_blank");
-    }
+    // The backend has already saved the bill and reduced stock.
+    // Reloading clears the old customer/products and prepares a fresh bill.
+    saveButton.textContent = "Saved ✓";
+    saveButton.style.animation = "savePulse .55s ease";
+    setTimeout(() => {
+      window.location.reload();
+    }, 450);
   } catch (error) {
     console.error(error);
     document.getElementById("saveStatus").textContent =

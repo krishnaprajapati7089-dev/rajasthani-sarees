@@ -1,5 +1,4 @@
 const express = require('express');
-
 const Product = require('../models/Product');
 const Bill = require('../models/Bill');
 const ShopProfile = require('../models/ShopProfile');
@@ -9,7 +8,7 @@ const router = express.Router();
 
 
 // ============================================================
-// Generate next invoice number
+// HELPERS
 // ============================================================
 
 async function nextInvoiceNo() {
@@ -34,11 +33,109 @@ async function nextInvoiceNo() {
 }
 
 
+function calculateLine(product, line, interstate) {
+
+  const qty = Number(line.qty) || 1;
+
+  if (qty <= 0) {
+    throw new Error(`Invalid quantity for product: ${product.name}`);
+  }
+
+  if (Number(product.stock_qty) < qty) {
+    throw new Error(
+      `Insufficient stock for ${product.name}. Available: ${product.stock_qty}`
+    );
+  }
+
+  const mrp =
+    Number(product.mrp || product.selling_price) || 0;
+
+  const sellingPrice =
+    Number(product.selling_price) || 0;
+
+  const gstRate =
+    Number(product.gst_rate) || 0;
+
+  const discountPercent =
+    Number(line.discount_percent) || 0;
+
+  const grossInclusive =
+    qty * sellingPrice;
+
+  const discountAmount =
+    grossInclusive * discountPercent / 100;
+
+  const finalInclusiveAmount =
+    grossInclusive - discountAmount;
+
+  let taxable = finalInclusiveAmount;
+  let gstAmount = 0;
+
+  if (gstRate > 0) {
+
+    taxable =
+      finalInclusiveAmount /
+      (1 + gstRate / 100);
+
+    gstAmount =
+      finalInclusiveAmount - taxable;
+  }
+
+  let cgst = 0;
+  let sgst = 0;
+  let igst = 0;
+
+  if (interstate) {
+    igst = gstAmount;
+  } else {
+    cgst = gstAmount / 2;
+    sgst = gstAmount / 2;
+  }
+
+  return {
+    product_id: product._id,
+
+    product_name: product.name,
+
+    // IMPORTANT:
+    // These were missing from the old CREATE BILL route.
+    category: product.category || '',
+
+    barcode_number: product.barcode || '',
+
+    hsn_code: product.hsn_code || '',
+
+    unit: product.unit || 'pcs',
+
+    qty,
+
+    mrp,
+
+    rate: sellingPrice,
+
+    discount_percent: discountPercent,
+
+    taxable_value: taxable,
+
+    gst_rate: gstRate,
+
+    cgst_amount: cgst,
+
+    sgst_amount: sgst,
+
+    igst_amount: igst,
+
+    line_total: finalInclusiveAmount
+  };
+}
+
+
 // ============================================================
-// GET all bills
+// GET ALL BILLS
 // ============================================================
 
 router.get('/', async (req, res) => {
+
   try {
 
     const bills = await Bill
@@ -49,38 +146,48 @@ router.get('/', async (req, res) => {
 
   } catch (err) {
 
+    console.error('Get bills error:', err);
+
     res.status(500).json({
       error: err.message
     });
 
   }
+
 });
 
 
 // ============================================================
-// GET single bill
+// GET SINGLE BILL
 // ============================================================
 
 router.get('/:id', async (req, res) => {
+
   try {
 
-    const bill = await Bill.findById(req.params.id);
+    const bill =
+      await Bill.findById(req.params.id);
 
     if (!bill) {
+
       return res.status(404).json({
         error: 'Bill not found'
       });
+
     }
 
     res.json(bill);
 
   } catch (err) {
 
+    console.error('Get bill error:', err);
+
     res.status(500).json({
       error: err.message
     });
 
   }
+
 });
 
 
@@ -106,10 +213,6 @@ router.post('/', async (req, res) => {
     } = req.body;
 
 
-    // --------------------------------------------------------
-    // Validate items
-    // --------------------------------------------------------
-
     if (!Array.isArray(items) || items.length === 0) {
 
       return res.status(400).json({
@@ -119,54 +222,34 @@ router.post('/', async (req, res) => {
     }
 
 
-    // --------------------------------------------------------
-    // Determine interstate
-    // --------------------------------------------------------
-
-    const interstate = Boolean(is_interstate);
+    const interstate =
+      Boolean(is_interstate);
 
 
-    // --------------------------------------------------------
-    // Generate invoice number
-    // --------------------------------------------------------
-
-    const invoice_no = await nextInvoiceNo();
+    const invoice_no =
+      await nextInvoiceNo();
 
 
-    // --------------------------------------------------------
-    // Totals
-    //
-    // subtotalDiscounted / finalInclusiveTotal both track the amount
-    // AFTER each line's discount_percent has been applied — this is what
-    // the customer is actually being charged. (The old bug: `subtotal`
-    // was accumulating the pre-discount gross amount, so a discounted
-    // sale still billed the customer as if no discount had been given.)
-    // --------------------------------------------------------
-
-    let subtotalDiscounted = 0; // = taxableTotal, kept as its own variable for clarity
-
-    let finalInclusiveTotal = 0; // GST-inclusive, post-discount — what grand_total is built from
-
+    let subtotal = 0;
     let taxableTotal = 0;
 
     let cgstTotal = 0;
-
     let sgstTotal = 0;
-
     let igstTotal = 0;
 
+    let finalInclusiveTotal = 0;
 
     const billItems = [];
 
 
     // ========================================================
-    // PROCESS EACH PRODUCT
+    // PROCESS ITEMS
     // ========================================================
 
     for (const line of items) {
 
-      const product = await Product.findById(line.product_id);
-
+      const product =
+        await Product.findById(line.product_id);
 
       if (!product) {
 
@@ -177,226 +260,40 @@ router.post('/', async (req, res) => {
       }
 
 
-      // ------------------------------------------------------
-      // Quantity
-      // ------------------------------------------------------
-
-      const qty = Number(line.qty) || 1;
-
-
-      if (qty <= 0) {
-
-        throw new Error(
-          `Invalid quantity for product: ${product.name}`
+      const billItem =
+        calculateLine(
+          product,
+          line,
+          interstate
         );
 
-      }
 
+      billItems.push(billItem);
 
-      // ------------------------------------------------------
-      // Stock validation
-      // ------------------------------------------------------
 
-      if (Number(product.stock_qty) < qty) {
+      subtotal +=
+        Number(billItem.taxable_value || 0);
 
-        throw new Error(
-          `Insufficient stock for ${product.name}. Available: ${product.stock_qty}`
-        );
+      taxableTotal +=
+        Number(billItem.taxable_value || 0);
 
-      }
+      cgstTotal +=
+        Number(billItem.cgst_amount || 0);
 
+      sgstTotal +=
+        Number(billItem.sgst_amount || 0);
 
-      // ------------------------------------------------------
-      // MRP
-      //
-      // Your Product model doesn't have a separate `mrp` field today —
-      // only `selling_price`, which IS the MRP (GST-inclusive, as set in
-      // Inventory). Falls back to product.mrp first in case you add that
-      // field to the Product schema later.
-      // ------------------------------------------------------
+      igstTotal +=
+        Number(billItem.igst_amount || 0);
 
-      const mrp =
-        Number(product.mrp || product.selling_price) || 0;
+      finalInclusiveTotal +=
+        Number(billItem.line_total || 0);
 
 
-      // ------------------------------------------------------
-      // SELLING PRICE
-      //
-      // IMPORTANT:
-      // selling_price ALREADY INCLUDES GST
-      // ------------------------------------------------------
-
-      const sellingPrice =
-        Number(product.selling_price) || 0;
-
-
-      const gstRate =
-        Number(product.gst_rate) || 0;
-
-
-      // ------------------------------------------------------
-      // Gross customer amount
-      //
-      // Example:
-      // selling price = ₹1180
-      // qty = 2
-      //
-      // grossInclusive = ₹2360
-      // ------------------------------------------------------
-
-      const grossInclusive =
-        qty * sellingPrice;
-
-
-      // ------------------------------------------------------
-      // Line discount
-      // ------------------------------------------------------
-
-      const discountPercent =
-        Number(line.discount_percent) || 0;
-
-
-      const discountAmount =
-        grossInclusive *
-        discountPercent /
-        100;
-
-
-      // Amount customer actually pays for this line
-      const finalInclusiveAmount =
-        grossInclusive - discountAmount;
-
-
-      // ------------------------------------------------------
-      // EXTRACT GST FROM GST-INCLUSIVE PRICE
-      //
-      // Example:
-      //
-      // Selling price = ₹1180
-      // GST = 18%
-      //
-      // Taxable:
-      //
-      // 1180 / 1.18 = 1000
-      //
-      // GST:
-      //
-      // 1180 - 1000 = 180
-      // ------------------------------------------------------
-
-      let taxable = finalInclusiveAmount;
-
-      let gstAmount = 0;
-
-
-      if (gstRate > 0) {
-
-        taxable =
-          finalInclusiveAmount /
-          (1 + gstRate / 100);
-
-        gstAmount =
-          finalInclusiveAmount - taxable;
-
-      }
-
-
-      // ------------------------------------------------------
-      // CGST / SGST / IGST
-      // ------------------------------------------------------
-
-      let cgst = 0;
-
-      let sgst = 0;
-
-      let igst = 0;
-
-
-      if (interstate) {
-
-        igst = gstAmount;
-
-      } else {
-
-        cgst = gstAmount / 2;
-
-        sgst = gstAmount / 2;
-
-      }
-
-
-      // ------------------------------------------------------
-      // Final line total
-      //
-      // GST is already included.
-      // DO NOT add GST again.
-      // ------------------------------------------------------
-
-      const lineTotal =
-        finalInclusiveAmount;
-
-
-      // ------------------------------------------------------
-      // Save bill item
-      // ------------------------------------------------------
-
-      billItems.push({
-
-        product_id: product._id,
-
-        product_name: product.name,
-
-        hsn_code: product.hsn_code,
-
-        unit: product.unit,
-
-        qty: qty,
-
-        mrp: mrp,
-
-        // Selling price INCLUDING GST
-        rate: sellingPrice,
-
-        discount_percent: discountPercent,
-
-        taxable_value: taxable,
-
-        gst_rate: gstRate,
-
-        cgst_amount: cgst,
-
-        sgst_amount: sgst,
-
-        igst_amount: igst,
-
-        line_total: lineTotal
-
-      });
-
-
-      // ------------------------------------------------------
-      // Add totals — all post-discount
-      // ------------------------------------------------------
-
-      subtotalDiscounted += taxable;
-
-      finalInclusiveTotal += finalInclusiveAmount;
-
-      taxableTotal += taxable;
-
-      cgstTotal += cgst;
-
-      sgstTotal += sgst;
-
-      igstTotal += igst;
-
-
-      // ------------------------------------------------------
       // Reduce stock
-      // ------------------------------------------------------
-
       product.stock_qty =
-        Number(product.stock_qty) - qty;
+        Number(product.stock_qty) -
+        Number(billItem.qty);
 
 
       await product.save();
@@ -412,107 +309,529 @@ router.post('/', async (req, res) => {
       Number(discount_amount) || 0;
 
 
-    // --------------------------------------------------------
-    // Amount before rounding
-    //
-    // Built from the POST-DISCOUNT, GST-inclusive total — not the raw
-    // undiscounted subtotal — so per-item discounts actually reduce what
-    // the customer is charged.
-    // --------------------------------------------------------
-
     const inclusiveBeforeRound =
-      finalInclusiveTotal - extraDiscount;
+      finalInclusiveTotal -
+      extraDiscount;
 
 
-    // --------------------------------------------------------
-    // Grand total
-    // --------------------------------------------------------
+    /*
+      Extra bill discount is treated as a discount
+      on the GST-inclusive customer amount.
+
+      GST is recalculated proportionally so the
+      stored GST remains consistent with the final
+      amount actually charged.
+    */
+
+    let finalTaxable = taxableTotal;
+    let finalCgst = cgstTotal;
+    let finalSgst = sgstTotal;
+    let finalIgst = igstTotal;
+
+
+    if (
+      extraDiscount > 0 &&
+      finalInclusiveTotal > 0
+    ) {
+
+      const ratio =
+        Math.max(
+          0,
+          inclusiveBeforeRound /
+          finalInclusiveTotal
+        );
+
+      finalTaxable =
+        taxableTotal * ratio;
+
+      finalCgst =
+        cgstTotal * ratio;
+
+      finalSgst =
+        sgstTotal * ratio;
+
+      finalIgst =
+        igstTotal * ratio;
+
+    }
+
 
     const grandTotal =
       Math.round(inclusiveBeforeRound);
 
 
     const roundOff =
-      grandTotal - inclusiveBeforeRound;
+      grandTotal -
+      inclusiveBeforeRound;
 
 
     // ========================================================
     // CREATE BILL
     // ========================================================
 
-    const bill = await Bill.create({
+    const bill =
+      await Bill.create({
 
-      invoice_no,
+        invoice_no,
 
-      customer_name:
-        customer_name || 'Walk-in Customer',
+        customer_name:
+          customer_name ||
+          'Walk-in Customer',
 
-      customer_phone:
-        customer_phone || '',
+        customer_phone:
+          customer_phone || '',
 
-      customer_gstin:
-        customer_gstin || '',
+        customer_gstin:
+          customer_gstin || '',
 
-      customer_state:
-        customer_state || '',
+        customer_state:
+          customer_state || '',
 
-      is_interstate:
-        interstate,
+        is_interstate:
+          interstate,
 
-      payment_mode:
-        payment_mode || 'Cash',
+        payment_mode:
+          payment_mode || 'Cash',
 
-      payment_status:
-        payment_status || 'Paid',
+        payment_status:
+          payment_status || 'Paid',
 
-      paid_amount:
-        Number(paid_amount) || grandTotal,
+        paid_amount:
+          Number(paid_amount) ||
+          grandTotal,
 
-      // The actual charged amount, net of every line discount, net of GST
-      // — matches the "Subtotal" line shown on the New Bill page.
-      subtotal:
-        subtotalDiscounted,
+        subtotal,
 
-      discount_amount:
-        extraDiscount,
+        discount_amount:
+          extraDiscount,
 
-      taxable_value:
-        taxableTotal,
+        taxable_value:
+          finalTaxable,
 
-      cgst_amount:
-        cgstTotal,
+        cgst_amount:
+          finalCgst,
 
-      sgst_amount:
-        sgstTotal,
+        sgst_amount:
+          finalSgst,
 
-      igst_amount:
-        igstTotal,
+        igst_amount:
+          finalIgst,
 
-      round_off:
-        roundOff,
+        round_off:
+          roundOff,
 
-      grand_total:
-        grandTotal,
+        grand_total:
+          grandTotal,
 
-      status:
-        'ACTIVE',
+        status:
+          'ACTIVE',
 
-      items:
-        billItems
+        items:
+          billItems
 
-    });
+      });
 
-
-    // ========================================================
-    // RESPONSE
-    // ========================================================
 
     res.status(201).json(bill);
 
 
   } catch (err) {
 
-    console.error('Create bill error:', err);
+    console.error(
+      'Create bill error:',
+      err
+    );
+
+    res.status(400).json({
+      error: err.message
+    });
+
+  }
+
+});
+
+
+// ============================================================
+// EDIT / UPDATE BILL
+// ============================================================
+//
+// PUT /api/bills/:id
+//
+// The old bill's stock is first restored.
+// Then the new bill items are validated and stock
+// is deducted again.
+//
+// This allows:
+// - changing quantity
+// - changing products
+// - removing products
+// - adding products
+// ============================================================
+
+router.put('/:id', async (req, res) => {
+
+  try {
+
+    const bill =
+      await Bill.findById(req.params.id);
+
+    if (!bill) {
+
+      return res.status(404).json({
+        error: 'Bill not found'
+      });
+
+    }
+
+
+    if (bill.status === 'CANCELLED') {
+
+      return res.status(400).json({
+        error: 'Cancelled bills cannot be edited'
+      });
+
+    }
+
+
+    const {
+      customer_name,
+      customer_phone,
+      customer_gstin,
+      customer_state,
+      is_interstate,
+      payment_mode,
+      payment_status,
+      paid_amount,
+      discount_amount,
+      items
+    } = req.body;
+
+
+    if (!Array.isArray(items) || items.length === 0) {
+
+      return res.status(400).json({
+        error: 'Bill must contain at least one product'
+      });
+
+    }
+
+
+    const interstate =
+      Boolean(is_interstate);
+
+
+    // ========================================================
+    // RESTORE OLD STOCK
+    // ========================================================
+
+    for (const oldItem of bill.items) {
+
+      const product =
+        await Product.findById(
+          oldItem.product_id
+        );
+
+      if (product) {
+
+        product.stock_qty =
+          Number(product.stock_qty) +
+          Number(oldItem.qty || 0);
+
+        // Make it active again when stock returns.
+        product.active = true;
+
+        await product.save();
+
+      }
+
+    }
+
+
+    // ========================================================
+    // PREPARE NEW ITEMS
+    // ========================================================
+
+    const billItems = [];
+
+    let subtotal = 0;
+    let taxableTotal = 0;
+
+    let cgstTotal = 0;
+    let sgstTotal = 0;
+    let igstTotal = 0;
+
+    let finalInclusiveTotal = 0;
+
+
+    try {
+
+      for (const line of items) {
+
+        const product =
+          await Product.findById(
+            line.product_id
+          );
+
+        if (!product) {
+
+          throw new Error(
+            `Product not found: ${line.product_id}`
+          );
+
+        }
+
+
+        const billItem =
+          calculateLine(
+            product,
+            line,
+            interstate
+          );
+
+
+        billItems.push(billItem);
+
+
+        subtotal +=
+          Number(billItem.taxable_value || 0);
+
+        taxableTotal +=
+          Number(billItem.taxable_value || 0);
+
+        cgstTotal +=
+          Number(billItem.cgst_amount || 0);
+
+        sgstTotal +=
+          Number(billItem.sgst_amount || 0);
+
+        igstTotal +=
+          Number(billItem.igst_amount || 0);
+
+        finalInclusiveTotal +=
+          Number(billItem.line_total || 0);
+
+      }
+
+
+      // ======================================================
+      // EXTRA DISCOUNT
+      // ======================================================
+
+      const extraDiscount =
+        Number(discount_amount) || 0;
+
+
+      const inclusiveBeforeRound =
+        finalInclusiveTotal -
+        extraDiscount;
+
+
+      let finalTaxable =
+        taxableTotal;
+
+      let finalCgst =
+        cgstTotal;
+
+      let finalSgst =
+        sgstTotal;
+
+      let finalIgst =
+        igstTotal;
+
+
+      if (
+        extraDiscount > 0 &&
+        finalInclusiveTotal > 0
+      ) {
+
+        const ratio =
+          Math.max(
+            0,
+            inclusiveBeforeRound /
+            finalInclusiveTotal
+          );
+
+
+        finalTaxable =
+          taxableTotal * ratio;
+
+        finalCgst =
+          cgstTotal * ratio;
+
+        finalSgst =
+          sgstTotal * ratio;
+
+        finalIgst =
+          igstTotal * ratio;
+
+      }
+
+
+      const grandTotal =
+        Math.round(
+          inclusiveBeforeRound
+        );
+
+
+      const roundOff =
+        grandTotal -
+        inclusiveBeforeRound;
+
+
+      // ======================================================
+      // DEDUCT NEW STOCK
+      // ======================================================
+
+      for (const item of billItems) {
+
+        const product =
+          await Product.findById(
+            item.product_id
+          );
+
+        if (!product) {
+
+          throw new Error(
+            `Product not found: ${item.product_id}`
+          );
+
+        }
+
+
+        if (
+          Number(product.stock_qty) <
+          Number(item.qty)
+        ) {
+
+          throw new Error(
+            `Insufficient stock for ${product.name}. Available: ${product.stock_qty}`
+          );
+
+        }
+
+      }
+
+
+      for (const item of billItems) {
+
+        const product =
+          await Product.findById(
+            item.product_id
+          );
+
+        product.stock_qty =
+          Number(product.stock_qty) -
+          Number(item.qty);
+
+        await product.save();
+
+      }
+
+
+      // ======================================================
+      // UPDATE BILL
+      // ======================================================
+
+      bill.customer_name =
+        customer_name ||
+        'Walk-in Customer';
+
+      bill.customer_phone =
+        customer_phone || '';
+
+      bill.customer_gstin =
+        customer_gstin || '';
+
+      bill.customer_state =
+        customer_state || '';
+
+      bill.is_interstate =
+        interstate;
+
+      bill.payment_mode =
+        payment_mode || 'Cash';
+
+      bill.payment_status =
+        payment_status || 'Paid';
+
+      bill.paid_amount =
+        Number(paid_amount) ||
+        grandTotal;
+
+      bill.subtotal =
+        subtotal;
+
+      bill.discount_amount =
+        extraDiscount;
+
+      bill.taxable_value =
+        finalTaxable;
+
+      bill.cgst_amount =
+        finalCgst;
+
+      bill.sgst_amount =
+        finalSgst;
+
+      bill.igst_amount =
+        finalIgst;
+
+      bill.round_off =
+        roundOff;
+
+      bill.grand_total =
+        grandTotal;
+
+      bill.items =
+        billItems;
+
+      await bill.save();
+
+
+      res.json(bill);
+
+
+    } catch (error) {
+
+      // ======================================================
+      // ROLLBACK OLD STOCK IF UPDATE FAILED
+      // ======================================================
+
+      for (const oldItem of bill.items) {
+
+        const product =
+          await Product.findById(
+            oldItem.product_id
+          );
+
+        if (product) {
+
+          /*
+            At this point old stock was restored.
+            If the new transaction failed before completing,
+            leave the restored stock in place.
+          */
+
+          product.active = true;
+
+          await product.save();
+
+        }
+
+      }
+
+
+      throw error;
+
+    }
+
+
+  } catch (err) {
+
+    console.error(
+      'Update bill error:',
+      err
+    );
 
     res.status(400).json({
       error: err.message
@@ -553,21 +872,22 @@ router.post('/:id/cancel', async (req, res) => {
     }
 
 
-    // --------------------------------------------------------
     // Restore stock
-    // --------------------------------------------------------
 
     for (const item of bill.items) {
 
       const product =
-        await Product.findById(item.product_id);
-
+        await Product.findById(
+          item.product_id
+        );
 
       if (product) {
 
         product.stock_qty =
           Number(product.stock_qty) +
           Number(item.qty || 0);
+
+        product.active = true;
 
         await product.save();
 
@@ -576,7 +896,8 @@ router.post('/:id/cancel', async (req, res) => {
     }
 
 
-    bill.status = 'CANCELLED';
+    bill.status =
+      'CANCELLED';
 
     await bill.save();
 
@@ -586,7 +907,10 @@ router.post('/:id/cancel', async (req, res) => {
 
   } catch (err) {
 
-    console.error('Cancel bill error:', err);
+    console.error(
+      'Cancel bill error:',
+      err
+    );
 
     res.status(400).json({
       error: err.message
@@ -598,7 +922,7 @@ router.post('/:id/cancel', async (req, res) => {
 
 
 // ============================================================
-// DELETE BILL — permanently removes it from MongoDB
+// DELETE BILL
 // ============================================================
 
 router.delete('/:id', async (req, res) => {
@@ -606,7 +930,9 @@ router.delete('/:id', async (req, res) => {
   try {
 
     const bill =
-      await Bill.findById(req.params.id);
+      await Bill.findById(
+        req.params.id
+      );
 
 
     if (!bill) {
@@ -618,24 +944,22 @@ router.delete('/:id', async (req, res) => {
     }
 
 
-    // --------------------------------------------------------
-    // Restore stock — unless this bill was already cancelled,
-    // in which case /cancel already put the stock back.
-    // --------------------------------------------------------
-
     if (bill.status !== 'CANCELLED') {
 
       for (const item of bill.items) {
 
         const product =
-          await Product.findById(item.product_id);
-
+          await Product.findById(
+            item.product_id
+          );
 
         if (product) {
 
           product.stock_qty =
             Number(product.stock_qty) +
             Number(item.qty || 0);
+
+          product.active = true;
 
           await product.save();
 
@@ -646,7 +970,9 @@ router.delete('/:id', async (req, res) => {
     }
 
 
-    await Bill.findByIdAndDelete(req.params.id);
+    await Bill.findByIdAndDelete(
+      req.params.id
+    );
 
 
     res.json({
@@ -657,7 +983,10 @@ router.delete('/:id', async (req, res) => {
 
   } catch (err) {
 
-    console.error('Delete bill error:', err);
+    console.error(
+      'Delete bill error:',
+      err
+    );
 
     res.status(500).json({
       error: err.message
@@ -677,7 +1006,9 @@ router.get('/:id/invoice', async (req, res) => {
   try {
 
     const bill =
-      await Bill.findById(req.params.id);
+      await Bill.findById(
+        req.params.id
+      );
 
 
     if (!bill) {

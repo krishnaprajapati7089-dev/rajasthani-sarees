@@ -67,7 +67,36 @@ button,input{font:inherit}.site-header{position:sticky;top:0;z-index:1000;height
   <div class="kpi-card"><div class="kpi-label">Average Bill</div><div class="kpi-value" id="kpiAvgBill">₹0</div><div class="kpi-sub">Sales ÷ bills</div></div>
  </div>
 
- 
+ <section class="panel">
+  <div class="panel-title">
+   <h2>Bill Filters</h2>
+   <span class="page-info">Filter active bills by date, invoice or customer</span>
+  </div>
+  <div class="filter-row">
+   <div class="filter-group search-box">
+    <label for="searchQuery">Search Invoice / Customer</label>
+    <input id="searchQuery" type="search" placeholder="Enter invoice number or customer name" autocomplete="off">
+   </div>
+   <div class="filter-group">
+    <label for="fromDate">From Date</label>
+    <input id="fromDate" type="date">
+   </div>
+   <div class="filter-group">
+    <label for="toDate">To Date</label>
+    <input id="toDate" type="date">
+   </div>
+   <button class="btn btn-primary" type="button" onclick="applyAllFilters()">Apply</button>
+   <button class="btn btn-ghost" type="button" onclick="clearFilters()">Clear</button>
+  </div>
+  <div class="quick-filters">
+   <button type="button" onclick="setPeriod('today')">Today</button>
+   <button type="button" onclick="setPeriod('yesterday')">Yesterday</button>
+   <button type="button" onclick="setPeriod('7days')">Last 7 Days</button>
+   <button type="button" onclick="setPeriod('month')">This Month</button>
+   <button type="button" onclick="setPeriod('lastmonth')">Last Month</button>
+   <button type="button" onclick="setPeriod('all')">All Time</button>
+  </div>
+ </section>
 
  <section class="panel">
   <div class="panel-title"><h2>Bill-wise Sales</h2><span class="page-info">10 bills per page</span></div>
@@ -128,27 +157,46 @@ function isInRange(b,from,to){
  return (!from||k>=from)&&(!to||k<=to);
 }
 function getSelectedBills(){
- const q=document.getElementById("searchQuery").value.trim().toLowerCase();
- return allBills.filter(b=>!isCancelled(b)&&isInRange(b,document.getElementById("fromDate").value,document.getElementById("toDate").value))
- .filter(b=>!q||String(b.customer_name||"").toLowerCase().includes(q)||String(b.invoice_no||"").toLowerCase().includes(q));
+ const searchEl=document.getElementById("searchQuery");
+ const fromEl=document.getElementById("fromDate");
+ const toEl=document.getElementById("toDate");
+
+ const q=(searchEl?.value||"").trim().toLowerCase();
+ const from=fromEl?.value||"";
+ const to=toEl?.value||"";
+
+ return allBills
+  .filter(b=>!isCancelled(b))
+  .filter(b=>isInRange(b,from,to))
+  .filter(b=>{
+    if(!q)return true;
+    const customer=String(b.customer_name||b.customer||"").toLowerCase();
+    const invoice=String(b.invoice_no||b.invoiceNo||"").toLowerCase();
+    const phone=String(b.customer_phone||b.phone||"").toLowerCase();
+    return customer.includes(q)||invoice.includes(q)||phone.includes(q);
+  });
 }
+
 function applyAllFilters(){currentPage=1;filteredBills=getSelectedBills();renderAll();}
 function renderAll(){renderKpis(filteredBills);renderBills();}
 
 function renderKpis(bills){
- const sales=bills.reduce((s,b)=>s+num(b.grand_total),0), qty=bills.reduce((s,b)=>s+billQty(b),0);
+ const sales=bills.reduce((s,b)=>s+num(b.grand_total),0);
+ const qty=bills.reduce((s,b)=>s+billQty(b),0);
  const gst=bills.reduce((s,b)=>s+billTax(b).total,0);
+
  document.getElementById("kpiTotalSales").textContent=money(sales);
  document.getElementById("kpiTotalBills").textContent=bills.length.toLocaleString("en-IN");
  document.getElementById("kpiQty").textContent=qty.toLocaleString("en-IN");
  document.getElementById("kpiGst").textContent=money(gst);
  document.getElementById("kpiAvgBill").textContent=money(bills.length?sales/bills.length:0);
- const f=document.getElementById("fromDate").value,t=document.getElementById("toDate").value;
- document.getElementById("kpiPeriod").textContent=f||t?`${f||"start"} → ${t||"today"}`:"All active bills";
- document.getElementById("periodSales").textContent=money(sales);
- document.getElementById("periodQty").textContent=qty.toLocaleString("en-IN");
- document.getElementById("monthSales").textContent=money(getCurrentMonthSales());
+
+ const from=document.getElementById("fromDate").value;
+ const to=document.getElementById("toDate").value;
+ document.getElementById("kpiPeriod").textContent=
+   from||to ? `${from||"start"} → ${to||"today"}` : "All active bills";
 }
+
 function getCurrentMonthSales(){
  const month=document.getElementById("gstMonth").value||indiaToday().slice(0,7);
  return allBills.filter(b=>!isCancelled(b)&&localDateKey(billDateValue(b)).slice(0,7)===month).reduce((s,b)=>s+num(b.grand_total),0);
@@ -188,13 +236,67 @@ function setPeriod(type){
 function clearFilters(){document.getElementById("searchQuery").value="";document.getElementById("fromDate").value="";document.getElementById("toDate").value="";applyAllFilters();}
 
 async function loadReports(){
- const btn=document.getElementById("refreshBtn");btn.disabled=true;
- document.getElementById("billsTable").innerHTML='<tr class="empty-row"><td colspan="9">Loading bills…</td></tr>';
+ const btn=document.getElementById("refreshBtn");
+ const message=document.getElementById("tableMessage");
+ btn.disabled=true;
+ message.style.display="none";
+ document.getElementById("billsTable").innerHTML='<tr class="empty-row"><td colspan="9">Connecting to billing database…</td></tr>';
+
  try{
-  const r=await fetch(`${API_BASE_URL}/api/bills`),data=await r.json();if(!r.ok)throw new Error(data.error||"Could not load bills");
-  allBills=Array.isArray(data)?data:[];applyAllFilters();loadGstReport();
- }catch(e){console.error(e);allBills=[];filteredBills=[];renderAll();document.getElementById("tableMessage").textContent="Could not load bills: "+e.message;document.getElementById("tableMessage").className="table-message error";document.getElementById("tableMessage").style.display="block";}
- finally{btn.disabled=false;}
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),20000);
+
+  const response=await fetch(`${API_BASE_URL}/api/bills`,{
+    method:"GET",
+    headers:{Accept:"application/json"},
+    cache:"no-store",
+    signal:controller.signal
+  });
+
+  clearTimeout(timeout);
+
+  const raw=await response.text();
+  let data;
+  try{data=raw?JSON.parse(raw):null;}
+  catch(parseError){throw new Error(`Server returned invalid JSON (HTTP ${response.status})`);}
+
+  if(!response.ok){
+    throw new Error(data?.error||data?.message||`Server error ${response.status}`);
+  }
+
+  if(Array.isArray(data)){
+    allBills=data;
+  }else if(Array.isArray(data?.bills)){
+    allBills=data.bills;
+  }else if(Array.isArray(data?.data)){
+    allBills=data.data;
+  }else{
+    throw new Error("The bills API responded successfully, but no bills array was found.");
+  }
+
+  filteredBills=[];
+  currentPage=1;
+  applyAllFilters();
+  loadGstReport();
+
+  console.log(`Reports loaded: ${allBills.length} bill(s) from ${API_BASE_URL}/api/bills`);
+ }catch(e){
+  console.error("Reports load error:",e);
+  allBills=[];
+  filteredBills=[];
+  currentPage=1;
+  renderAll();
+
+  const reason=e.name==="AbortError"
+    ?"The server took too long to respond."
+    :e.message;
+
+  message.textContent=`Could not load bills from backend: ${reason}`;
+  message.className="table-message error";
+  message.style.display="block";
+ }finally{
+  btn.disabled=false;
+ }
 }
 
 function calculateGstForMonth(month){
@@ -225,11 +327,40 @@ function loadGstReport(){
  document.getElementById("gstMessage").className="table-message";
 }
 
-document.getElementById("searchQuery").addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(applyAllFilters,180);});
-document.getElementById("gstMonth").addEventListener("change",()=>{loadGstReport();renderKpis(filteredBills);});
-document.getElementById("menuToggle").addEventListener("click",()=>{const p=document.getElementById("mobilePanel");p.classList.toggle("open");if(p.classList.contains("open"))p.innerHTML='<div style="background:#fff;padding:18px;border-radius:0 0 14px 14px;display:grid;gap:7px"><a href="dashboard.html" class="nav-link">Dashboard</a><a href="billing.html" class="nav-link">New Bill</a><a href="inventory.html" class="nav-link">Inventory</a><a href="purchase.html" class="nav-link">Purchase Bill</a><a href="reports.html" class="nav-link is-active">Reports</a></div>';});
+const searchQueryEl=document.getElementById("searchQuery");
+const gstMonthEl=document.getElementById("gstMonth");
+const menuToggleEl=document.getElementById("menuToggle");
 
-const now=new Date();document.getElementById("gstMonth").value=indiaToday().slice(0,7);loadReports();
+if(searchQueryEl){
+ searchQueryEl.addEventListener("input",()=>{
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(applyAllFilters,180);
+ });
+}
+
+if(gstMonthEl){
+ gstMonthEl.addEventListener("change",()=>{
+  loadGstReport();
+  renderKpis(filteredBills);
+ });
+}
+
+if(menuToggleEl){
+ menuToggleEl.addEventListener("click",()=>{
+  const p=document.getElementById("mobilePanel");
+  p.classList.toggle("open");
+  if(p.classList.contains("open")){
+   p.innerHTML='<div style="background:#fff;padding:18px;border-radius:0 0 14px 14px;display:grid;gap:7px"><a href="dashboard.html" class="nav-link">Dashboard</a><a href="billing.html" class="nav-link">New Bill</a><a href="inventory.html" class="nav-link">Inventory</a><a href="purchase.html" class="nav-link">Purchase Bill</a><a href="reports.html" class="nav-link is-active">Reports</a></div>';
+  }else{
+   p.innerHTML="";
+  }
+ });
+}
+
+const initialMonth=indiaToday().slice(0,7);
+if(gstMonthEl)gstMonthEl.value=initialMonth;
+loadReports();
+
 </script>
 </body>
 </html>

@@ -198,6 +198,201 @@
   white-space:nowrap;
 }
 
+
+/* =========================================================
+   PREMIUM INVENTORY — EMERALD / CHAMPAGNE
+   ========================================================= */
+:root{
+  --maroon:#123C35;
+  --maroon-2:#1B5A4E;
+  --maroon-dark:#092A25;
+  --gold:#C7A15A;
+  --gold-light:#F0D9A2;
+  --cream:#F3F1EB;
+  --paper:#FFFDF8;
+  --ink:#17221F;
+  --ink-soft:#6C7773;
+  --line:#E5DED0;
+  --success:#197A5B;
+  --danger:#A63D45;
+}
+body{
+  background:
+    radial-gradient(circle at 8% 0%,rgba(199,161,90,.09),transparent 26rem),
+    var(--cream);
+}
+.site-header{
+  background:rgba(255,253,248,.94);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(199,161,90,.22);
+  box-shadow:0 8px 30px rgba(9,42,37,.06);
+}
+.nav-link,.btn-primary,.btn-ghost,.icon-btn,.menu-toggle,.table-action,.page-number{
+  transition:transform .22s ease,box-shadow .22s ease,background .22s ease,
+              border-color .22s ease,color .22s ease;
+}
+.nav-link:hover{
+  transform:translateY(-2px);
+  color:var(--maroon);
+  background:rgba(199,161,90,.12);
+  box-shadow:0 7px 18px rgba(9,42,37,.08);
+}
+.nav-link.is-active{
+  color:var(--maroon);
+  background:linear-gradient(135deg,rgba(199,161,90,.16),rgba(240,217,162,.08));
+}
+.btn-primary{
+  background:linear-gradient(135deg,#123C35,#1B5A4E);
+  box-shadow:0 7px 18px rgba(9,42,37,.14);
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg,#174C42,#236658);
+  transform:translateY(-3px);
+  box-shadow:0 12px 25px rgba(9,42,37,.20);
+}
+.btn-ghost:hover,.table-action:hover,.page-number:hover{
+  background:#fff8e9;
+  border-color:var(--gold);
+  color:var(--maroon);
+  transform:translateY(-2px);
+  box-shadow:0 8px 18px rgba(9,42,37,.08);
+}
+.panel{
+  background:rgba(255,253,248,.93);
+  border-color:rgba(229,222,208,.95);
+  box-shadow:0 10px 30px rgba(9,42,37,.055);
+  transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;
+  animation:panelIn .65s ease both;
+}
+.panel:hover{
+  transform:translateY(-2px);
+  box-shadow:0 16px 38px rgba(9,42,37,.085);
+  border-color:rgba(199,161,90,.35);
+}
+.page-header h1{animation:titleIn .65s cubic-bezier(.2,.8,.2,1) both}
+@keyframes titleIn{
+  from{opacity:0;transform:translateY(14px) scale(.98);filter:blur(4px)}
+  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes panelIn{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+input,select{
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+input:hover,select:hover{border-color:rgba(199,161,90,.65)}
+input:focus,select:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 4px rgba(199,161,90,.14);
+  transform:translateY(-1px);
+}
+.table-wrapper tbody tr{
+  transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.table-wrapper tbody tr:hover{
+  background:rgba(199,161,90,.055);
+  transform:translateX(2px);
+  box-shadow:inset 3px 0 0 var(--gold);
+}
+.barcode-pill{
+  background:linear-gradient(135deg,#fff8e9,#f6f0e4);
+  border:1px solid rgba(199,161,90,.25);
+}
+.modal{
+  background:rgba(9,42,37,.70);
+  backdrop-filter:blur(6px);
+}
+.modal-box{
+  border:1px solid rgba(199,161,90,.30);
+  box-shadow:0 25px 70px rgba(0,0,0,.28);
+  animation:modalIn .3s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes modalIn{
+  from{opacity:0;transform:translateY(18px) scale(.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* Insights */
+.inventory-insights-panel{overflow:hidden}
+.insights-heading{
+  display:flex;justify-content:space-between;align-items:center;gap:15px;
+  margin-bottom:16px;
+}
+.insights-heading h2{margin-bottom:0}
+.insight-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;
+}
+.insight-grid-2{grid-template-columns:1fr 1fr}
+.insight-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#123C35,#1B5A4E);
+  color:#fff;border-radius:14px;padding:17px;
+  box-shadow:0 9px 22px rgba(9,42,37,.12);
+  animation:cardRise .55s ease both;
+}
+.insight-card:nth-child(2){animation-delay:.06s}
+.insight-card:nth-child(3){animation-delay:.12s}
+.insight-card:nth-child(4){animation-delay:.18s}
+.insight-card::after{
+  content:"";position:absolute;width:110px;height:110px;border-radius:50%;
+  right:-45px;top:-50px;background:rgba(240,217,162,.12);
+}
+.insight-card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 15px 30px rgba(9,42,37,.18)}
+.insight-card span{display:block;font-size:11px;color:#DCE9E4;text-transform:uppercase;letter-spacing:.7px}
+.insight-card strong{display:block;margin-top:7px;font:700 24px 'Playfair Display',serif;color:#F0D9A2}
+@keyframes cardRise{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.insight-subpanel{
+  border:1px solid var(--line);border-radius:14px;background:#fff;padding:15px;
+}
+.subpanel-title{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--line);
+}
+.subpanel-title strong{color:var(--maroon)}
+.subpanel-title span{font-size:11px;color:var(--ink-soft)}
+.brand-summary-list,.movement-list{display:flex;flex-direction:column;gap:8px;max-height:310px;overflow:auto}
+.brand-row,.movement-row{
+  display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+  padding:10px;border-radius:10px;background:#fbfaf6;
+  transition:transform .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.brand-row:hover,.movement-row:hover{
+  transform:translateX(3px);background:#fff8e9;box-shadow:inset 3px 0 var(--gold);
+}
+.brand-main strong,.movement-main strong{display:block;color:var(--maroon);font-size:13px}
+.brand-main small,.movement-main small{display:block;color:var(--ink-soft);font-size:11px;margin-top:3px}
+.brand-value{text-align:right;font-weight:700;color:var(--maroon);font-size:13px}
+.brand-value small{display:block;color:var(--ink-soft);font-weight:500}
+.movement-value{text-align:right;color:var(--maroon);font-size:12px;font-weight:700}
+.movement-value .sold{color:var(--danger)}
+.movement-value .added{color:var(--success)}
+.insight-empty{padding:20px;text-align:center;color:var(--ink-soft);font-size:12px}
+.stock-zero{
+  color:var(--danger)!important;font-weight:800;
+}
+@media(max-width:1000px){
+  .insight-grid{grid-template-columns:repeat(2,1fr)}
+  .insight-grid-2{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .insights-heading{align-items:flex-start;flex-direction:column}
+  .insight-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .insight-grid{grid-template-columns:1fr}
+}
+@media(hover:none){
+  .panel:hover,.nav-link:hover,.btn-primary:hover,.btn-ghost:hover,.table-action:hover,
+  .page-number:hover,.insight-card:hover,.brand-row:hover,.movement-row:hover{
+    transform:none;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -225,7 +420,6 @@
       <button class="icon-btn hide-xs" aria-label="Search" title="Search">⌕</button>
       <button class="icon-btn hide-xs" aria-label="Notifications" title="Notifications">♢</button>
       <a class="btn-primary" href="billing.html">＋ <span class="label">New Bill</span></a>
-      <div class="avatar" title="Store Manager">SM</div>
       <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
     </div>
   </div>
@@ -248,6 +442,35 @@
 <section class="panel">
   <label for="inventorySearch" class="sr-only">Search inventory</label>
   <input id="inventorySearch" placeholder="Search saree, barcode or category..." oninput="onSearchInput()">
+</section>
+
+<section class="panel inventory-insights-panel">
+  <div class="insights-heading">
+    <div>
+      <p class="section-label">Stock intelligence</p>
+      <h2>Inventory Insights</h2>
+    </div>
+    <button class="btn-ghost small" type="button" onclick="loadInventoryInsights()">↻ Refresh Insights</button>
+  </div>
+
+  <div class="insight-grid" id="inventoryKpis">
+    <div class="insight-card"><span>Total Saree Designs</span><strong id="insightProducts">—</strong></div>
+    <div class="insight-card"><span>Total Pieces in Stock</span><strong id="insightPieces">—</strong></div>
+    <div class="insight-card"><span>Stock Cost Value</span><strong id="insightCost">₹—</strong></div>
+    <div class="insight-card"><span>Stock Selling Value</span><strong id="insightSelling">₹—</strong></div>
+  </div>
+
+  <div class="insight-grid insight-grid-2">
+    <div class="insight-subpanel">
+      <div class="subpanel-title"><strong>Brand / Category Stock</strong><span>designs · pieces · cost</span></div>
+      <div id="brandSummary" class="brand-summary-list"><div class="insight-empty">Loading…</div></div>
+    </div>
+
+    <div class="insight-subpanel">
+      <div class="subpanel-title"><strong>Product Movement</strong><span>sold · added · balance</span></div>
+      <div id="movementSummary" class="movement-list"><div class="insight-empty">Loading…</div></div>
+    </div>
+  </div>
 </section>
 
 <section class="panel">
@@ -307,7 +530,7 @@
       <div class="form-group"><label>Stock Quantity</label><input id="newStock" type="number" min="0" value="1"></div>
     </div>
     <div class="form-row" style="margin-top:14px">
-      <div class="form-group"><label>Reorder Level</label><input id="newReorder" type="number" min="0" value="5"></div>
+      <div class="form-group"><label>Reorder Level</label><input id="newReorder" type="number" min="0" value="1"></div>
       <div class="form-group"><label>Barcode (optional)</label><input id="newBarcode" placeholder="Leave blank to auto-generate"></div>
     </div>
     <div class="form-row" style="margin-top:14px">
@@ -329,12 +552,12 @@
 
     <div class="form-row">
       <div class="form-group">
-        <label>Saree Name</label>
-        <input id="editName" readonly>
+        <label>Saree Name (editable)</label>
+        <input id="editName">
       </div>
       <div class="form-group">
-        <label>Category</label>
-        <input id="editCategory" readonly>
+        <label>Category (editable)</label>
+        <input id="editCategory">
       </div>
     </div>
 
@@ -358,6 +581,14 @@
         <label>Stock Quantity</label>
         <input id="editStock" type="number" min="0">
       </div>
+    </div>
+
+    <div class="form-row" style="margin-top:14px">
+      <div class="form-group">
+        <label>Reorder Level</label>
+        <input id="editReorder" type="number" min="0" value="1">
+      </div>
+      <div></div>
     </div>
 
     <div class="form-row" style="margin-top:14px">
@@ -445,6 +676,164 @@ function setInventoryMessage(msg, type=""){
   el.className = "form-message " + type;
 }
 
+
+/* =========================================================
+   INVENTORY INTELLIGENCE
+   - Brand is not a field in the current Product schema, so
+     this groups by Category and labels it "Brand / Category".
+   - Sales come from /api/bills.
+   - Stock additions come from /api/purchases.
+   ========================================================= */
+let billHistory = [];
+let purchaseHistory = [];
+
+function safeDate(value){
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatShortDate(value){
+  const d = safeDate(value);
+  if (!d) return "—";
+  return d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+}
+
+async function loadInventoryHistory(){
+  try{
+    const [billsRes,purchasesRes] = await Promise.all([
+      fetch("/api/bills"),
+      fetch("/api/purchases")
+    ]);
+
+    const billsData = await billsRes.json();
+    const purchasesData = await purchasesRes.json();
+
+    billHistory = Array.isArray(billsData) ? billsData : [];
+    purchaseHistory = Array.isArray(purchasesData) ? purchasesData : [];
+  }catch(err){
+    console.warn("History could not be loaded:", err);
+    billHistory = [];
+    purchaseHistory = [];
+  }
+}
+
+function buildProductMovement(){
+  const movement = new Map();
+
+  allProducts.forEach(p=>{
+    movement.set(String(p._id),{
+      sold:0,
+      added:0,
+      lastSold:null,
+      lastAdded:null
+    });
+  });
+
+  billHistory.forEach(bill=>{
+    const status = String(bill.status || "ACTIVE").toUpperCase();
+    if(status === "CANCELLED") return;
+
+    const date = bill.bill_date || bill.createdAt;
+    (bill.items || []).forEach(item=>{
+      const id = String(item.product_id || "");
+      if(!movement.has(id)) movement.set(id,{sold:0,added:0,lastSold:null,lastAdded:null});
+      const m = movement.get(id);
+      m.sold += Number(item.qty || 0);
+      if(!m.lastSold || (safeDate(date) && safeDate(date) > safeDate(m.lastSold))) m.lastSold = date;
+    });
+  });
+
+  purchaseHistory.forEach(purchase=>{
+    const date = purchase.invoice_date || purchase.createdAt;
+    (purchase.items || []).forEach(item=>{
+      const id = String(item.product_id || "");
+      if(!movement.has(id)) movement.set(id,{sold:0,added:0,lastSold:null,lastAdded:null});
+      const m = movement.get(id);
+      m.added += Number(item.qty || 0);
+      if(!m.lastAdded || (safeDate(date) && safeDate(date) > safeDate(m.lastAdded))) m.lastAdded = date;
+    });
+  });
+
+  return movement;
+}
+
+function renderInventoryInsights(){
+  const products = allProducts.filter(p=>Number(p.stock_qty || 0) > 0);
+  const totalPieces = products.reduce((s,p)=>s+Number(p.stock_qty||0),0);
+  const costValue = products.reduce((s,p)=>s+Number(p.stock_qty||0)*Number(p.purchase_price||0),0);
+  const sellingValue = products.reduce((s,p)=>s+Number(p.stock_qty||0)*Number(p.selling_price||0),0);
+
+  document.getElementById("insightProducts").textContent = products.length.toLocaleString("en-IN");
+  document.getElementById("insightPieces").textContent = totalPieces.toLocaleString("en-IN");
+  document.getElementById("insightCost").textContent = money(costValue);
+  document.getElementById("insightSelling").textContent = money(sellingValue);
+
+  const groups = new Map();
+  products.forEach(p=>{
+    const key = String(p.category || "General").trim() || "General";
+    if(!groups.has(key)) groups.set(key,{designs:0,pieces:0,cost:0});
+    const g = groups.get(key);
+    g.designs += 1;
+    g.pieces += Number(p.stock_qty||0);
+    g.cost += Number(p.stock_qty||0)*Number(p.purchase_price||0);
+  });
+
+  const brandEl = document.getElementById("brandSummary");
+  const groupRows = [...groups.entries()].sort((a,b)=>b[1].cost-a[1].cost);
+
+  brandEl.innerHTML = groupRows.length ? groupRows.map(([name,g])=>`
+    <div class="brand-row">
+      <div class="brand-main">
+        <strong>${escapeHtml(name)}</strong>
+        <small>${g.designs} design${g.designs===1?"":"s"} · ${g.pieces} piece${g.pieces===1?"":"s"}</small>
+      </div>
+      <div class="brand-value">
+        ${money(g.cost)}
+        <small>stock cost</small>
+      </div>
+    </div>
+  `).join("") : '<div class="insight-empty">No stock available.</div>';
+
+  const movement = buildProductMovement();
+  const movementRows = products
+    .map(p=>({p,m:movement.get(String(p._id)) || {sold:0,added:0}}))
+    .sort((a,b)=>(b.m.sold||0)-(a.m.sold||0));
+
+  document.getElementById("movementSummary").innerHTML = movementRows.length ? movementRows.map(({p,m})=>`
+    <div class="movement-row">
+      <div class="movement-main">
+        <strong>${escapeHtml(p.name)}</strong>
+        <small>Stock ${Number(p.stock_qty||0)} · Last sale ${formatShortDate(m.lastSold)}</small>
+      </div>
+      <div class="movement-value">
+        <span class="sold">Sold ${Number(m.sold||0)}</span><br>
+        <span class="added">Added ${Number(m.added||0)}</span>
+      </div>
+    </div>
+  `).join("") : '<div class="insight-empty">No movement history available.</div>';
+}
+
+async function loadInventoryInsights(){
+  await loadInventoryHistory();
+  renderInventoryInsights();
+}
+
+async function deactivateZeroStockProducts(products){
+  const zeroProducts = products.filter(p =>
+    Number(p.stock_qty || 0) <= 0 && p.active !== false
+  );
+
+  if(!zeroProducts.length) return false;
+
+  await Promise.allSettled(
+    zeroProducts.map(p =>
+      fetch("/api/products/" + encodeURIComponent(p._id), {method:"DELETE"})
+    )
+  );
+
+  return true;
+}
+
 async function loadInventory(q="", resetPage=true){
   try {
     if (resetPage) currentInventoryPage = 1;
@@ -452,7 +841,19 @@ async function loadInventory(q="", resetPage=true){
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not load inventory");
     allProducts = data;
+
+    // Zero-stock sarees are soft-deactivated through the existing DELETE
+    // endpoint. This removes them from active inventory and barcode/search
+    // results while preserving old bill history in MongoDB.
+    const deactivated = await deactivateZeroStockProducts(allProducts);
+    if (deactivated) {
+      const refreshed = await fetch("/api/products" + (q ? "?q=" + encodeURIComponent(q) : ""));
+      const refreshedData = await refreshed.json();
+      if (refreshed.ok && Array.isArray(refreshedData)) allProducts = refreshedData;
+    }
+
     renderInventory();
+    await loadInventoryInsights();
     setInventoryMessage("");
   } catch (err) {
     console.error(err);
@@ -510,7 +911,7 @@ function renderInventory(){
 
       <td>${Number(p.gst_rate || 0)}%</td>
 
-      <td>${Number(p.stock_qty || 0)}</td>
+      <td class="${Number(p.stock_qty || 0) <= 0 ? "stock-zero" : ""}">${Number(p.stock_qty || 0)}</td>
 
       <td>
         <button
@@ -737,6 +1138,7 @@ async function openEditProduct(id){
   document.getElementById("editSellingPrice").value = Number(product.selling_price || 0);
   document.getElementById("editGst").value = Number(product.gst_rate || 0);
   document.getElementById("editStock").value = Number(product.stock_qty || 0);
+  document.getElementById("editReorder").value = Number(product.reorder_level ?? 1);
   document.getElementById("editColor").value = product.color || "";
 
   document.getElementById("editMessage").textContent = "";
@@ -772,12 +1174,21 @@ async function saveEditProduct(){
   }
 
   const payload = {
+    name: document.getElementById("editName").value.trim(),
+    category: document.getElementById("editCategory").value.trim() || "General",
     purchase_price: Number(document.getElementById("editPurchasePrice").value) || 0,
     selling_price: sellingPrice,
     gst_rate: Number(document.getElementById("editGst").value) || 0,
     stock_qty: stock,
+    reorder_level: Math.max(0, Number(document.getElementById("editReorder").value) || 1),
     color: document.getElementById("editColor").value.trim()
   };
+
+  if (!payload.name) {
+    msgEl.textContent = "Saree name is required.";
+    msgEl.className = "form-message error";
+    return;
+  }
 
   msgEl.textContent = "Saving...";
   msgEl.className = "form-message";
@@ -797,6 +1208,7 @@ async function saveEditProduct(){
 
     closeEditProduct();
     await loadInventory(document.getElementById("inventorySearch").value.trim());
+    await loadInventoryInsights();
     setInventoryMessage("Product updated successfully.", "success");
   } catch (err) {
     console.error(err);
@@ -840,7 +1252,7 @@ async function submitAddProduct(){
     gst_rate: Number(document.getElementById("newGst").value) || 0,
     stock_qty: Number(document.getElementById("newStock").value) || 0,
     color: document.getElementById("newColor").value.trim(),
-    reorder_level: Number(document.getElementById("newReorder").value) || 5,
+    reorder_level: Math.max(0, Number(document.getElementById("newReorder").value) || 1),
     barcode: document.getElementById("newBarcode").value.trim() || undefined
   };
 
@@ -865,7 +1277,7 @@ async function submitAddProduct(){
     document.getElementById("newSellingPrice").value = "0";
     document.getElementById("newGst").value = "5";
     document.getElementById("newStock").value = "1";
-    document.getElementById("newReorder").value = "5";
+    document.getElementById("newReorder").value = "1";
 
     await loadInventory(document.getElementById("inventorySearch").value.trim());
 
@@ -1395,7 +1807,7 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
 });
 
-loadInventory();
+loadInventoryHistory().then(() => loadInventory());
 </script>
 </body>
 </html>

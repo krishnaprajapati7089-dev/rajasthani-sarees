@@ -3,440 +3,3885 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Reports — Rajastani Saree</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
+
 :root{
- --emerald:#063f35;--emerald-2:#0b5a4b;--emerald-3:#0f7664;
- --champagne:#c9a24a;--champagne-light:#ead9a7;
- --ivory:#fbf8f2;--paper:#fff;--ink:#17221f;--muted:#68756f;
- --line:#e5ddcc;--danger:#b23a2e;--success:#1f7a51;--header-h:72px;
+ --emerald:#063f35;
+ --emerald-2:#0b5a4b;
+ --emerald-3:#0f7664;
+
+ --champagne:#c9a24a;
+ --champagne-light:#ead9a7;
+
+ --ivory:#fbf8f2;
+ --paper:#fff;
+
+ --ink:#17221f;
+ --muted:#68756f;
+
+ --line:#e5ddcc;
+
+ --danger:#b23a2e;
+ --danger-dark:#8f2d24;
+
+ --success:#1f7a51;
+
+ --header-h:72px;
 }
-*{box-sizing:border-box}html,body{margin:0;padding:0}
-body{font-family:Inter,sans-serif;background:linear-gradient(135deg,#fbf8f2 0%,#f5f0e5 100%);color:var(--ink)}
-button,input{font:inherit}.site-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);box-shadow:0 5px 25px rgba(6,63,53,.06)}
-.header-inner{max-width:1320px;margin:auto;height:100%;padding:0 24px;display:flex;align-items:center;gap:24px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}.brand-text{display:flex;flex-direction:column;line-height:1}
-.brand-name{font-family:"Playfair Display",serif;font-weight:700;font-size:20px;color:var(--emerald);letter-spacing:.4px}.brand-sub{font-size:10px;letter-spacing:1.5px;color:var(--champagne);margin-top:4px;font-weight:700}
-.primary-nav{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}.nav-link{padding:10px 15px;border-radius:10px;text-decoration:none;color:var(--muted);font-size:14px;font-weight:600;transition:.22s ease}.nav-link:hover,.nav-link.is-active{color:var(--emerald);background:#eef6f2;transform:translateY(-1px)}
-.header-actions{display:flex;align-items:center;gap:9px}.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;transition:.22s ease;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn-primary{background:var(--emerald);color:#fff;box-shadow:0 7px 18px rgba(6,63,53,.16)}.btn-primary:hover{background:var(--emerald-2);transform:translateY(-2px);box-shadow:0 11px 24px rgba(6,63,53,.23)}.btn-ghost{background:#fff;color:var(--emerald);border:1px solid var(--line)}.btn-ghost:hover{border-color:var(--champagne);background:#fffaf0;transform:translateY(-2px)}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.icon-btn{width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--emerald);transition:.2s}.icon-btn:hover{transform:rotate(8deg) scale(1.04);border-color:var(--champagne)}
-.menu-toggle{display:none;width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:10px}.menu-toggle span,.menu-toggle span:before,.menu-toggle span:after{display:block;width:18px;height:2px;background:var(--emerald);margin:auto;position:relative}.menu-toggle span:before,.menu-toggle span:after{content:"";position:absolute;left:0}.menu-toggle span:before{top:-6px}.menu-toggle span:after{top:6px}
-.mobile-panel{display:none}.page-inner{max-width:1320px;margin:auto;padding:34px 24px 50px}
-.page-header{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:24px;animation:rise .55s ease both}.eyebrow{font-size:11px;letter-spacing:1.7px;font-weight:800;color:var(--champagne);margin:0 0 7px}.page-header h1{font-family:"Playfair Display",serif;font-size:38px;color:var(--emerald);margin:0}.page-header p:last-child{color:var(--muted);margin:8px 0 0;font-size:13px}
-.panel{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 10px 35px rgba(6,63,53,.06);animation:rise .6s ease both;transition:.25s}.panel:hover{box-shadow:0 16px 45px rgba(6,63,53,.1);transform:translateY(-2px)}.panel h2{font-family:"Playfair Display",serif;color:var(--emerald);font-size:21px;margin:0 0 18px}.panel-title{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:17px}.panel-title h2{margin:0}
-.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:20px}.kpi-card{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:0 7px 25px rgba(6,63,53,.05);animation:cardRise .65s ease both;transition:.25s}.kpi-card:nth-child(2){animation-delay:.05s}.kpi-card:nth-child(3){animation-delay:.1s}.kpi-card:nth-child(4){animation-delay:.15s}.kpi-card:nth-child(5){animation-delay:.2s}.kpi-card:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--emerald),var(--champagne))}.kpi-card:hover{transform:translateY(-5px);box-shadow:0 16px 35px rgba(6,63,53,.13)}.kpi-label{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}.kpi-value{font-family:"Playfair Display",serif;font-size:25px;font-weight:700;color:var(--emerald);margin-top:8px}.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px}
-.filter-row{display:grid;grid-template-columns:1.5fr repeat(2,minmax(150px,.6fr)) auto auto;gap:10px;align-items:end}.filter-group{display:flex;flex-direction:column;gap:6px}.filter-group label{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.3px}.filter-group input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);outline:none;transition:.2s}.filter-group input:focus{border-color:var(--champagne);box-shadow:0 0 0 3px rgba(201,162,74,.14)}
-.quick-filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.quick-filters button{font-size:11px;padding:7px 10px;border:1px solid var(--line);background:#fff;border-radius:20px;color:var(--emerald);cursor:pointer;font-weight:700;transition:.2s}.quick-filters button:hover{background:#eef6f2;border-color:#b8d4cc;transform:translateY(-1px)}
-.table-wrapper{overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;padding:12px 11px;border-bottom:1px solid var(--line);font-size:12.5px;white-space:nowrap}th{font-size:10.5px;text-transform:uppercase;letter-spacing:.45px;color:var(--muted);background:#faf8f2;position:sticky;top:0;z-index:1}tbody tr{transition:.18s}tbody tr:hover{background:#f7fbf8;transform:scale(1.002)}td strong{color:var(--emerald)}.status-pill{font-size:10px;font-weight:800;padding:4px 8px;border-radius:20px}.paid{background:#e7f5ed;color:#1e7a4c}.due{background:#fbeae7;color:#b23a2e}.cancelled{background:#f1eee7;color:#6b5c56}.row-link{cursor:pointer}.empty-row td{text-align:center;color:var(--muted);padding:30px}.table-message{font-size:12px;color:var(--muted);margin:10px 0}.table-message.error{color:var(--danger)}
-.pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}.page-info{font-size:12px;color:var(--muted)}.page-buttons{display:flex;gap:6px}.page-buttons button{min-width:36px;height:34px;border:1px solid var(--line);background:#fff;border-radius:8px;color:var(--emerald);cursor:pointer;font-weight:700}.page-buttons button:hover:not(:disabled){background:#eef6f2;transform:translateY(-1px)}.page-buttons button:disabled{opacity:.4;cursor:not-allowed}.page-buttons .active{background:var(--emerald);color:#fff;border-color:var(--emerald)}
-.gst-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}.gst-cell{background:#fbf8f2;border:1px solid var(--line);border-radius:12px;padding:14px;transition:.2s}.gst-cell:hover{transform:translateY(-3px);border-color:var(--champagne)}.gst-cell .label{font-size:10.5px;color:var(--muted);font-weight:800;text-transform:uppercase}.gst-cell .value{font-family:"Playfair Display",serif;font-weight:700;color:var(--emerald);font-size:19px;margin-top:5px}
-.note{font-size:11px;color:var(--muted);line-height:1.5;margin-top:10px}
-@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes cardRise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
-@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(3,1fr)}.filter-row{grid-template-columns:1fr 1fr 1fr}.filter-row .search-box{grid-column:1/-1}}
-@media(max-width:850px){.primary-nav,.header-actions .new-bill{display:none}.menu-toggle{display:block}.kpi-row{grid-template-columns:1fr 1fr}.page-header h1{font-size:32px}.filter-row{grid-template-columns:1fr 1fr}.filter-row .search-box{grid-column:1/-1}}
-@media(max-width:600px){.page-inner{padding:25px 14px}.header-inner{padding:0 14px}.brand-sub{display:none}.page-header{align-items:flex-start;flex-direction:column}.kpi-row{grid-template-columns:1fr}.filter-row{grid-template-columns:1fr}.gst-grid{grid-template-columns:1fr 1fr}.pagination{align-items:flex-start;flex-direction:column}.panel{padding:17px}}
+
+*{
+ box-sizing:border-box;
+}
+
+html,
+body{
+ margin:0;
+ padding:0;
+}
+
+body{
+ font-family:Inter,sans-serif;
+ background:
+ linear-gradient(
+   135deg,
+   #fbf8f2 0%,
+   #f5f0e5 100%
+ );
+ color:var(--ink);
+}
+
+button,
+input{
+ font:inherit;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.site-header{
+ position:sticky;
+ top:0;
+ z-index:1000;
+ height:var(--header-h);
+
+ background:rgba(255,255,255,.94);
+
+ backdrop-filter:blur(14px);
+
+ border-bottom:1px solid var(--line);
+
+ box-shadow:
+   0 5px 25px rgba(6,63,53,.06);
+}
+
+.header-inner{
+ max-width:1320px;
+ margin:auto;
+
+ height:100%;
+
+ padding:0 24px;
+
+ display:flex;
+ align-items:center;
+
+ gap:24px;
+}
+
+.brand{
+ display:flex;
+ align-items:center;
+ gap:10px;
+
+ text-decoration:none;
+
+ flex-shrink:0;
+}
+
+.brand-text{
+ display:flex;
+ flex-direction:column;
+ line-height:1;
+}
+
+.brand-name{
+ font-family:"Playfair Display",serif;
+
+ font-weight:700;
+
+ font-size:20px;
+
+ color:var(--emerald);
+
+ letter-spacing:.4px;
+}
+
+.brand-sub{
+ font-size:10px;
+
+ letter-spacing:1.5px;
+
+ color:var(--champagne);
+
+ margin-top:4px;
+
+ font-weight:700;
+}
+
+.primary-nav{
+ display:flex;
+ align-items:center;
+
+ gap:4px;
+
+ flex:1;
+
+ justify-content:center;
+}
+
+.nav-link{
+ padding:10px 15px;
+
+ border-radius:10px;
+
+ text-decoration:none;
+
+ color:var(--muted);
+
+ font-size:14px;
+
+ font-weight:600;
+
+ transition:.22s ease;
+}
+
+.nav-link:hover,
+.nav-link.is-active{
+ color:var(--emerald);
+
+ background:#eef6f2;
+
+ transform:translateY(-1px);
+}
+
+.header-actions{
+ display:flex;
+ align-items:center;
+
+ gap:9px;
+}
+
+.btn{
+ border:0;
+
+ border-radius:10px;
+
+ padding:10px 16px;
+
+ font-weight:700;
+
+ cursor:pointer;
+
+ transition:.22s ease;
+
+ display:inline-flex;
+
+ align-items:center;
+
+ justify-content:center;
+
+ gap:7px;
+
+ text-decoration:none;
+}
+
+.btn-primary{
+ background:var(--emerald);
+
+ color:#fff;
+
+ box-shadow:
+   0 7px 18px rgba(6,63,53,.16);
+}
+
+.btn-primary:hover{
+ background:var(--emerald-2);
+
+ transform:translateY(-2px);
+
+ box-shadow:
+   0 11px 24px rgba(6,63,53,.23);
+}
+
+.btn-ghost{
+ background:#fff;
+
+ color:var(--emerald);
+
+ border:1px solid var(--line);
+}
+
+.btn-ghost:hover{
+ border-color:var(--champagne);
+
+ background:#fffaf0;
+
+ transform:translateY(-2px);
+}
+
+.btn-danger{
+ background:#fff;
+
+ color:var(--danger);
+
+ border:1px solid rgba(178,58,46,.25);
+}
+
+.btn-danger:hover{
+ background:#fff3f1;
+
+ color:var(--danger-dark);
+
+ border-color:rgba(178,58,46,.45);
+
+ transform:translateY(-2px);
+}
+
+.btn:disabled{
+ opacity:.55;
+
+ cursor:not-allowed;
+
+ transform:none !important;
+}
+
+.icon-btn{
+ width:40px;
+ height:40px;
+
+ border:1px solid var(--line);
+
+ background:#fff;
+
+ border-radius:10px;
+
+ cursor:pointer;
+
+ color:var(--emerald);
+
+ transition:.2s;
+}
+
+.icon-btn:hover{
+ transform:rotate(8deg) scale(1.04);
+
+ border-color:var(--champagne);
+}
+
+.menu-toggle{
+ display:none;
+
+ width:40px;
+ height:40px;
+
+ border:1px solid var(--line);
+
+ background:#fff;
+
+ border-radius:10px;
+}
+
+.menu-toggle span,
+.menu-toggle span:before,
+.menu-toggle span:after{
+ display:block;
+
+ width:18px;
+
+ height:2px;
+
+ background:var(--emerald);
+
+ margin:auto;
+
+ position:relative;
+}
+
+.menu-toggle span:before,
+.menu-toggle span:after{
+ content:"";
+
+ position:absolute;
+
+ left:0;
+}
+
+.menu-toggle span:before{
+ top:-6px;
+}
+
+.menu-toggle span:after{
+ top:6px;
+}
+
+.mobile-panel{
+ display:none;
+}
+
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.page-inner{
+ max-width:1320px;
+
+ margin:auto;
+
+ padding:34px 24px 50px;
+}
+
+.page-header{
+ display:flex;
+
+ justify-content:space-between;
+
+ align-items:flex-end;
+
+ gap:20px;
+
+ margin-bottom:24px;
+
+ animation:rise .55s ease both;
+}
+
+.eyebrow{
+ font-size:11px;
+
+ letter-spacing:1.7px;
+
+ font-weight:800;
+
+ color:var(--champagne);
+
+ margin:0 0 7px;
+}
+
+.page-header h1{
+ font-family:"Playfair Display",serif;
+
+ font-size:38px;
+
+ color:var(--emerald);
+
+ margin:0;
+}
+
+.page-header p:last-child{
+ color:var(--muted);
+
+ margin:8px 0 0;
+
+ font-size:13px;
+}
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.panel{
+ background:rgba(255,255,255,.95);
+
+ border:1px solid var(--line);
+
+ border-radius:18px;
+
+ padding:22px;
+
+ margin-bottom:20px;
+
+ box-shadow:
+   0 10px 35px rgba(6,63,53,.06);
+
+ animation:rise .6s ease both;
+
+ transition:.25s;
+}
+
+.panel:hover{
+ box-shadow:
+   0 16px 45px rgba(6,63,53,.1);
+
+ transform:translateY(-2px);
+}
+
+.panel h2{
+ font-family:"Playfair Display",serif;
+
+ color:var(--emerald);
+
+ font-size:21px;
+
+ margin:0 0 18px;
+}
+
+.panel-title{
+ display:flex;
+
+ justify-content:space-between;
+
+ align-items:center;
+
+ gap:15px;
+
+ margin-bottom:17px;
+}
+
+.panel-title h2{
+ margin:0;
+}
+
+
+/* =========================================================
+   KPI
+   ========================================================= */
+
+.kpi-row{
+ display:grid;
+
+ grid-template-columns:
+   repeat(5,1fr);
+
+ gap:14px;
+
+ margin-bottom:20px;
+}
+
+.kpi-card{
+ position:relative;
+
+ overflow:hidden;
+
+ background:#fff;
+
+ border:1px solid var(--line);
+
+ border-radius:16px;
+
+ padding:19px;
+
+ box-shadow:
+   0 7px 25px rgba(6,63,53,.05);
+
+ animation:cardRise .65s ease both;
+
+ transition:.25s;
+}
+
+.kpi-card:nth-child(2){
+ animation-delay:.05s;
+}
+
+.kpi-card:nth-child(3){
+ animation-delay:.1s;
+}
+
+.kpi-card:nth-child(4){
+ animation-delay:.15s;
+}
+
+.kpi-card:nth-child(5){
+ animation-delay:.2s;
+}
+
+.kpi-card:before{
+ content:"";
+
+ position:absolute;
+
+ top:0;
+ left:0;
+ right:0;
+
+ height:3px;
+
+ background:
+   linear-gradient(
+     90deg,
+     var(--emerald),
+     var(--champagne)
+   );
+}
+
+.kpi-card:hover{
+ transform:translateY(-5px);
+
+ box-shadow:
+   0 16px 35px rgba(6,63,53,.13);
+}
+
+.kpi-label{
+ font-size:11px;
+
+ font-weight:800;
+
+ letter-spacing:.5px;
+
+ color:var(--muted);
+
+ text-transform:uppercase;
+}
+
+.kpi-value{
+ font-family:"Playfair Display",serif;
+
+ font-size:25px;
+
+ font-weight:700;
+
+ color:var(--emerald);
+
+ margin-top:8px;
+}
+
+.kpi-sub{
+ font-size:11px;
+
+ color:var(--muted);
+
+ margin-top:5px;
+}
+
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+
+.filter-row{
+ display:grid;
+
+ grid-template-columns:
+   1.5fr
+   repeat(2,minmax(150px,.6fr))
+   auto
+   auto;
+
+ gap:10px;
+
+ align-items:end;
+}
+
+.filter-group{
+ display:flex;
+
+ flex-direction:column;
+
+ gap:6px;
+}
+
+.filter-group label{
+ font-size:11px;
+
+ font-weight:800;
+
+ color:var(--muted);
+
+ letter-spacing:.3px;
+}
+
+.filter-group input{
+ width:100%;
+
+ padding:11px 12px;
+
+ border:1px solid var(--line);
+
+ border-radius:10px;
+
+ background:#fff;
+
+ color:var(--ink);
+
+ outline:none;
+
+ transition:.2s;
+}
+
+.filter-group input:focus{
+ border-color:var(--champagne);
+
+ box-shadow:
+   0 0 0 3px rgba(201,162,74,.14);
+}
+
+.quick-filters{
+ display:flex;
+
+ gap:8px;
+
+ flex-wrap:wrap;
+
+ margin-top:12px;
+}
+
+.quick-filters button{
+ font-size:11px;
+
+ padding:7px 10px;
+
+ border:1px solid var(--line);
+
+ background:#fff;
+
+ border-radius:20px;
+
+ color:var(--emerald);
+
+ cursor:pointer;
+
+ font-weight:700;
+
+ transition:.2s;
+}
+
+.quick-filters button:hover{
+ background:#eef6f2;
+
+ border-color:#b8d4cc;
+
+ transform:translateY(-1px);
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-wrapper{
+ overflow:auto;
+
+ border:1px solid var(--line);
+
+ border-radius:12px;
+}
+
+table{
+ width:100%;
+
+ border-collapse:collapse;
+
+ background:#fff;
+}
+
+th,
+td{
+ text-align:left;
+
+ padding:12px 11px;
+
+ border-bottom:1px solid var(--line);
+
+ font-size:12.5px;
+
+ white-space:nowrap;
+}
+
+th{
+ font-size:10.5px;
+
+ text-transform:uppercase;
+
+ letter-spacing:.45px;
+
+ color:var(--muted);
+
+ background:#faf8f2;
+
+ position:sticky;
+
+ top:0;
+
+ z-index:1;
+}
+
+tbody tr{
+ transition:.18s;
+}
+
+tbody tr:hover{
+ background:#f7fbf8;
+
+ transform:scale(1.002);
+}
+
+td strong{
+ color:var(--emerald);
+}
+
+.status-pill{
+ font-size:10px;
+
+ font-weight:800;
+
+ padding:4px 8px;
+
+ border-radius:20px;
+}
+
+.paid{
+ background:#e7f5ed;
+
+ color:#1e7a4c;
+}
+
+.due{
+ background:#fbeae7;
+
+ color:#b23a2e;
+}
+
+.cancelled{
+ background:#f1eee7;
+
+ color:#6b5c56;
+}
+
+.row-link{
+ cursor:pointer;
+}
+
+.empty-row td{
+ text-align:center;
+
+ color:var(--muted);
+
+ padding:30px;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.action-buttons{
+ display:flex;
+
+ align-items:center;
+
+ gap:6px;
+}
+
+.action-buttons .btn{
+ padding:6px 9px;
+
+ font-size:10px;
+
+ min-width:58px;
+
+ white-space:nowrap;
+}
+
+.action-buttons .btn-invoice{
+ min-width:62px;
+}
+
+.action-buttons .btn-edit{
+ color:var(--emerald);
+
+ background:#fff;
+
+ border:1px solid var(--line);
+}
+
+.action-buttons .btn-edit:hover{
+ background:#eef6f2;
+
+ border-color:#b8d4cc;
+}
+
+.action-buttons .btn-delete{
+ color:var(--danger);
+
+ background:#fff;
+
+ border:1px solid rgba(178,58,46,.25);
+}
+
+.action-buttons .btn-delete:hover{
+ background:#fff3f1;
+
+ border-color:rgba(178,58,46,.45);
+}
+
+
+/* =========================================================
+   TABLE MESSAGE
+   ========================================================= */
+
+.table-message{
+ font-size:12px;
+
+ color:var(--muted);
+
+ margin:10px 0;
+}
+
+.table-message.error{
+ color:var(--danger);
+}
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.pagination{
+ display:flex;
+
+ align-items:center;
+
+ justify-content:space-between;
+
+ gap:10px;
+
+ margin-top:13px;
+}
+
+.page-info{
+ font-size:12px;
+
+ color:var(--muted);
+}
+
+.page-buttons{
+ display:flex;
+
+ gap:6px;
+}
+
+.page-buttons button{
+ min-width:36px;
+
+ height:34px;
+
+ border:1px solid var(--line);
+
+ background:#fff;
+
+ border-radius:8px;
+
+ color:var(--emerald);
+
+ cursor:pointer;
+
+ font-weight:700;
+}
+
+.page-buttons button:hover:not(:disabled){
+ background:#eef6f2;
+
+ transform:translateY(-1px);
+}
+
+.page-buttons button:disabled{
+ opacity:.4;
+
+ cursor:not-allowed;
+}
+
+.page-buttons .active{
+ background:var(--emerald);
+
+ color:#fff;
+
+ border-color:var(--emerald);
+}
+
+
+/* =========================================================
+   GST
+   ========================================================= */
+
+.gst-grid{
+ display:grid;
+
+ grid-template-columns:
+   repeat(5,1fr);
+
+ gap:12px;
+
+ margin-bottom:16px;
+}
+
+.gst-cell{
+ background:#fbf8f2;
+
+ border:1px solid var(--line);
+
+ border-radius:12px;
+
+ padding:14px;
+
+ transition:.2s;
+}
+
+.gst-cell:hover{
+ transform:translateY(-3px);
+
+ border-color:var(--champagne);
+}
+
+.gst-cell .label{
+ font-size:10.5px;
+
+ color:var(--muted);
+
+ font-weight:800;
+
+ text-transform:uppercase;
+}
+
+.gst-cell .value{
+ font-family:"Playfair Display",serif;
+
+ font-weight:700;
+
+ color:var(--emerald);
+
+ font-size:19px;
+
+ margin-top:5px;
+}
+
+.note{
+ font-size:11px;
+
+ color:var(--muted);
+
+ line-height:1.5;
+
+ margin-top:10px;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes rise{
+ from{
+   opacity:0;
+   transform:translateY(14px);
+ }
+
+ to{
+   opacity:1;
+   transform:none;
+ }
+}
+
+@keyframes cardRise{
+ from{
+   opacity:0;
+   transform:
+     translateY(18px)
+     scale(.98);
+ }
+
+ to{
+   opacity:1;
+   transform:none;
+ }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media(max-width:1100px){
+
+ .kpi-row{
+   grid-template-columns:
+     repeat(3,1fr);
+ }
+
+ .filter-row{
+   grid-template-columns:
+     1fr 1fr 1fr;
+ }
+
+ .filter-row .search-box{
+   grid-column:1/-1;
+ }
+
+ .action-buttons{
+   flex-direction:column;
+
+   align-items:stretch;
+ }
+
+ .action-buttons .btn{
+   width:100%;
+ }
+
+}
+
+@media(max-width:850px){
+
+ .primary-nav,
+ .header-actions .new-bill{
+   display:none;
+ }
+
+ .menu-toggle{
+   display:block;
+ }
+
+ .kpi-row{
+   grid-template-columns:
+     1fr 1fr;
+ }
+
+ .page-header h1{
+   font-size:32px;
+ }
+
+ .filter-row{
+   grid-template-columns:
+     1fr 1fr;
+ }
+
+ .filter-row .search-box{
+   grid-column:1/-1;
+ }
+
+}
+
+@media(max-width:600px){
+
+ .page-inner{
+   padding:25px 14px;
+ }
+
+ .header-inner{
+   padding:0 14px;
+ }
+
+ .brand-sub{
+   display:none;
+ }
+
+ .page-header{
+   align-items:flex-start;
+
+   flex-direction:column;
+ }
+
+ .kpi-row{
+   grid-template-columns:1fr;
+ }
+
+ .filter-row{
+   grid-template-columns:1fr;
+ }
+
+ .gst-grid{
+   grid-template-columns:
+     1fr 1fr;
+ }
+
+ .pagination{
+   align-items:flex-start;
+
+   flex-direction:column;
+ }
+
+ .panel{
+   padding:17px;
+ }
+
+ .action-buttons{
+   flex-direction:row;
+
+   flex-wrap:wrap;
+ }
+
+ .action-buttons .btn{
+   width:auto;
+ }
+
+}
+
 </style>
 </head>
+
+
 <body>
+
 <script src="auth-guard.js"></script>
+
+
+<!-- ========================================================
+     HEADER
+     ======================================================== -->
+
 <header class="site-header">
+
  <div class="header-inner">
+
   <a href="dashboard.html" class="brand">
-   <svg width="30" height="30" viewBox="0 0 40 40" fill="none"><path d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3" stroke="#C9A24A" stroke-width="2" stroke-linecap="round"/><circle cx="17" cy="19" r="6.5" fill="#C9A24A" fill-opacity=".12" stroke="#C9A24A" stroke-width="1.6"/><circle cx="17" cy="19" r="2.3" fill="#C9A24A"/></svg>
-   <span class="brand-text"><span class="brand-name">Rajastani Saree</span><span class="brand-sub">BILLING & INVENTORY</span></span>
+
+   <svg
+     width="30"
+     height="30"
+     viewBox="0 0 40 40"
+     fill="none"
+   >
+
+    <path
+      d="M22 3c5 1 7 5 6 9.5-.8 3.6-3.6 5-6.3 7.4C19 22 17.8 24.6 18.3 28c.5 3.2 3 5.3 6 5.3"
+      stroke="#C9A24A"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+
+    <circle
+      cx="17"
+      cy="19"
+      r="6.5"
+      fill="#C9A24A"
+      fill-opacity=".12"
+      stroke="#C9A24A"
+      stroke-width="1.6"
+    />
+
+    <circle
+      cx="17"
+      cy="19"
+      r="2.3"
+      fill="#C9A24A"
+    />
+
+   </svg>
+
+
+   <span class="brand-text">
+
+    <span class="brand-name">
+      Rajastani Saree
+    </span>
+
+    <span class="brand-sub">
+      BILLING & INVENTORY
+    </span>
+
+   </span>
+
   </a>
-  <nav class="primary-nav"><a href="dashboard.html" class="nav-link">Dashboard</a><a href="billing.html" class="nav-link">New Bill</a><a href="inventory.html" class="nav-link">Inventory</a><a href="purchase.html" class="nav-link">Purchase Bill</a><a href="reports.html" class="nav-link is-active">Reports</a></nav>
-  <div class="header-actions"><a class="btn btn-primary new-bill" href="billing.html">＋ New Bill</a><button class="icon-btn" onclick="rsLogout()" title="Logout">⏻</button><button class="menu-toggle" id="menuToggle"><span></span></button></div>
+
+
+  <nav class="primary-nav">
+
+   <a
+     href="dashboard.html"
+     class="nav-link"
+   >
+     Dashboard
+   </a>
+
+   <a
+     href="billing.html"
+     class="nav-link"
+   >
+     New Bill
+   </a>
+
+   <a
+     href="inventory.html"
+     class="nav-link"
+   >
+     Inventory
+   </a>
+
+   <a
+     href="purchase.html"
+     class="nav-link"
+   >
+     Purchase Bill
+   </a>
+
+   <a
+     href="reports.html"
+     class="nav-link is-active"
+   >
+     Reports
+   </a>
+
+  </nav>
+
+
+  <div class="header-actions">
+
+   <a
+     class="btn btn-primary new-bill"
+     href="billing.html"
+   >
+     ＋ New Bill
+   </a>
+
+   <button
+     class="icon-btn"
+     onclick="rsLogout()"
+     title="Logout"
+   >
+     ⏻
+   </button>
+
+   <button
+     class="menu-toggle"
+     id="menuToggle"
+   >
+    <span></span>
+   </button>
+
+  </div>
+
  </div>
+
 </header>
-<div class="mobile-panel" id="mobilePanel"></div>
 
-<main><div class="page-inner">
- <div class="page-header">
-  <div><p class="eyebrow">BUSINESS ANALYTICS</p><h1>Sales & Reports</h1><p>Track daily sales, monthly totals, quantities sold and GST from your bills.</p></div>
-  <button class="btn btn-primary" id="refreshBtn" onclick="loadReports()">↻ Refresh</button>
+
+<div
+  class="mobile-panel"
+  id="mobilePanel"
+></div>
+
+
+<!-- ========================================================
+     MAIN
+     ======================================================== -->
+
+<main>
+
+<div class="page-inner">
+
+
+<!-- ========================================================
+     PAGE HEADER
+     ======================================================== -->
+
+<div class="page-header">
+
+ <div>
+
+  <p class="eyebrow">
+    BUSINESS ANALYTICS
+  </p>
+
+  <h1>
+    Sales & Reports
+  </h1>
+
+  <p>
+    Track daily sales, monthly totals,
+    quantities sold and GST from your bills.
+  </p>
+
  </div>
 
- <div class="kpi-row">
-  <div class="kpi-card"><div class="kpi-label">Sales in Selection</div><div class="kpi-value" id="kpiTotalSales">₹0</div><div class="kpi-sub" id="kpiPeriod">All bills</div></div>
-  <div class="kpi-card"><div class="kpi-label">Bills</div><div class="kpi-value" id="kpiTotalBills">0</div><div class="kpi-sub">Bills in selection</div></div>
-  <div class="kpi-card"><div class="kpi-label">Sarees Sold</div><div class="kpi-value" id="kpiQty">0</div><div class="kpi-sub">Total quantity</div></div>
-  <div class="kpi-card"><div class="kpi-label">GST Collected</div><div class="kpi-value" id="kpiGst">₹0</div><div class="kpi-sub">CGST + SGST + IGST</div></div>
-  <div class="kpi-card"><div class="kpi-label">Average Bill</div><div class="kpi-value" id="kpiAvgBill">₹0</div><div class="kpi-sub">Sales ÷ bills</div></div>
-  <div class="kpi-card"><div class="kpi-label">Online Payments</div><div class="kpi-value" id="kpiOnlinePayments">₹0</div><div class="kpi-sub" id="kpiOnlinePeriod">Selected period</div></div>
+
+ <button
+   class="btn btn-primary"
+   id="refreshBtn"
+   onclick="loadReports()"
+ >
+   ↻ Refresh
+ </button>
+
+</div>
+
+
+<!-- ========================================================
+     KPI
+     ======================================================== -->
+
+<div class="kpi-row">
+
+ <div class="kpi-card">
+
+  <div class="kpi-label">
+    Sales in Selection
+  </div>
+
+  <div
+    class="kpi-value"
+    id="kpiTotalSales"
+  >
+    ₹0
+  </div>
+
+  <div
+    class="kpi-sub"
+    id="kpiPeriod"
+  >
+    All bills
+  </div>
+
  </div>
 
- <section class="panel">
-  <div class="panel-title">
-   <h2>Bill Filters</h2>
-   <span class="page-info">Filter active bills by date, invoice or customer</span>
-  </div>
-  <div class="filter-row">
-   <div class="filter-group search-box">
-    <label for="searchQuery">Search Invoice / Customer</label>
-    <input id="searchQuery" type="search" placeholder="Enter invoice number or customer name" autocomplete="off">
-   </div>
-   <div class="filter-group">
-    <label for="fromDate">From Date</label>
-    <input id="fromDate" type="date">
-   </div>
-   <div class="filter-group">
-    <label for="toDate">To Date</label>
-    <input id="toDate" type="date">
-   </div>
-   <button class="btn btn-primary" type="button" onclick="applyAllFilters()">Apply</button>
-   <button class="btn btn-ghost" type="button" onclick="clearFilters()">Clear</button>
-  </div>
-  <div class="quick-filters">
-   <button type="button" onclick="setPeriod('today')">Today</button>
-   <button type="button" onclick="setPeriod('yesterday')">Yesterday</button>
-   <button type="button" onclick="setPeriod('7days')">Last 7 Days</button>
-   <button type="button" onclick="setPeriod('month')">This Month</button>
-   <button type="button" onclick="setPeriod('lastmonth')">Last Month</button>
-   <button type="button" onclick="setPeriod('all')">All Time</button>
-  </div>
- </section>
 
- <section class="panel">
-  <div class="panel-title"><h2>Bill-wise Sales</h2><span class="page-info">10 bills per page</span></div>
-  <div id="tableMessage" class="table-message" style="display:none"></div>
-  <div class="table-wrapper"><table><thead><tr><th>Date & Time</th><th>Invoice</th><th>Customer</th><th>Sarees Qty</th><th>Subtotal</th><th>GST</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody id="billsTable"><tr class="empty-row"><td colspan="9">Loading bills…</td></tr></tbody></table></div>
-  <div class="pagination"><span class="page-info" id="pageInfo">Page 1</span><div class="page-buttons" id="pageButtons"></div></div>
- </section>
+ <div class="kpi-card">
 
- <section class="panel">
-  <div class="panel-title">
-   <h2>Payment Summary</h2>
-   <span class="page-info">Cash vs Online for the selected period</span>
+  <div class="kpi-label">
+    Bills
   </div>
-  <div class="gst-grid">
-   <div class="gst-cell"><div class="label">Total Sales</div><div class="value" id="paymentTotalSales">₹0</div></div>
-   <div class="gst-cell"><div class="label">Cash Received</div><div class="value" id="paymentCash">₹0</div></div>
-   <div class="gst-cell"><div class="label">Online Received</div><div class="value" id="paymentOnline">₹0</div></div>
-   <div class="gst-cell"><div class="label">Cash Bills</div><div class="value" id="paymentCashBills">0</div></div>
-   <div class="gst-cell"><div class="label">Online Bills</div><div class="value" id="paymentOnlineBills">0</div></div>
-  </div>
-  <div class="table-wrapper">
-   <table>
-    <thead><tr><th>Payment Mode</th><th>Bills</th><th>Total Amount</th><th>Share of Sales</th></tr></thead>
-    <tbody id="paymentSummaryBody"></tbody>
-   </table>
-  </div>
- </section>
 
- <section class="panel">
-  <div class="panel-title"><h2>GST Report</h2><div class="filter-group"><label>GST month</label><input type="month" id="gstMonth"></div></div>
-  <div id="gstMessage" class="table-message" style="display:none"></div>
-  <div class="gst-grid" id="gstGrid">
-   <div class="gst-cell"><div class="label">Taxable Value</div><div class="value" id="gstTaxable">₹0</div></div>
-   <div class="gst-cell"><div class="label">CGST</div><div class="value" id="gstCgst">₹0</div></div>
-   <div class="gst-cell"><div class="label">SGST</div><div class="value" id="gstSgst">₹0</div></div>
-   <div class="gst-cell"><div class="label">IGST</div><div class="value" id="gstIgst">₹0</div></div>
-   <div class="gst-cell"><div class="label">Total GST</div><div class="value" id="gstTotal">₹0</div></div>
+  <div
+    class="kpi-value"
+    id="kpiTotalBills"
+  >
+    0
   </div>
-  <div class="table-wrapper"><table><thead><tr><th>GST Rate</th><th>Taxable Value</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Total Tax</th></tr></thead><tbody id="gstRateTable"></tbody></table></div>
-  <p class="note">GST is calculated from bill-level tax amounts when available. If the bill stores tax amounts on individual items, the report also sums those item values. Cancelled/deleted bills are excluded.</p>
- </section>
-</div></main>
+
+  <div class="kpi-sub">
+    Bills in selection
+  </div>
+
+ </div>
+
+
+ <div class="kpi-card">
+
+  <div class="kpi-label">
+    Sarees Sold
+  </div>
+
+  <div
+    class="kpi-value"
+    id="kpiQty"
+  >
+    0
+  </div>
+
+  <div class="kpi-sub">
+    Total quantity
+  </div>
+
+ </div>
+
+
+ <div class="kpi-card">
+
+  <div class="kpi-label">
+    GST Collected
+  </div>
+
+  <div
+    class="kpi-value"
+    id="kpiGst"
+  >
+    ₹0
+  </div>
+
+  <div class="kpi-sub">
+    CGST + SGST + IGST
+  </div>
+
+ </div>
+
+
+ <div class="kpi-card">
+
+  <div class="kpi-label">
+    Average Bill
+  </div>
+
+  <div
+    class="kpi-value"
+    id="kpiAvgBill"
+  >
+    ₹0
+  </div>
+
+  <div class="kpi-sub">
+    Sales ÷ bills
+  </div>
+
+ </div>
+
+</div>
+
+
+<!-- ========================================================
+     FILTERS
+     ======================================================== -->
+
+<section class="panel">
+
+ <div class="panel-title">
+
+  <h2>
+    Bill Filters
+  </h2>
+
+  <span class="page-info">
+    Filter active bills by date,
+    invoice or customer
+  </span>
+
+ </div>
+
+
+ <div class="filter-row">
+
+
+  <div
+    class="filter-group search-box"
+  >
+
+   <label for="searchQuery">
+     Search Invoice / Customer
+   </label>
+
+   <input
+     id="searchQuery"
+     type="search"
+     placeholder="Enter invoice number or customer name"
+     autocomplete="off"
+   >
+
+  </div>
+
+
+  <div class="filter-group">
+
+   <label for="fromDate">
+     From Date
+   </label>
+
+   <input
+     id="fromDate"
+     type="date"
+   >
+
+  </div>
+
+
+  <div class="filter-group">
+
+   <label for="toDate">
+     To Date
+   </label>
+
+   <input
+     id="toDate"
+     type="date"
+   >
+
+  </div>
+
+
+  <button
+    class="btn btn-primary"
+    type="button"
+    onclick="applyAllFilters()"
+  >
+    Apply
+  </button>
+
+
+  <button
+    class="btn btn-ghost"
+    type="button"
+    onclick="clearFilters()"
+  >
+    Clear
+  </button>
+
+
+ </div>
+
+
+ <div class="quick-filters">
+
+  <button
+    type="button"
+    onclick="setPeriod('today')"
+  >
+    Today
+  </button>
+
+  <button
+    type="button"
+    onclick="setPeriod('yesterday')"
+  >
+    Yesterday
+  </button>
+
+  <button
+    type="button"
+    onclick="setPeriod('7days')"
+  >
+    Last 7 Days
+  </button>
+
+  <button
+    type="button"
+    onclick="setPeriod('month')"
+  >
+    This Month
+  </button>
+
+  <button
+    type="button"
+    onclick="setPeriod('lastmonth')"
+  >
+    Last Month
+  </button>
+
+  <button
+    type="button"
+    onclick="setPeriod('all')"
+  >
+    All Time
+  </button>
+
+ </div>
+
+</section>
+
+
+<!-- ========================================================
+     BILL TABLE
+     ======================================================== -->
+
+<section class="panel">
+
+ <div class="panel-title">
+
+  <h2>
+    Bill-wise Sales
+  </h2>
+
+  <span class="page-info">
+    10 bills per page
+  </span>
+
+ </div>
+
+
+ <div
+   id="tableMessage"
+   class="table-message"
+   style="display:none"
+ ></div>
+
+
+ <div class="table-wrapper">
+
+  <table>
+
+   <thead>
+
+    <tr>
+
+     <th>
+       Date & Time
+     </th>
+
+     <th>
+       Invoice
+     </th>
+
+     <th>
+       Customer
+     </th>
+
+     <th>
+       Sarees Qty
+     </th>
+
+     <th>
+       Subtotal
+     </th>
+
+     <th>
+       GST
+     </th>
+
+     <th>
+       Total
+     </th>
+
+     <th>
+       Status
+     </th>
+
+     <th>
+       Action
+     </th>
+
+    </tr>
+
+   </thead>
+
+
+   <tbody id="billsTable">
+
+    <tr class="empty-row">
+
+     <td colspan="9">
+       Loading bills…
+     </td>
+
+    </tr>
+
+   </tbody>
+
+  </table>
+
+ </div>
+
+
+ <div class="pagination">
+
+  <span
+    class="page-info"
+    id="pageInfo"
+  >
+    Page 1
+  </span>
+
+  <div
+    class="page-buttons"
+    id="pageButtons"
+  ></div>
+
+ </div>
+
+</section>
+
+
+<!-- ========================================================
+     GST REPORT
+     ======================================================== -->
+
+<section class="panel">
+
+ <div class="panel-title">
+
+  <h2>
+    GST Report
+  </h2>
+
+  <div class="filter-group">
+
+   <label>
+     GST month
+   </label>
+
+   <input
+     type="month"
+     id="gstMonth"
+   >
+
+  </div>
+
+ </div>
+
+
+ <div
+   id="gstMessage"
+   class="table-message"
+   style="display:none"
+ ></div>
+
+
+ <div
+   class="gst-grid"
+   id="gstGrid"
+ >
+
+  <div class="gst-cell">
+
+   <div class="label">
+     Taxable Value
+   </div>
+
+   <div
+     class="value"
+     id="gstTaxable"
+   >
+     ₹0
+   </div>
+
+  </div>
+
+
+  <div class="gst-cell">
+
+   <div class="label">
+     CGST
+   </div>
+
+   <div
+     class="value"
+     id="gstCgst"
+   >
+     ₹0
+   </div>
+
+  </div>
+
+
+  <div class="gst-cell">
+
+   <div class="label">
+     SGST
+   </div>
+
+   <div
+     class="value"
+     id="gstSgst"
+   >
+     ₹0
+   </div>
+
+  </div>
+
+
+  <div class="gst-cell">
+
+   <div class="label">
+     IGST
+   </div>
+
+   <div
+     class="value"
+     id="gstIgst"
+   >
+     ₹0
+   </div>
+
+  </div>
+
+
+  <div class="gst-cell">
+
+   <div class="label">
+     Total GST
+   </div>
+
+   <div
+     class="value"
+     id="gstTotal"
+   >
+     ₹0
+   </div>
+
+  </div>
+
+ </div>
+
+
+ <div class="table-wrapper">
+
+  <table>
+
+   <thead>
+
+    <tr>
+
+     <th>
+       GST Rate
+     </th>
+
+     <th>
+       Taxable Value
+     </th>
+
+     <th>
+       CGST
+     </th>
+
+     <th>
+       SGST
+     </th>
+
+     <th>
+       IGST
+     </th>
+
+     <th>
+       Total Tax
+     </th>
+
+    </tr>
+
+   </thead>
+
+
+   <tbody id="gstRateTable"></tbody>
+
+  </table>
+
+ </div>
+
+
+ <p class="note">
+
+  GST is calculated from bill-level tax amounts
+  when available. If the bill stores tax amounts
+  on individual items, the report also sums those
+  item values. Cancelled/deleted bills are excluded.
+
+ </p>
+
+</section>
+
+
+</div>
+
+</main>
+
 
 <script>
-const API_BASE_URL="https://rajasthani-sarees.onrender.com";
-let allBills=[], filteredBills=[], currentPage=1;
-const PAGE_SIZE=10;
-let searchTimer=null;
 
-function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2});}
-function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
-function num(v){return Number(v)||0;}
-function billDateValue(b){return b.bill_date||b.createdAt||b.created_at||b.date||null;}
+/* =========================================================
+   API
+   ========================================================= */
+
+const API_BASE_URL =
+  "https://rajasthani-sarees.onrender.com";
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let allBills = [];
+
+let filteredBills = [];
+
+let currentPage = 1;
+
+const PAGE_SIZE = 10;
+
+let searchTimer = null;
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function money(v){
+
+  return "₹" +
+    Number(v || 0).toLocaleString(
+      "en-IN",
+      {
+        maximumFractionDigits:2
+      }
+    );
+
+}
+
+
+function escapeHtml(v){
+
+  return String(v ?? "")
+    .replace(
+      /[&<>"']/g,
+      c => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+      }[c])
+    );
+
+}
+
+
+function num(v){
+
+  return Number(v) || 0;
+
+}
+
+
+function billDateValue(b){
+
+  return (
+    b.bill_date ||
+    b.createdAt ||
+    b.created_at ||
+    b.date ||
+    null
+  );
+
+}
+
+
 function localDateKey(value){
- if(!value)return "";
- const d=new Date(value); if(Number.isNaN(d.getTime()))return "";
- return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+
+  if(!value)
+    return "";
+
+  const d = new Date(value);
+
+  if(
+    Number.isNaN(
+      d.getTime()
+    )
+  )
+    return "";
+
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone:"Asia/Kolkata",
+      year:"numeric",
+      month:"2-digit",
+      day:"2-digit"
+    }
+  ).format(d);
+
 }
+
+
 function fmtDateTime(value){
- if(!value)return "—"; const d=new Date(value); if(Number.isNaN(d.getTime()))return "—";
- return new Intl.DateTimeFormat("en-IN",{timeZone:"Asia/Kolkata",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true}).format(d);
+
+  if(!value)
+    return "—";
+
+  const d = new Date(value);
+
+  if(
+    Number.isNaN(
+      d.getTime()
+    )
+  )
+    return "—";
+
+  return new Intl.DateTimeFormat(
+    "en-IN",
+    {
+      timeZone:"Asia/Kolkata",
+      day:"2-digit",
+      month:"short",
+      year:"numeric",
+      hour:"2-digit",
+      minute:"2-digit",
+      hour12:true
+    }
+  ).format(d);
+
 }
+
+
 function billQty(b){
- const items=Array.isArray(b.items)?b.items:(Array.isArray(b.bill_items)?b.bill_items:[]);
- return items.reduce((s,i)=>s+num(i.qty||i.quantity||i.stock_qty),0);
+
+  const items =
+    Array.isArray(b.items)
+      ? b.items
+      : (
+          Array.isArray(b.bill_items)
+            ? b.bill_items
+            : []
+        );
+
+  return items.reduce(
+    (s,i) =>
+      s +
+      num(
+        i.qty ||
+        i.quantity ||
+        i.stock_qty
+      ),
+    0
+  );
+
 }
+
+
 function billTax(b){
- const direct=num(b.cgst_amount)+num(b.sgst_amount)+num(b.igst_amount);
- if(direct>0)return {cgst:num(b.cgst_amount),sgst:num(b.sgst_amount),igst:num(b.igst_amount),total:direct};
- const items=Array.isArray(b.items)?b.items:(Array.isArray(b.bill_items)?b.bill_items:[]);
- let cg=0,sg=0,ig=0;
- items.forEach(i=>{cg+=num(i.cgst_amount||i.cgst);sg+=num(i.sgst_amount||i.sgst);ig+=num(i.igst_amount||i.igst);});
- return {cgst:cg,sgst:sg,igst:ig,total:cg+sg+ig};
+
+  const direct =
+    num(b.cgst_amount) +
+    num(b.sgst_amount) +
+    num(b.igst_amount);
+
+
+  if(direct > 0){
+
+    return {
+
+      cgst:
+        num(b.cgst_amount),
+
+      sgst:
+        num(b.sgst_amount),
+
+      igst:
+        num(b.igst_amount),
+
+      total:
+        direct
+
+    };
+
+  }
+
+
+  const items =
+    Array.isArray(b.items)
+      ? b.items
+      : (
+          Array.isArray(b.bill_items)
+            ? b.bill_items
+            : []
+        );
+
+
+  let cg = 0;
+
+  let sg = 0;
+
+  let ig = 0;
+
+
+  items.forEach(i => {
+
+    cg +=
+      num(
+        i.cgst_amount ||
+        i.cgst
+      );
+
+    sg +=
+      num(
+        i.sgst_amount ||
+        i.sgst
+      );
+
+    ig +=
+      num(
+        i.igst_amount ||
+        i.igst
+      );
+
+  });
+
+
+  return {
+
+    cgst:cg,
+
+    sgst:sg,
+
+    igst:ig,
+
+    total:
+      cg + sg + ig
+
+  };
+
 }
-function isCancelled(b){return String(b.status||"").toUpperCase()==="CANCELLED";}
-function isInRange(b,from,to){
- const k=localDateKey(billDateValue(b)); if(!k)return false;
- return (!from||k>=from)&&(!to||k<=to);
+
+
+function isCancelled(b){
+
+  return String(
+    b.status || ""
+  ).toUpperCase() === "CANCELLED";
+
 }
+
+
+function isInRange(
+  b,
+  from,
+  to
+){
+
+  const k =
+    localDateKey(
+      billDateValue(b)
+    );
+
+  if(!k)
+    return false;
+
+  return (
+    (!from || k >= from) &&
+    (!to || k <= to)
+  );
+
+}
+
+
+/* =========================================================
+   FILTERING
+   ========================================================= */
+
 function getSelectedBills(){
- const searchEl=document.getElementById("searchQuery");
- const fromEl=document.getElementById("fromDate");
- const toEl=document.getElementById("toDate");
 
- const q=(searchEl?.value||"").trim().toLowerCase();
- const from=fromEl?.value||"";
- const to=toEl?.value||"";
+  const searchEl =
+    document.getElementById(
+      "searchQuery"
+    );
 
- return allBills
-  .filter(b=>!isCancelled(b))
-  .filter(b=>isInRange(b,from,to))
-  .filter(b=>{
-    if(!q)return true;
-    const customer=String(b.customer_name||b.customer||"").toLowerCase();
-    const invoice=String(b.invoice_no||b.invoiceNo||"").toLowerCase();
-    const phone=String(b.customer_phone||b.phone||"").toLowerCase();
-    return customer.includes(q)||invoice.includes(q)||phone.includes(q);
-  });
+  const fromEl =
+    document.getElementById(
+      "fromDate"
+    );
+
+  const toEl =
+    document.getElementById(
+      "toDate"
+    );
+
+
+  const q =
+    (
+      searchEl?.value ||
+      ""
+    )
+    .trim()
+    .toLowerCase();
+
+
+  const from =
+    fromEl?.value || "";
+
+
+  const to =
+    toEl?.value || "";
+
+
+  return allBills
+
+    .filter(
+      b => !isCancelled(b)
+    )
+
+    .filter(
+      b =>
+        isInRange(
+          b,
+          from,
+          to
+        )
+    )
+
+    .filter(
+      b => {
+
+        if(!q)
+          return true;
+
+
+        const customer =
+          String(
+            b.customer_name ||
+            b.customer ||
+            ""
+          ).toLowerCase();
+
+
+        const invoice =
+          String(
+            b.invoice_no ||
+            b.invoiceNo ||
+            ""
+          ).toLowerCase();
+
+
+        const phone =
+          String(
+            b.customer_phone ||
+            b.phone ||
+            ""
+          ).toLowerCase();
+
+
+        return (
+          customer.includes(q) ||
+          invoice.includes(q) ||
+          phone.includes(q)
+        );
+
+      }
+    );
+
 }
 
-function applyAllFilters(){currentPage=1;filteredBills=getSelectedBills();renderAll();}
-function renderAll(){renderKpis(filteredBills);renderPaymentSummary(filteredBills);renderBills();}
 
-function renderKpis(bills){
- const sales=bills.reduce((s,b)=>s+num(b.grand_total),0);
- const qty=bills.reduce((s,b)=>s+billQty(b),0);
- const gst=bills.reduce((s,b)=>s+billTax(b).total,0);
+/* =========================================================
+   FILTER APPLY
+   ========================================================= */
 
- const onlinePayments=bills.reduce((s,b)=>{
-  const mode=String(b.payment_mode||b.paymentMode||b.payment_method||"").trim().toLowerCase();
-  return mode==="online" ? s+num(b.grand_total) : s;
- },0);
+function applyAllFilters(){
 
- document.getElementById("kpiTotalSales").textContent=money(sales);
- document.getElementById("kpiTotalBills").textContent=bills.length.toLocaleString("en-IN");
- document.getElementById("kpiQty").textContent=qty.toLocaleString("en-IN");
- document.getElementById("kpiGst").textContent=money(gst);
- document.getElementById("kpiAvgBill").textContent=money(bills.length?sales/bills.length:0);
+  currentPage = 1;
 
- const onlineEl=document.getElementById("kpiOnlinePayments");
- if(onlineEl) onlineEl.textContent=money(onlinePayments);
+  filteredBills =
+    getSelectedBills();
 
- const from=document.getElementById("fromDate").value;
- const to=document.getElementById("toDate").value;
-
- document.getElementById("kpiPeriod").textContent=
-   from||to ? `${from||"start"} → ${to||"today"}` : "All active bills";
-
- const onlinePeriodEl=document.getElementById("kpiOnlinePeriod");
- if(onlinePeriodEl){
-  onlinePeriodEl.textContent=
-    from||to ? `${from||"start"} → ${to||"today"}` : "All active bills";
- }
-}
-
-function renderPaymentSummary(bills){
- const total=bills.reduce((s,b)=>s+num(b.grand_total),0);
- let cash=0,online=0,other=0,cashBills=0,onlineBills=0,otherBills=0;
-
- bills.forEach(b=>{
-  const amount=num(b.grand_total);
-  const mode=String(b.payment_mode||b.paymentMode||b.payment_method||"").trim().toLowerCase();
-
-  if(mode==="online"){
-   online+=amount;
-   onlineBills++;
-  }else if(mode==="cash"){
-   cash+=amount;
-   cashBills++;
-  }else{
-   other+=amount;
-   otherBills++;
-  }
- });
-
- document.getElementById("paymentTotalSales").textContent=money(total);
- document.getElementById("paymentCash").textContent=money(cash);
- document.getElementById("paymentOnline").textContent=money(online);
- document.getElementById("paymentCashBills").textContent=cashBills.toLocaleString("en-IN");
- document.getElementById("paymentOnlineBills").textContent=onlineBills.toLocaleString("en-IN");
-
- const rows=[
-  ["Cash",cashBills,cash,total?cash/total*100:0],
-  ["Online",onlineBills,online,total?online/total*100:0]
- ];
-
- if(otherBills){
-  rows.push(["Other / Not Set",otherBills,other,total?other/total*100:0]);
- }
-
- document.getElementById("paymentSummaryBody").innerHTML=rows.map(r=>
-  `<tr><td><strong>${escapeHtml(r[0])}</strong></td><td>${r[1].toLocaleString("en-IN")}</td><td><strong>${money(r[2])}</strong></td><td>${r[3].toFixed(2)}%</td></tr>`
- ).join("");
-}
-
-function getCurrentMonthSales(){
- const month=document.getElementById("gstMonth").value||indiaToday().slice(0,7);
- return allBills.filter(b=>!isCancelled(b)&&localDateKey(billDateValue(b)).slice(0,7)===month).reduce((s,b)=>s+num(b.grand_total),0);
-}
-function indiaToday(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
-function addDays(key,n){const d=new Date(key+"T00:00:00+05:30");d.setDate(d.getDate()+n);return d.toLocaleDateString("en-CA");}
-
-function renderBills(){
- const body=document.getElementById("billsTable"),totalPages=Math.max(1,Math.ceil(filteredBills.length/PAGE_SIZE));
- if(currentPage>totalPages)currentPage=totalPages;
- const start=(currentPage-1)*PAGE_SIZE,rows=filteredBills.slice(start,start+PAGE_SIZE);
- if(!rows.length){body.innerHTML='<tr class="empty-row"><td colspan="9">No bills found for this date range.</td></tr>';}
- else body.innerHTML=rows.map(b=>{
-  const tax=billTax(b),status=String(b.status||"ACTIVE").toUpperCase(),pay=String(b.payment_status||"Paid");
-  const cls=status==="CANCELLED"?"cancelled":/due|unpaid/i.test(pay)?"due":"paid",label=status==="CANCELLED"?"Cancelled":pay;
-  return `<tr class="row-link" onclick="openInvoice('${b._id}')"><td>${fmtDateTime(billDateValue(b))}</td><td><strong>#${escapeHtml(b.invoice_no)}</strong></td><td>${escapeHtml(b.customer_name||"Walk-in customer")}</td><td><strong>${billQty(b).toLocaleString("en-IN")}</strong></td><td>${money(b.subtotal)}</td><td>${money(tax.total)}</td><td><strong>${money(b.grand_total)}</strong></td><td><span class="status-pill ${cls}">${escapeHtml(label)}</span></td><td><button class="btn btn-ghost" style="padding:6px 9px;font-size:10px" onclick="event.stopPropagation();openInvoice('${b._id}')">Invoice</button></td></tr>`;
- }).join("");
- document.getElementById("pageInfo").textContent=`Page ${currentPage} of ${totalPages} • ${filteredBills.length} bills`;
- const pb=document.getElementById("pageButtons");pb.innerHTML="";
- const prev=document.createElement("button");prev.textContent="‹";prev.disabled=currentPage===1;prev.onclick=()=>{currentPage--;renderBills()};pb.appendChild(prev);
- const maxBtns=5,first=Math.max(1,Math.min(currentPage-2,totalPages-4));
- for(let i=first;i<=Math.min(totalPages,first+maxBtns-1);i++){const b=document.createElement("button");b.textContent=i;b.className=i===currentPage?"active":"";b.onclick=()=>{currentPage=i;renderBills()};pb.appendChild(b);}
- const next=document.createElement("button");next.textContent="›";next.disabled=currentPage===totalPages;next.onclick=()=>{currentPage++;renderBills()};pb.appendChild(next);
-}
-
-function openInvoice(id){window.open(`${API_BASE_URL}/api/bills/${encodeURIComponent(id)}/invoice`,"_blank");}
-
-function setPeriod(type){
- const today=indiaToday();let f=today,t=today;
- if(type==="yesterday")f=t=addDays(today,-1);
- if(type==="7days")f=addDays(today,-6);
- if(type==="month")f=today.slice(0,8)+"01";
- if(type==="lastmonth"){const first=new Date(today.slice(0,7)+"-01T00:00:00+05:30");first.setDate(0);t=first.toLocaleDateString("en-CA");first.setDate(1);f=first.toLocaleDateString("en-CA");}
- if(type==="all"){f="";t="";}
- document.getElementById("fromDate").value=f;document.getElementById("toDate").value=t;applyAllFilters();
-}
-function clearFilters(){document.getElementById("searchQuery").value="";document.getElementById("fromDate").value="";document.getElementById("toDate").value="";applyAllFilters();}
-
-async function loadReports(){
- const btn=document.getElementById("refreshBtn");
- const message=document.getElementById("tableMessage");
- btn.disabled=true;
- message.style.display="none";
- document.getElementById("billsTable").innerHTML='<tr class="empty-row"><td colspan="9">Connecting to billing database…</td></tr>';
-
- try{
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),20000);
-
-  const response=await fetch(`${API_BASE_URL}/api/bills`,{
-    method:"GET",
-    headers:{Accept:"application/json"},
-    cache:"no-store",
-    signal:controller.signal
-  });
-
-  clearTimeout(timeout);
-
-  const raw=await response.text();
-  let data;
-  try{data=raw?JSON.parse(raw):null;}
-  catch(parseError){throw new Error(`Server returned invalid JSON (HTTP ${response.status})`);}
-
-  if(!response.ok){
-    throw new Error(data?.error||data?.message||`Server error ${response.status}`);
-  }
-
-  if(Array.isArray(data)){
-    allBills=data;
-  }else if(Array.isArray(data?.bills)){
-    allBills=data.bills;
-  }else if(Array.isArray(data?.data)){
-    allBills=data.data;
-  }else{
-    throw new Error("The bills API responded successfully, but no bills array was found.");
-  }
-
-  filteredBills=[];
-  currentPage=1;
-  applyAllFilters();
-  loadGstReport();
-
-  console.log(`Reports loaded: ${allBills.length} bill(s) from ${API_BASE_URL}/api/bills`);
- }catch(e){
-  console.error("Reports load error:",e);
-  allBills=[];
-  filteredBills=[];
-  currentPage=1;
   renderAll();
 
-  const reason=e.name==="AbortError"
-    ?"The server took too long to respond."
-    :e.message;
-
-  message.textContent=`Could not load bills from backend: ${reason}`;
-  message.className="table-message error";
-  message.style.display="block";
- }finally{
-  btn.disabled=false;
- }
 }
 
-function calculateGstForMonth(month){
- const bills=allBills.filter(b=>!isCancelled(b)&&localDateKey(billDateValue(b)).slice(0,7)===month);
- let taxable=0,cgst=0,sgst=0,igst=0;const rates={};
- bills.forEach(b=>{
-  const tax=billTax(b);cgst+=tax.cgst;sgst+=tax.sgst;igst+=tax.igst;
-  let billTaxable=num(b.subtotal);
-  const items=Array.isArray(b.items)?b.items:(Array.isArray(b.bill_items)?b.bill_items:[]);
-  if(items.length){
-   let itemTaxable=0;items.forEach(i=>{itemTaxable+=num(i.taxable_value||i.taxable_amount||i.base_amount||i.amount_without_tax);});
-   if(itemTaxable>0)billTaxable=itemTaxable;
-   items.forEach(i=>{const rate=num(i.gst_rate||i.gst||0);if(rate){const base=num(i.taxable_value||i.taxable_amount||i.base_amount||i.amount_without_tax)||(num(i.qty)*num(i.selling_price||i.rate||i.unit_price));const tx=num(i.gst_amount||i.tax_amount||0);if(!rates[rate])rates[rate]={taxable:0,cgst:0,sgst:0,igst:0};rates[rate].taxable+=base;if(tx){rates[rate].cgst+=num(i.cgst_amount||i.cgst||tx/2);rates[rate].sgst+=num(i.sgst_amount||i.sgst||tx/2);rates[rate].igst+=num(i.igst_amount||i.igst);}}});
+
+function renderAll(){
+
+  renderKpis(
+    filteredBills
+  );
+
+  renderBills();
+
+}
+
+
+/* =========================================================
+   KPI
+   ========================================================= */
+
+function renderKpis(
+  bills
+){
+
+  const sales =
+    bills.reduce(
+      (s,b) =>
+        s +
+        num(b.grand_total),
+      0
+    );
+
+
+  const qty =
+    bills.reduce(
+      (s,b) =>
+        s +
+        billQty(b),
+      0
+    );
+
+
+  const gst =
+    bills.reduce(
+      (s,b) =>
+        s +
+        billTax(b).total,
+      0
+    );
+
+
+  document.getElementById(
+    "kpiTotalSales"
+  ).textContent =
+    money(sales);
+
+
+  document.getElementById(
+    "kpiTotalBills"
+  ).textContent =
+    bills.length.toLocaleString(
+      "en-IN"
+    );
+
+
+  document.getElementById(
+    "kpiQty"
+  ).textContent =
+    qty.toLocaleString(
+      "en-IN"
+    );
+
+
+  document.getElementById(
+    "kpiGst"
+  ).textContent =
+    money(gst);
+
+
+  document.getElementById(
+    "kpiAvgBill"
+  ).textContent =
+    money(
+      bills.length
+        ? sales / bills.length
+        : 0
+    );
+
+
+  const from =
+    document.getElementById(
+      "fromDate"
+    ).value;
+
+
+  const to =
+    document.getElementById(
+      "toDate"
+    ).value;
+
+
+  document.getElementById(
+    "kpiPeriod"
+  ).textContent =
+    from || to
+      ? `${from || "start"} → ${to || "today"}`
+      : "All active bills";
+
+}
+
+
+/* =========================================================
+   DATE HELPERS
+   ========================================================= */
+
+function indiaToday(){
+
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone:"Asia/Kolkata",
+      year:"numeric",
+      month:"2-digit",
+      day:"2-digit"
+    }
+  ).format(
+    new Date()
+  );
+
+}
+
+
+function addDays(
+  key,
+  n
+){
+
+  const d =
+    new Date(
+      key +
+      "T00:00:00+05:30"
+    );
+
+
+  d.setDate(
+    d.getDate() + n
+  );
+
+
+  return d.toLocaleDateString(
+    "en-CA"
+  );
+
+}
+
+
+/* =========================================================
+   BILL TABLE
+   ========================================================= */
+
+function renderBills(){
+
+  const body =
+    document.getElementById(
+      "billsTable"
+    );
+
+
+  const totalPages =
+    Math.max(
+      1,
+      Math.ceil(
+        filteredBills.length /
+        PAGE_SIZE
+      )
+    );
+
+
+  if(
+    currentPage >
+    totalPages
+  ){
+
+    currentPage =
+      totalPages;
+
   }
-  taxable+=billTaxable;
- });
- if(!Object.keys(rates).length){const totalTax=cgst+sgst+igst;taxable=bills.reduce((s,b)=>s+num(b.subtotal),0);}
- return {bills,taxable,cgst,sgst,igst,rates};
-}
-function loadGstReport(){
- const month=document.getElementById("gstMonth").value||indiaToday().slice(0,7),x=calculateGstForMonth(month);
- document.getElementById("gstTaxable").textContent=money(x.taxable);document.getElementById("gstCgst").textContent=money(x.cgst);document.getElementById("gstSgst").textContent=money(x.sgst);document.getElementById("gstIgst").textContent=money(x.igst);document.getElementById("gstTotal").textContent=money(x.cgst+x.sgst+x.igst);
- const body=document.getElementById("gstRateTable");
- const entries=Object.entries(x.rates);
- if(!entries.length)body.innerHTML=`<tr class="empty-row"><td colspan="6">No item-level GST rate data for ${month}. Overall GST above uses the bill tax amounts stored by the billing system.</td></tr>`;
- else body.innerHTML=entries.sort((a,b)=>Number(a[0])-Number(b[0])).map(([rate,r])=>`<tr><td>${rate}%</td><td>${money(r.taxable)}</td><td>${money(r.cgst)}</td><td>${money(r.sgst)}</td><td>${money(r.igst)}</td><td>${money(r.cgst+r.sgst+r.igst)}</td></tr>`).join("");
- document.getElementById("gstMessage").style.display=x.bills.length?"none":"block";document.getElementById("gstMessage").textContent=`No active bills found for ${month}.`;
- document.getElementById("gstMessage").className="table-message";
+
+
+  const start =
+    (
+      currentPage - 1
+    ) *
+    PAGE_SIZE;
+
+
+  const rows =
+    filteredBills.slice(
+      start,
+      start + PAGE_SIZE
+    );
+
+
+  if(!rows.length){
+
+    body.innerHTML = `
+
+      <tr class="empty-row">
+
+        <td colspan="9">
+          No bills found for this date range.
+        </td>
+
+      </tr>
+
+    `;
+
+  }
+
+  else{
+
+    body.innerHTML =
+      rows.map(
+        b => {
+
+          const tax =
+            billTax(b);
+
+
+          const status =
+            String(
+              b.status ||
+              "ACTIVE"
+            ).toUpperCase();
+
+
+          const pay =
+            String(
+              b.payment_status ||
+              "Paid"
+            );
+
+
+          const cls =
+            status === "CANCELLED"
+              ? "cancelled"
+              : /due|unpaid/i.test(pay)
+                ? "due"
+                : "paid";
+
+
+          const label =
+            status === "CANCELLED"
+              ? "Cancelled"
+              : pay;
+
+
+          const billId =
+            String(
+              b._id || ""
+            );
+
+
+          return `
+
+            <tr
+              class="row-link"
+              onclick="
+                openInvoice(
+                  '${escapeHtml(billId)}'
+                )
+              "
+            >
+
+              <td>
+                ${fmtDateTime(
+                  billDateValue(b)
+                )}
+              </td>
+
+
+              <td>
+
+                <strong>
+                  #${escapeHtml(
+                    b.invoice_no
+                  )}
+                </strong>
+
+              </td>
+
+
+              <td>
+
+                ${escapeHtml(
+                  b.customer_name ||
+                  "Walk-in customer"
+                )}
+
+              </td>
+
+
+              <td>
+
+                <strong>
+                  ${billQty(b)
+                    .toLocaleString(
+                      "en-IN"
+                    )}
+                </strong>
+
+              </td>
+
+
+              <td>
+                ${money(
+                  b.subtotal
+                )}
+              </td>
+
+
+              <td>
+                ${money(
+                  tax.total
+                )}
+              </td>
+
+
+              <td>
+
+                <strong>
+                  ${money(
+                    b.grand_total
+                  )}
+                </strong>
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="status-pill ${cls}"
+                >
+                  ${escapeHtml(
+                    label
+                  )}
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <div
+                  class="action-buttons"
+                  onclick="event.stopPropagation()"
+                >
+
+                  <!-- INVOICE -->
+
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-invoice"
+                    onclick="
+                      openInvoice(
+                        '${escapeHtml(billId)}'
+                      )
+                    "
+                  >
+                    Invoice
+                  </button>
+
+
+                  <!-- EDIT -->
+
+                  <button
+                    type="button"
+                    class="btn btn-edit"
+                    onclick="
+                      editBill(
+                        '${escapeHtml(billId)}'
+                      )
+                    "
+                  >
+                    Edit
+                  </button>
+
+
+                  <!-- DELETE -->
+
+                  <button
+                    type="button"
+                    class="btn btn-delete"
+                    onclick="
+                      deleteBill(
+                        '${escapeHtml(billId)}',
+                        '${escapeHtml(
+                          b.invoice_no || ""
+                        )}'
+                      )
+                    "
+                  >
+                    Delete
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          `;
+
+        }
+      ).join("");
+
+  }
+
+
+  document.getElementById(
+    "pageInfo"
+  ).textContent =
+    `Page ${currentPage} of ${totalPages} • ${filteredBills.length} bills`;
+
+
+  const pb =
+    document.getElementById(
+      "pageButtons"
+    );
+
+
+  pb.innerHTML = "";
+
+
+  const prev =
+    document.createElement(
+      "button"
+    );
+
+
+  prev.textContent = "‹";
+
+  prev.disabled =
+    currentPage === 1;
+
+
+  prev.onclick = () => {
+
+    currentPage--;
+
+    renderBills();
+
+  };
+
+
+  pb.appendChild(
+    prev
+  );
+
+
+  const maxBtns = 5;
+
+
+  const first =
+    Math.max(
+      1,
+      Math.min(
+        currentPage - 2,
+        totalPages - 4
+      )
+    );
+
+
+  for(
+    let i = first;
+    i <= Math.min(
+      totalPages,
+      first + maxBtns - 1
+    );
+    i++
+  ){
+
+    const b =
+      document.createElement(
+        "button"
+      );
+
+
+    b.textContent = i;
+
+
+    b.className =
+      i === currentPage
+        ? "active"
+        : "";
+
+
+    b.onclick = () => {
+
+      currentPage = i;
+
+      renderBills();
+
+    };
+
+
+    pb.appendChild(
+      b
+    );
+
+  }
+
+
+  const next =
+    document.createElement(
+      "button"
+    );
+
+
+  next.textContent = "›";
+
+  next.disabled =
+    currentPage === totalPages;
+
+
+  next.onclick = () => {
+
+    currentPage++;
+
+    renderBills();
+
+  };
+
+
+  pb.appendChild(
+    next
+  );
+
 }
 
-const searchQueryEl=document.getElementById("searchQuery");
-const gstMonthEl=document.getElementById("gstMonth");
-const menuToggleEl=document.getElementById("menuToggle");
+
+/* =========================================================
+   OPEN INVOICE
+   ========================================================= */
+
+function openInvoice(id){
+
+  if(!id)
+    return;
+
+
+  window.open(
+    `${API_BASE_URL}/api/bills/` +
+    encodeURIComponent(id) +
+    `/invoice`,
+    "_blank"
+  );
+
+}
+
+
+/* =========================================================
+   EDIT BILL
+   ========================================================= */
+
+function editBill(id){
+
+  if(!id)
+    return;
+
+
+  /*
+    Open the same billing.html page
+    in edit mode.
+
+    The billing page will read:
+    ?edit=BILL_ID
+  */
+
+  window.location.href =
+    `billing.html?edit=${encodeURIComponent(id)}`;
+
+}
+
+
+/* =========================================================
+   DELETE BILL
+   ========================================================= */
+
+async function deleteBill(
+  id,
+  invoiceNo
+){
+
+  if(!id)
+    return;
+
+
+  const confirmed =
+    confirm(
+      `Delete bill ${invoiceNo ? "#" + invoiceNo : ""} permanently?\n\n` +
+      `The stock from this bill will be returned to inventory.\n\n` +
+      `This action cannot be undone.`
+    );
+
+
+  if(!confirmed)
+    return;
+
+
+  try{
+
+    const response =
+      await fetch(
+
+        `${API_BASE_URL}/api/bills/` +
+        encodeURIComponent(id),
+
+        {
+          method:"DELETE",
+
+          headers:{
+            Accept:"application/json"
+          }
+        }
+
+      );
+
+
+    const raw =
+      await response.text();
+
+
+    let data = {};
+
+    try{
+
+      data =
+        raw
+          ? JSON.parse(raw)
+          : {};
+
+    }
+
+    catch{
+
+      throw new Error(
+        `Server returned invalid response (${response.status})`
+      );
+
+    }
+
+
+    if(!response.ok){
+
+      throw new Error(
+        data.error ||
+        data.message ||
+        `Could not delete bill (${response.status})`
+      );
+
+    }
+
+
+    alert(
+      `Bill ${invoiceNo ? "#" + invoiceNo : ""} deleted successfully.\n\n` +
+      `Inventory stock has been restored.`
+    );
+
+
+    /*
+      Reload the reports from MongoDB
+      so the deleted bill disappears
+      immediately.
+    */
+
+    await loadReports();
+
+
+  }
+
+  catch(error){
+
+    console.error(
+      "Delete bill error:",
+      error
+    );
+
+
+    alert(
+      "Could not delete bill.\n\n" +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   PERIOD FILTER
+   ========================================================= */
+
+function setPeriod(
+  type
+){
+
+  const today =
+    indiaToday();
+
+
+  let f =
+    today;
+
+  let t =
+    today;
+
+
+  if(
+    type === "yesterday"
+  ){
+
+    f =
+      t =
+        addDays(
+          today,
+          -1
+        );
+
+  }
+
+
+  if(
+    type === "7days"
+  ){
+
+    f =
+      addDays(
+        today,
+        -6
+      );
+
+  }
+
+
+  if(
+    type === "month"
+  ){
+
+    f =
+      today.slice(
+        0,
+        8
+      ) +
+      "01";
+
+  }
+
+
+  if(
+    type === "lastmonth"
+  ){
+
+    const first =
+      new Date(
+        today.slice(
+          0,
+          7
+        ) +
+        "-01T00:00:00+05:30"
+      );
+
+
+    first.setDate(0);
+
+    t =
+      first.toLocaleDateString(
+        "en-CA"
+      );
+
+
+    first.setDate(1);
+
+    f =
+      first.toLocaleDateString(
+        "en-CA"
+      );
+
+  }
+
+
+  if(
+    type === "all"
+  ){
+
+    f = "";
+
+    t = "";
+
+  }
+
+
+  document.getElementById(
+    "fromDate"
+  ).value = f;
+
+
+  document.getElementById(
+    "toDate"
+  ).value = t;
+
+
+  applyAllFilters();
+
+}
+
+
+/* =========================================================
+   CLEAR FILTERS
+   ========================================================= */
+
+function clearFilters(){
+
+  document.getElementById(
+    "searchQuery"
+  ).value = "";
+
+
+  document.getElementById(
+    "fromDate"
+  ).value = "";
+
+
+  document.getElementById(
+    "toDate"
+  ).value = "";
+
+
+  applyAllFilters();
+
+}
+
+
+/* =========================================================
+   LOAD REPORTS
+   ========================================================= */
+
+async function loadReports(){
+
+  const btn =
+    document.getElementById(
+      "refreshBtn"
+    );
+
+
+  const message =
+    document.getElementById(
+      "tableMessage"
+    );
+
+
+  btn.disabled = true;
+
+
+  message.style.display =
+    "none";
+
+
+  document.getElementById(
+    "billsTable"
+  ).innerHTML = `
+
+    <tr class="empty-row">
+
+      <td colspan="9">
+        Connecting to billing database…
+      </td>
+
+    </tr>
+
+  `;
+
+
+  try{
+
+    const controller =
+      new AbortController();
+
+
+    const timeout =
+      setTimeout(
+        () =>
+          controller.abort(),
+        20000
+      );
+
+
+    const response =
+      await fetch(
+
+        `${API_BASE_URL}/api/bills`,
+
+        {
+          method:"GET",
+
+          headers:{
+            Accept:"application/json"
+          },
+
+          cache:"no-store",
+
+          signal:
+            controller.signal
+        }
+
+      );
+
+
+    clearTimeout(
+      timeout
+    );
+
+
+    const raw =
+      await response.text();
+
+
+    let data;
+
+
+    try{
+
+      data =
+        raw
+          ? JSON.parse(raw)
+          : null;
+
+    }
+
+    catch{
+
+      throw new Error(
+        `Server returned invalid JSON (HTTP ${response.status})`
+      );
+
+    }
+
+
+    if(!response.ok){
+
+      throw new Error(
+        data?.error ||
+        data?.message ||
+        `Server error ${response.status}`
+      );
+
+    }
+
+
+    if(
+      Array.isArray(data)
+    ){
+
+      allBills =
+        data;
+
+    }
+
+    else if(
+      Array.isArray(
+        data?.bills
+      )
+    ){
+
+      allBills =
+        data.bills;
+
+    }
+
+    else if(
+      Array.isArray(
+        data?.data
+      )
+    ){
+
+      allBills =
+        data.data;
+
+    }
+
+    else{
+
+      throw new Error(
+        "The bills API responded successfully, but no bills array was found."
+      );
+
+    }
+
+
+    filteredBills = [];
+
+    currentPage = 1;
+
+
+    applyAllFilters();
+
+
+    loadGstReport();
+
+
+    console.log(
+      `Reports loaded: ${allBills.length} bill(s)`
+    );
+
+  }
+
+
+  catch(e){
+
+    console.error(
+      "Reports load error:",
+      e
+    );
+
+
+    allBills = [];
+
+    filteredBills = [];
+
+    currentPage = 1;
+
+
+    renderAll();
+
+
+    const reason =
+      e.name === "AbortError"
+
+        ? "The server took too long to respond."
+
+        : e.message;
+
+
+    message.textContent =
+      `Could not load bills from backend: ${reason}`;
+
+
+    message.className =
+      "table-message error";
+
+
+    message.style.display =
+      "block";
+
+  }
+
+
+  finally{
+
+    btn.disabled = false;
+
+  }
+
+}
+
+
+/* =========================================================
+   GST REPORT
+   ========================================================= */
+
+function calculateGstForMonth(
+  month
+){
+
+  const bills =
+    allBills.filter(
+      b =>
+        !isCancelled(b) &&
+        localDateKey(
+          billDateValue(b)
+        ).slice(0,7) ===
+        month
+    );
+
+
+  let taxable = 0;
+
+  let cgst = 0;
+
+  let sgst = 0;
+
+  let igst = 0;
+
+
+  const rates = {};
+
+
+  bills.forEach(
+    b => {
+
+      const tax =
+        billTax(b);
+
+
+      cgst +=
+        tax.cgst;
+
+
+      sgst +=
+        tax.sgst;
+
+
+      igst +=
+        tax.igst;
+
+
+      let billTaxable =
+        num(
+          b.subtotal
+        );
+
+
+      const items =
+        Array.isArray(b.items)
+          ? b.items
+          : (
+              Array.isArray(
+                b.bill_items
+              )
+                ? b.bill_items
+                : []
+            );
+
+
+      if(items.length){
+
+        let itemTaxable = 0;
+
+
+        items.forEach(
+          i => {
+
+            itemTaxable +=
+              num(
+                i.taxable_value ||
+                i.taxable_amount ||
+                i.base_amount ||
+                i.amount_without_tax
+              );
+
+          }
+        );
+
+
+        if(
+          itemTaxable > 0
+        ){
+
+          billTaxable =
+            itemTaxable;
+
+        }
+
+
+        items.forEach(
+          i => {
+
+            const rate =
+              num(
+                i.gst_rate ||
+                i.gst ||
+                0
+              );
+
+
+            if(!rate)
+              return;
+
+
+            const base =
+              num(
+                i.taxable_value ||
+                i.taxable_amount ||
+                i.base_amount ||
+                i.amount_without_tax
+              ) ||
+              (
+                num(i.qty) *
+                num(
+                  i.selling_price ||
+                  i.rate ||
+                  i.unit_price
+                )
+              );
+
+
+            const tx =
+              num(
+                i.gst_amount ||
+                i.tax_amount ||
+                0
+              );
+
+
+            if(
+              !rates[rate]
+            ){
+
+              rates[rate] = {
+
+                taxable:0,
+
+                cgst:0,
+
+                sgst:0,
+
+                igst:0
+
+              };
+
+            }
+
+
+            rates[rate].taxable +=
+              base;
+
+
+            if(tx){
+
+              rates[rate].cgst +=
+                num(
+                  i.cgst_amount ||
+                  i.cgst ||
+                  tx / 2
+                );
+
+
+              rates[rate].sgst +=
+                num(
+                  i.sgst_amount ||
+                  i.sgst ||
+                  tx / 2
+                );
+
+
+              rates[rate].igst +=
+                num(
+                  i.igst_amount ||
+                  i.igst
+                );
+
+            }
+
+          }
+        );
+
+      }
+
+
+      taxable +=
+        billTaxable;
+
+    }
+  );
+
+
+  return {
+
+    bills,
+
+    taxable,
+
+    cgst,
+
+    sgst,
+
+    igst,
+
+    rates
+
+  };
+
+}
+
+
+function loadGstReport(){
+
+  const month =
+    document.getElementById(
+      "gstMonth"
+    ).value ||
+    indiaToday().slice(
+      0,
+      7
+    );
+
+
+  const x =
+    calculateGstForMonth(
+      month
+    );
+
+
+  document.getElementById(
+    "gstTaxable"
+  ).textContent =
+    money(x.taxable);
+
+
+  document.getElementById(
+    "gstCgst"
+  ).textContent =
+    money(x.cgst);
+
+
+  document.getElementById(
+    "gstSgst"
+  ).textContent =
+    money(x.sgst);
+
+
+  document.getElementById(
+    "gstIgst"
+  ).textContent =
+    money(x.igst);
+
+
+  document.getElementById(
+    "gstTotal"
+  ).textContent =
+    money(
+      x.cgst +
+      x.sgst +
+      x.igst
+    );
+
+
+  const body =
+    document.getElementById(
+      "gstRateTable"
+    );
+
+
+  const entries =
+    Object.entries(
+      x.rates
+    );
+
+
+  if(
+    !entries.length
+  ){
+
+    body.innerHTML = `
+
+      <tr class="empty-row">
+
+        <td colspan="6">
+
+          No item-level GST rate data
+          for ${month}.
+
+          Overall GST above uses
+          the bill tax amounts stored
+          by the billing system.
+
+        </td>
+
+      </tr>
+
+    `;
+
+  }
+
+  else{
+
+    body.innerHTML =
+
+      entries
+
+        .sort(
+          (a,b) =>
+            Number(a[0]) -
+            Number(b[0])
+        )
+
+        .map(
+          ([rate,r]) => `
+
+            <tr>
+
+              <td>
+                ${rate}%
+              </td>
+
+              <td>
+                ${money(
+                  r.taxable
+                )}
+              </td>
+
+              <td>
+                ${money(
+                  r.cgst
+                )}
+              </td>
+
+              <td>
+                ${money(
+                  r.sgst
+                )}
+              </td>
+
+              <td>
+                ${money(
+                  r.igst
+                )}
+              </td>
+
+              <td>
+                ${money(
+                  r.cgst +
+                  r.sgst +
+                  r.igst
+                )}
+              </td>
+
+            </tr>
+
+          `
+        )
+        .join("");
+
+  }
+
+
+  const gstMessage =
+    document.getElementById(
+      "gstMessage"
+    );
+
+
+  gstMessage.style.display =
+    x.bills.length
+      ? "none"
+      : "block";
+
+
+  gstMessage.textContent =
+    `No active bills found for ${month}.`;
+
+
+  gstMessage.className =
+    "table-message";
+
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+const searchQueryEl =
+  document.getElementById(
+    "searchQuery"
+  );
+
 
 if(searchQueryEl){
- searchQueryEl.addEventListener("input",()=>{
-  clearTimeout(searchTimer);
-  searchTimer=setTimeout(applyAllFilters,180);
- });
+
+  searchQueryEl.addEventListener(
+    "input",
+    () => {
+
+      clearTimeout(
+        searchTimer
+      );
+
+
+      searchTimer =
+        setTimeout(
+          applyAllFilters,
+          180
+        );
+
+    }
+  );
+
 }
+
+
+/* =========================================================
+   GST MONTH
+   ========================================================= */
+
+const gstMonthEl =
+  document.getElementById(
+    "gstMonth"
+  );
+
 
 if(gstMonthEl){
- gstMonthEl.addEventListener("change",()=>{
-  loadGstReport();
-  renderKpis(filteredBills);
- });
+
+  gstMonthEl.addEventListener(
+    "change",
+    () => {
+
+      loadGstReport();
+
+      renderKpis(
+        filteredBills
+      );
+
+    }
+  );
+
 }
+
+
+/* =========================================================
+   MOBILE MENU
+   ========================================================= */
+
+const menuToggleEl =
+  document.getElementById(
+    "menuToggle"
+  );
+
 
 if(menuToggleEl){
- menuToggleEl.addEventListener("click",()=>{
-  const p=document.getElementById("mobilePanel");
-  p.classList.toggle("open");
-  if(p.classList.contains("open")){
-   p.innerHTML='<div style="background:#fff;padding:18px;border-radius:0 0 14px 14px;display:grid;gap:7px"><a href="dashboard.html" class="nav-link">Dashboard</a><a href="billing.html" class="nav-link">New Bill</a><a href="inventory.html" class="nav-link">Inventory</a><a href="purchase.html" class="nav-link">Purchase Bill</a><a href="reports.html" class="nav-link is-active">Reports</a></div>';
-  }else{
-   p.innerHTML="";
-  }
- });
+
+  menuToggleEl.addEventListener(
+    "click",
+    () => {
+
+      const p =
+        document.getElementById(
+          "mobilePanel"
+        );
+
+
+      p.classList.toggle(
+        "open"
+      );
+
+
+      if(
+        p.classList.contains(
+          "open"
+        )
+      ){
+
+        p.innerHTML = `
+
+          <div
+            style="
+              background:#fff;
+              padding:18px;
+              border-radius:
+                0 0 14px 14px;
+              display:grid;
+              gap:7px
+            "
+          >
+
+            <a
+              href="dashboard.html"
+              class="nav-link"
+            >
+              Dashboard
+            </a>
+
+            <a
+              href="billing.html"
+              class="nav-link"
+            >
+              New Bill
+            </a>
+
+            <a
+              href="inventory.html"
+              class="nav-link"
+            >
+              Inventory
+            </a>
+
+            <a
+              href="purchase.html"
+              class="nav-link"
+            >
+              Purchase Bill
+            </a>
+
+            <a
+              href="reports.html"
+              class="nav-link is-active"
+            >
+              Reports
+            </a>
+
+          </div>
+
+        `;
+
+      }
+
+      else{
+
+        p.innerHTML = "";
+
+      }
+
+    }
+  );
+
 }
 
-const initialMonth=indiaToday().slice(0,7);
-if(gstMonthEl)gstMonthEl.value=initialMonth;
+
+/* =========================================================
+   INITIAL LOAD
+   ========================================================= */
+
+const initialMonth =
+  indiaToday().slice(
+    0,
+    7
+  );
+
+
+if(gstMonthEl){
+
+  gstMonthEl.value =
+    initialMonth;
+
+}
+
+
 loadReports();
 
 </script>
+
+
 </body>
 </html>

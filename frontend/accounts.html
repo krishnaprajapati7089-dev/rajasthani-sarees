@@ -1,0 +1,2654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Accounts — Rajastani Saree</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#f7f2e9;
+  --card:#fffdf8;
+  --card2:#faf6ed;
+  --text:#241c18;
+  --muted:#776c64;
+  --border:#e5d9c8;
+  --maroon:#6d2638;
+  --maroon2:#8b354c;
+  --gold:#b88a44;
+  --green:#286b55;
+  --red:#a33a3a;
+  --blue:#355d8c;
+  --shadow:0 12px 35px rgba(63,40,20,.08);
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top right,rgba(184,138,68,.10),transparent 30%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,Arial,sans-serif;
+}
+
+button,input,select{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.topbar{
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  background:rgba(255,253,248,.94);
+  backdrop-filter:blur(15px);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand-logo{
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,var(--maroon),var(--maroon2));
+  color:white;
+  font-family:"Playfair Display";
+  font-size:20px;
+  box-shadow:0 8px 20px rgba(109,38,56,.22);
+}
+
+.brand-title{
+  font-family:"Playfair Display";
+  font-size:21px;
+  font-weight:700;
+}
+
+.brand-sub{
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+
+.nav{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.nav a{
+  text-decoration:none;
+  color:var(--muted);
+  padding:9px 13px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:600;
+  transition:.2s;
+}
+
+.nav a:hover{
+  background:#f2e9dc;
+  color:var(--maroon);
+}
+
+.nav a.active{
+  background:var(--maroon);
+  color:#fff;
+}
+
+.container{
+  max-width:1500px;
+  margin:auto;
+  padding:30px;
+}
+
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:20px;
+  margin-bottom:25px;
+}
+
+.eyebrow{
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--gold);
+  font-weight:700;
+}
+
+h1{
+  margin:5px 0;
+  font-family:"Playfair Display";
+  font-size:34px;
+}
+
+.subtitle{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.filters{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.field{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:9px 11px;
+  color:var(--text);
+  outline:none;
+}
+
+.btn{
+  border:0;
+  border-radius:11px;
+  padding:10px 14px;
+  font-size:12px;
+  font-weight:700;
+  transition:.2s;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.btn-primary{
+  background:var(--maroon);
+  color:white;
+}
+
+.btn-gold{
+  background:var(--gold);
+  color:white;
+}
+
+.btn-light{
+  background:#f2e9dc;
+  color:var(--maroon);
+}
+
+.btn-green{
+  background:var(--green);
+  color:white;
+}
+
+.btn-blue{
+  background:var(--blue);
+  color:white;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:14px;
+  margin-bottom:20px;
+}
+
+.card{
+  background:rgba(255,253,248,.92);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+}
+
+.kpi{
+  padding:18px;
+}
+
+.kpi-label{
+  font-size:10px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  font-weight:700;
+}
+
+.kpi-value{
+  margin-top:8px;
+  font-size:22px;
+  font-weight:800;
+}
+
+.kpi-note{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.green{
+  color:var(--green);
+}
+
+.red{
+  color:var(--red);
+}
+
+.blue{
+  color:var(--blue);
+}
+
+.gold{
+  color:#9b6c20;
+}
+
+.tabs{
+  display:flex;
+  gap:7px;
+  overflow:auto;
+  margin-bottom:16px;
+  padding-bottom:4px;
+}
+
+.tab{
+  white-space:nowrap;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--muted);
+  padding:10px 15px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.tab.active{
+  background:var(--maroon);
+  color:#fff;
+  border-color:var(--maroon);
+}
+
+.panel{
+  display:none;
+  padding:20px;
+}
+
+.panel.active{
+  display:block;
+}
+
+.panel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:15px;
+}
+
+.panel-title{
+  font-size:17px;
+  font-weight:800;
+}
+
+.panel-sub{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:3px;
+}
+
+.table-wrap{
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:850px;
+}
+
+th{
+  background:#f4ecdf;
+  color:#67594f;
+  text-align:left;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  padding:12px;
+  white-space:nowrap;
+}
+
+td{
+  padding:11px 12px;
+  border-top:1px solid #eee4d6;
+  font-size:11px;
+  white-space:nowrap;
+}
+
+tr:hover td{
+  background:#fffaf2;
+}
+
+.empty{
+  text-align:center;
+  padding:45px;
+  color:var(--muted);
+}
+
+.export-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+}
+
+.export-card{
+  padding:20px;
+  min-height:145px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.export-icon{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:#f2e9dc;
+  color:var(--maroon);
+  font-weight:900;
+}
+
+.export-title{
+  margin-top:13px;
+  font-size:14px;
+  font-weight:800;
+}
+
+.export-desc{
+  margin-top:5px;
+  font-size:10px;
+  color:var(--muted);
+}
+
+.export-actions{
+  display:flex;
+  gap:7px;
+  margin-top:15px;
+}
+
+.health{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+
+.health-card{
+  padding:18px;
+}
+
+.health-number{
+  font-size:28px;
+  font-weight:800;
+  margin-top:7px;
+}
+
+.issue{
+  padding:9px 12px;
+  background:#fff4e9;
+  border:1px solid #ecd6b7;
+  border-radius:9px;
+  margin-top:7px;
+  font-size:11px;
+}
+
+.success{
+  padding:14px;
+  background:#edf8f1;
+  border:1px solid #c9e5d2;
+  border-radius:10px;
+  color:#246341;
+  font-size:12px;
+}
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(20,12,8,.55);
+  z-index:100;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  width:min(100%,900px);
+  max-height:90vh;
+  overflow:auto;
+  background:var(--card);
+  border-radius:18px;
+  box-shadow:0 25px 80px rgba(0,0,0,.2);
+  padding:22px;
+}
+
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.close{
+  border:0;
+  background:#f1e8dc;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  font-weight:800;
+}
+
+.loading{
+  position:fixed;
+  inset:0;
+  background:rgba(247,242,233,.65);
+  backdrop-filter:blur(3px);
+  z-index:200;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.loading.show{
+  display:flex;
+}
+
+.spinner{
+  width:40px;
+  height:40px;
+  border:4px solid #e3d6c5;
+  border-top-color:var(--maroon);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+@media(max-width:1200px){
+  .cards{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .export-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:800px){
+  .topbar{
+    height:auto;
+    padding:12px;
+    align-items:flex-start;
+    gap:10px;
+    flex-direction:column;
+  }
+
+  .container{
+    padding:16px;
+  }
+
+  .page-head{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .cards{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .health{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:500px){
+  .cards,
+  .export-grid{
+    grid-template-columns:1fr;
+  }
+
+  h1{
+    font-size:27px;
+  }
+}
+
+/* PRINT */
+
+@media print{
+  .topbar,
+  .page-head,
+  .tabs,
+  .no-print,
+  .loading{
+    display:none!important;
+  }
+
+  body{
+    background:white;
+  }
+
+  .container{
+    padding:0;
+  }
+
+  .card{
+    box-shadow:none;
+    border:1px solid #ddd;
+  }
+
+  .panel{
+    display:none!important;
+  }
+
+  .panel.print-active{
+    display:block!important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">R</div>
+    <div>
+      <div class="brand-title">Rajastani Saree</div>
+      <div class="brand-sub">CA & Accounts</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="billing.html">Billing</a>
+    <a href="purchase.html">Purchase</a>
+    <a href="inventory.html">Inventory</a>
+    <a href="reports.html">Reports</a>
+    <a href="ca.html" class="active">CA & Accounts</a>
+  </nav>
+</header>
+
+
+<main class="container">
+
+  <section class="page-head">
+
+    <div>
+      <div class="eyebrow">Accounts & Compliance</div>
+      <h1>CA Dashboard</h1>
+      <div class="subtitle">
+        Sales, purchases, GST, ledgers, stock and CA-ready exports.
+      </div>
+    </div>
+
+    <div class="filters no-print">
+      <select id="period" class="field">
+        <option value="month">This Month</option>
+        <option value="previous_month">Previous Month</option>
+        <option value="quarter">Current Quarter</option>
+        <option value="fy">Financial Year</option>
+        <option value="custom">Custom Range</option>
+      </select>
+
+      <input id="fromDate" class="field" type="date" style="display:none">
+      <input id="toDate" class="field" type="date" style="display:none">
+
+      <button class="btn btn-primary" onclick="loadCA()">
+        Refresh
+      </button>
+    </div>
+
+  </section>
+
+
+  <!-- KPI -->
+
+  <section class="cards">
+
+    <div class="card kpi">
+      <div class="kpi-label">Sales</div>
+      <div class="kpi-value green" id="salesTotal">₹0</div>
+      <div class="kpi-note" id="salesCount">0 invoices</div>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-label">Purchases</div>
+      <div class="kpi-value blue" id="purchaseTotal">₹0</div>
+      <div class="kpi-note" id="purchaseCount">0 invoices</div>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-label">Output GST</div>
+      <div class="kpi-value gold" id="outputGST">₹0</div>
+      <div class="kpi-note">Sales GST</div>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-label">Input GST</div>
+      <div class="kpi-value blue" id="inputGST">₹0</div>
+      <div class="kpi-note">Purchase GST</div>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-label">Net GST</div>
+      <div class="kpi-value" id="netGST">₹0</div>
+      <div class="kpi-note">Books-based estimate</div>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-label">Stock Value</div>
+      <div class="kpi-value gold" id="stockValue">₹0</div>
+      <div class="kpi-note">Purchase-cost basis</div>
+    </div>
+
+  </section>
+
+
+  <!-- TABS -->
+
+  <div class="tabs no-print">
+
+    <button class="tab active" data-tab="overview">
+      Overview
+    </button>
+
+    <button class="tab" data-tab="sales">
+      Sales Register
+    </button>
+
+    <button class="tab" data-tab="purchases">
+      Purchase Register
+    </button>
+
+    <button class="tab" data-tab="gst">
+      GST Summary
+    </button>
+
+    <button class="tab" data-tab="hsn">
+      HSN Summary
+    </button>
+
+    <button class="tab" data-tab="ledgers">
+      Ledgers
+    </button>
+
+    <button class="tab" data-tab="stock">
+      Stock
+    </button>
+
+    <button class="tab" data-tab="export">
+      CA Export
+    </button>
+
+    <button class="tab" data-tab="health">
+      Data Check
+    </button>
+
+  </div>
+
+
+  <!-- OVERVIEW -->
+
+  <section id="panel-overview" class="card panel active">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Accounts Overview</div>
+        <div class="panel-sub">
+          Current selected period
+        </div>
+      </div>
+
+      <button class="btn btn-light no-print" onclick="printPanel('overview')">
+        Print PDF
+      </button>
+    </div>
+
+    <div class="health">
+
+      <div class="card health-card">
+        <div class="kpi-label">Output CGST</div>
+        <div class="health-number" id="overviewCGST">₹0</div>
+      </div>
+
+      <div class="card health-card">
+        <div class="kpi-label">Output SGST</div>
+        <div class="health-number" id="overviewSGST">₹0</div>
+      </div>
+
+      <div class="card health-card">
+        <div class="kpi-label">Output IGST</div>
+        <div class="health-number" id="overviewIGST">₹0</div>
+      </div>
+
+      <div class="card health-card">
+        <div class="kpi-label">Receivable</div>
+        <div class="health-number red" id="receivable">₹0</div>
+      </div>
+
+      <div class="card health-card">
+        <div class="kpi-label">Payable</div>
+        <div class="health-number blue" id="payable">₹0</div>
+      </div>
+
+      <div class="card health-card">
+        <div class="kpi-label">Gross Profit*</div>
+        <div class="health-number green" id="grossProfit">₹0</div>
+      </div>
+
+    </div>
+
+    <br>
+
+    <div class="success">
+      * Gross profit is an estimate based on available purchase-cost data.
+      Final accounting figures should be verified by your CA.
+    </div>
+
+  </section>
+
+
+  <!-- SALES -->
+
+  <section id="panel-sales" class="card panel">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Sales Register</div>
+        <div class="panel-sub">
+          Invoice-wise sales and GST data
+        </div>
+      </div>
+
+      <button class="btn btn-light no-print" onclick="exportCSV('sales')">
+        Excel / CSV
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Invoice</th>
+            <th>Customer</th>
+            <th>GSTIN</th>
+            <th>Taxable</th>
+            <th>CGST</th>
+            <th>SGST</th>
+            <th>IGST</th>
+            <th>Total</th>
+            <th>Payment</th>
+          </tr>
+        </thead>
+
+        <tbody id="salesTable"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+
+  <!-- PURCHASES -->
+
+  <section id="panel-purchases" class="card panel">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Purchase Register</div>
+        <div class="panel-sub">
+          Supplier-wise purchase data
+        </div>
+      </div>
+
+      <button class="btn btn-light no-print" onclick="exportCSV('purchases')">
+        Excel / CSV
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Supplier</th>
+            <th>GSTIN</th>
+            <th>Invoice</th>
+            <th>Taxable</th>
+            <th>GST</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+
+        <tbody id="purchaseTable"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+
+  <!-- GST -->
+
+  <section id="panel-gst" class="card panel">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">GST Summary</div>
+        <div class="panel-sub">
+          Books-based output and input GST
+        </div>
+      </div>
+
+      <button class="btn btn-light no-print" onclick="printPanel('gst')">
+        Print PDF
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tax Type</th>
+            <th>Sales / Output</th>
+            <th>Purchase / Input</th>
+            <th>Difference</th>
+          </tr>
+        </thead>
+
+        <tbody id="gstTable"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+
+  <!-- HSN -->
+
+  <section id="panel-hsn" class="card panel">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">HSN Summary</div>
+        <div class="panel-sub">
+          Sales HSN-wise summary
+        </div>
+      </div>
+
+      <button class="btn btn-light no-print" onclick="exportCSV('hsn')">
+        Excel / CSV
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>HSN</th>
+            <th>Qty</th>
+            <th>Taxable</th>
+            <th>CGST</th>
+            <th>SGST</th>
+            <th>IGST</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+
+        <tbody id="hsnTable"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+
+  <!-- LEDGERS -->
+
+  <section id="panel-ledgers" class="card panel">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Customer & Supplier Ledgers</div>
+        <div class="panel-sub">
+          Party-wise sales and purchase summary
+        </div>
+      </div>
+
+      <button class="btn btn-light no-print" onclick="exportCSV('ledgers')">
+        Excel / CSV
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Party</th>
+            <th>Type</th>
+            <th>GSTIN</th>
+            <th>Transactions</th>
+            <th>Amount</th>
+            <th>Paid</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+
+        <tbody id="ledgerTable"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+
+  <!-- STOCK -->
+
+  <section id="panel-stock" class="card panel">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Current Stock</div>
+        <div class="panel-sub">
+          Current inventory valuation at purchase cost
+        </div>
+      </div>
+
+      <button class="btn btn-light no-print" onclick="exportCSV('stock')">
+        Excel / CSV
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>HSN</th>
+            <th>Qty</th>
+            <th>Purchase Rate</th>
+            <th>Stock Value</th>
+            <th>Sale Value</th>
+          </tr>
+        </thead>
+
+        <tbody id="stockTable"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+
+  <!-- EXPORT -->
+
+  <section id="panel-export" class="card panel">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">CA Export Center</div>
+        <div class="panel-sub">
+          Generate files for your CA
+        </div>
+      </div>
+    </div>
+
+    <div class="export-grid">
+
+      <div class="card export-card">
+        <div class="export-icon">S</div>
+        <div>
+          <div class="export-title">Sales Register</div>
+          <div class="export-desc">
+            Invoice-wise sales report
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn btn-primary" onclick="downloadReportPDF('sales')">
+            PDF
+          </button>
+
+          <button class="btn btn-light" onclick="exportCSV('sales')">
+            Excel
+          </button>
+        </div>
+      </div>
+
+
+      <div class="card export-card">
+        <div class="export-icon">P</div>
+        <div>
+          <div class="export-title">Purchase Register</div>
+          <div class="export-desc">
+            Supplier-wise purchase report
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn btn-primary" onclick="downloadReportPDF('purchases')">
+            PDF
+          </button>
+
+          <button class="btn btn-light" onclick="exportCSV('purchases')">
+            Excel
+          </button>
+        </div>
+      </div>
+
+
+      <div class="card export-card">
+        <div class="export-icon">G</div>
+        <div>
+          <div class="export-title">GST Summary</div>
+          <div class="export-desc">
+            Output and input GST
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn btn-primary" onclick="downloadReportPDF('gst')">
+            PDF
+          </button>
+
+          <button class="btn btn-light" onclick="exportCSV('gst')">
+            Excel
+          </button>
+        </div>
+      </div>
+
+
+      <div class="card export-card">
+        <div class="export-icon">H</div>
+        <div>
+          <div class="export-title">HSN Summary</div>
+          <div class="export-desc">
+            HSN-wise sales summary
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn btn-primary" onclick="downloadReportPDF('hsn')">
+            PDF
+          </button>
+
+          <button class="btn btn-light" onclick="exportCSV('hsn')">
+            Excel
+          </button>
+        </div>
+      </div>
+
+
+      <div class="card export-card">
+        <div class="export-icon">L</div>
+        <div>
+          <div class="export-title">Party Ledgers</div>
+          <div class="export-desc">
+            Customer and supplier summaries
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn btn-primary" onclick="downloadReportPDF('ledgers')">
+            PDF
+          </button>
+
+          <button class="btn btn-light" onclick="exportCSV('ledgers')">
+            Excel
+          </button>
+        </div>
+      </div>
+
+
+      <div class="card export-card">
+        <div class="export-icon">I</div>
+        <div>
+          <div class="export-title">Stock Report</div>
+          <div class="export-desc">
+            Current stock valuation
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn btn-primary" onclick="downloadReportPDF('stock')">
+            PDF
+          </button>
+
+          <button class="btn btn-light" onclick="exportCSV('stock')">
+            Excel
+          </button>
+        </div>
+      </div>
+
+
+      <div class="card export-card">
+        <div class="export-icon">A</div>
+        <div>
+          <div class="export-title">Complete CA Report</div>
+          <div class="export-desc">
+            All important accounts information
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn btn-green" onclick="downloadCompletePDF()">
+            Generate PDF
+          </button>
+        </div>
+      </div>
+
+
+      <div class="card export-card">
+        <div class="export-icon">🖨</div>
+        <div>
+          <div class="export-title">Print CA Package</div>
+          <div class="export-desc">
+            Print/save complete report as PDF
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn btn-gold" onclick="printAll()">
+            Print
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- DATA CHECK -->
+
+  <section id="panel-health" class="card panel">
+
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">CA Data Check</div>
+        <div class="panel-sub">
+          Find incomplete or suspicious accounting data
+        </div>
+      </div>
+
+      <button class="btn btn-primary no-print" onclick="runHealthCheck()">
+        Run Check
+      </button>
+    </div>
+
+    <div id="healthResult">
+      <div class="empty">
+        Click "Run Check" to check your accounting data.
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+</div>
+
+
+<script>
+  const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
+
+let CA_DATA = null;
+
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function money(value) {
+  return "₹" + Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+
+function number(value) {
+  return Number(value || 0);
+}
+
+
+function dateOnly(value) {
+  if (!value) return "-";
+
+  const d = new Date(value);
+
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+}
+
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function showLoading(value) {
+  document
+    .getElementById("loading")
+    .classList.toggle("show", value);
+}
+
+
+// ============================================================
+// DATE RANGE
+// ============================================================
+
+function getDateRange() {
+
+  const period =
+    document.getElementById("period").value;
+
+  const now = new Date();
+
+  let from;
+  let to;
+
+
+  if (period === "month") {
+
+    from =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1
+      );
+
+    to =
+      new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0
+      );
+
+  }
+
+
+  else if (period === "previous_month") {
+
+    from =
+      new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        1
+      );
+
+    to =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        0
+      );
+
+  }
+
+
+  else if (period === "quarter") {
+
+    const quarter =
+      Math.floor(
+        now.getMonth() / 3
+      );
+
+    from =
+      new Date(
+        now.getFullYear(),
+        quarter * 3,
+        1
+      );
+
+    to =
+      new Date(
+        now.getFullYear(),
+        quarter * 3 + 3,
+        0
+      );
+
+  }
+
+
+  else if (period === "fy") {
+
+    const year =
+      now.getMonth() >= 3
+        ? now.getFullYear()
+        : now.getFullYear() - 1;
+
+    from =
+      new Date(
+        year,
+        3,
+        1
+      );
+
+    to =
+      new Date(
+        year + 1,
+        2,
+        31
+      );
+
+  }
+
+
+  else {
+
+    const fromValue =
+      document.getElementById("fromDate").value;
+
+    const toValue =
+      document.getElementById("toDate").value;
+
+    if (!fromValue || !toValue) {
+      return null;
+    }
+
+    from =
+      new Date(
+        fromValue + "T00:00:00"
+      );
+
+    to =
+      new Date(
+        toValue + "T23:59:59"
+      );
+  }
+
+
+  return {
+    from: from.toISOString(),
+    to: to.toISOString()
+  };
+}
+
+
+// ============================================================
+// LOAD CA DATA
+// ============================================================
+
+async function loadCA() {
+
+  const range =
+    getDateRange();
+
+  if (!range) {
+    alert(
+      "Please select From and To dates."
+    );
+    return;
+  }
+
+
+  try {
+
+    showLoading(true);
+
+
+    const url =
+      `${API_BASE_URL}/api/ca/summary` +
+      `?from=${encodeURIComponent(range.from)}` +
+      `&to=${encodeURIComponent(range.to)}`;
+
+
+    const response =
+      await fetch(url);
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+        "Failed to load CA report"
+      );
+    }
+
+
+    CA_DATA = data;
+
+
+    renderAll();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "CA report error: " +
+      error.message
+    );
+
+  } finally {
+
+    showLoading(false);
+
+  }
+}
+
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+
+function renderAll() {
+
+  if (!CA_DATA) return;
+
+
+  const s =
+    CA_DATA.summary;
+
+
+  document.getElementById(
+    "salesTotal"
+  ).textContent =
+    money(s.sales.total);
+
+
+  document.getElementById(
+    "salesCount"
+  ).textContent =
+    `${s.sales.count} invoices`;
+
+
+  document.getElementById(
+    "purchaseTotal"
+  ).textContent =
+    money(s.purchases.total);
+
+
+  document.getElementById(
+    "purchaseCount"
+  ).textContent =
+    `${s.purchases.count} invoices`;
+
+
+  document.getElementById(
+    "outputGST"
+  ).textContent =
+    money(s.gst.output);
+
+
+  document.getElementById(
+    "inputGST"
+  ).textContent =
+    money(s.gst.input);
+
+
+  document.getElementById(
+    "netGST"
+  ).textContent =
+    money(
+      s.gst.output -
+      s.gst.input
+    );
+
+
+  document.getElementById(
+    "stockValue"
+  ).textContent =
+    money(
+      s.stock.value
+    );
+
+
+  document.getElementById(
+    "overviewCGST"
+  ).textContent =
+    money(
+      s.gst.outputCGST
+    );
+
+
+  document.getElementById(
+    "overviewSGST"
+  ).textContent =
+    money(
+      s.gst.outputSGST
+    );
+
+
+  document.getElementById(
+    "overviewIGST"
+  ).textContent =
+    money(
+      s.gst.outputIGST
+    );
+
+
+  document.getElementById(
+    "receivable"
+  ).textContent =
+    money(
+      s.receivable
+    );
+
+
+  document.getElementById(
+    "payable"
+  ).textContent =
+    money(
+      s.payable
+    );
+
+
+  document.getElementById(
+    "grossProfit"
+  ).textContent =
+    money(
+      s.grossProfit
+    );
+
+
+  renderSales();
+  renderPurchases();
+  renderGST();
+  renderHSN();
+  renderLedgers();
+  renderStock();
+}
+
+
+// ============================================================
+// SALES
+// ============================================================
+
+function renderSales() {
+
+  const rows =
+    CA_DATA.sales || [];
+
+
+  const html =
+    rows.map(bill => {
+
+      return `
+        <tr>
+          <td>${dateOnly(bill.createdAt || bill.bill_date)}</td>
+
+          <td>
+            <strong>${escapeHTML(bill.invoice_no)}</strong>
+          </td>
+
+          <td>
+            ${escapeHTML(bill.customer_name || "Walk-in Customer")}
+          </td>
+
+          <td>
+            ${escapeHTML(bill.customer_gstin || "-")}
+          </td>
+
+          <td>${money(bill.taxable_value)}</td>
+
+          <td>${money(bill.cgst_amount)}</td>
+
+          <td>${money(bill.sgst_amount)}</td>
+
+          <td>${money(bill.igst_amount)}</td>
+
+          <td>
+            <strong>${money(bill.grand_total)}</strong>
+          </td>
+
+          <td>
+            ${escapeHTML(bill.payment_mode || "-")}
+          </td>
+        </tr>
+      `;
+
+    }).join("");
+
+
+  document.getElementById(
+    "salesTable"
+  ).innerHTML =
+    html ||
+    `<tr>
+      <td colspan="10" class="empty">
+        No sales found.
+      </td>
+    </tr>`;
+}
+
+
+// ============================================================
+// PURCHASES
+// ============================================================
+
+function renderPurchases() {
+
+  const rows =
+    CA_DATA.purchases || [];
+
+
+  const html =
+    rows.map(p => {
+
+      return `
+        <tr>
+
+          <td>
+            ${dateOnly(
+              p.invoice_date ||
+              p.createdAt
+            )}
+          </td>
+
+          <td>
+            <strong>
+              ${escapeHTML(p.supplier)}
+            </strong>
+          </td>
+
+          <td>
+            ${escapeHTML(
+              p.supplier_gstin || "-"
+            )}
+          </td>
+
+          <td>
+            ${escapeHTML(
+              p.invoice_number
+            )}
+          </td>
+
+          <td>
+            ${money(
+              p.taxable_amount
+            )}
+          </td>
+
+          <td>
+            ${money(
+              p.gst_total
+            )}
+          </td>
+
+          <td>
+            <strong>
+              ${money(
+                p.grand_total
+              )}
+            </strong>
+          </td>
+
+        </tr>
+      `;
+
+    }).join("");
+
+
+  document.getElementById(
+    "purchaseTable"
+  ).innerHTML =
+    html ||
+    `<tr>
+      <td colspan="7" class="empty">
+        No purchases found.
+      </td>
+    </tr>`;
+}
+
+
+// ============================================================
+// GST
+// ============================================================
+
+function renderGST() {
+
+  const g =
+    CA_DATA.summary.gst;
+
+
+  const rows = [
+
+    [
+      "CGST",
+      g.outputCGST,
+      g.inputCGST
+    ],
+
+    [
+      "SGST",
+      g.outputSGST,
+      g.inputSGST
+    ],
+
+    [
+      "IGST",
+      g.outputIGST,
+      g.inputIGST
+    ],
+
+    [
+      "TOTAL GST",
+      g.output,
+      g.input
+    ]
+
+  ];
+
+
+  document.getElementById(
+    "gstTable"
+  ).innerHTML =
+
+    rows.map(
+      row => {
+
+        const diff =
+          number(row[1]) -
+          number(row[2]);
+
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${row[0]}
+              </strong>
+            </td>
+
+            <td>
+              ${money(row[1])}
+            </td>
+
+            <td>
+              ${money(row[2])}
+            </td>
+
+            <td>
+              ${money(diff)}
+            </td>
+
+          </tr>
+        `;
+
+      }
+    ).join("");
+}
+
+
+// ============================================================
+// HSN
+// ============================================================
+
+function renderHSN() {
+
+  const rows =
+    CA_DATA.hsn || [];
+
+
+  document.getElementById(
+    "hsnTable"
+  ).innerHTML =
+
+    rows.map(
+      h => {
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHTML(h.hsn || "N/A")}
+              </strong>
+            </td>
+
+            <td>
+              ${number(h.qty)}
+            </td>
+
+            <td>
+              ${money(h.taxable)}
+            </td>
+
+            <td>
+              ${money(h.cgst)}
+            </td>
+
+            <td>
+              ${money(h.sgst)}
+            </td>
+
+            <td>
+              ${money(h.igst)}
+            </td>
+
+            <td>
+              <strong>
+                ${money(h.total)}
+              </strong>
+            </td>
+
+          </tr>
+        `;
+
+      }
+    ).join("") ||
+
+    `<tr>
+      <td colspan="7" class="empty">
+        No HSN data found.
+      </td>
+    </tr>`;
+}
+
+
+// ============================================================
+// LEDGERS
+// ============================================================
+
+function renderLedgers() {
+
+  const rows =
+    CA_DATA.ledgers || [];
+
+
+  document.getElementById(
+    "ledgerTable"
+  ).innerHTML =
+
+    rows.map(
+      l => {
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHTML(l.name)}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHTML(l.type)}
+            </td>
+
+            <td>
+              ${escapeHTML(l.gstin || "-")}
+            </td>
+
+            <td>
+              ${number(l.transactions)}
+            </td>
+
+            <td>
+              ${money(l.amount)}
+            </td>
+
+            <td>
+              ${money(l.paid)}
+            </td>
+
+            <td>
+              <strong>
+                ${money(l.balance)}
+              </strong>
+            </td>
+
+          </tr>
+        `;
+
+      }
+    ).join("") ||
+
+    `<tr>
+      <td colspan="7" class="empty">
+        No ledger data found.
+      </td>
+    </tr>`;
+}
+
+
+// ============================================================
+// STOCK
+// ============================================================
+
+function renderStock() {
+
+  const rows =
+    CA_DATA.stock || [];
+
+
+  document.getElementById(
+    "stockTable"
+  ).innerHTML =
+
+    rows.map(
+      p => {
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHTML(p.name)}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHTML(p.category || "General")}
+            </td>
+
+            <td>
+              ${escapeHTML(p.hsn_code || "-")}
+            </td>
+
+            <td>
+              ${number(p.stock_qty)}
+            </td>
+
+            <td>
+              ${money(p.purchase_price)}
+            </td>
+
+            <td>
+              <strong>
+                ${money(p.stock_value)}
+              </strong>
+            </td>
+
+            <td>
+              ${money(p.sale_value)}
+            </td>
+
+          </tr>
+        `;
+
+      }
+    ).join("") ||
+
+    `<tr>
+      <td colspan="7" class="empty">
+        No stock found.
+      </td>
+    </tr>`;
+}
+
+
+// ============================================================
+// TABS
+// ============================================================
+
+document.querySelectorAll(
+  ".tab"
+).forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      document.querySelectorAll(
+        ".tab"
+      ).forEach(
+        b => b.classList.remove(
+          "active"
+        )
+      );
+
+
+      document.querySelectorAll(
+        ".panel"
+      ).forEach(
+        p => p.classList.remove(
+          "active"
+        )
+      );
+
+
+      button.classList.add(
+        "active"
+      );
+
+
+      document
+        .getElementById(
+          `panel-${button.dataset.tab}`
+        )
+        .classList.add(
+          "active"
+        );
+    }
+  );
+});
+
+
+// ============================================================
+// PERIOD SELECT
+// ============================================================
+
+document
+  .getElementById("period")
+  .addEventListener(
+    "change",
+    function(){
+
+      const custom =
+        this.value === "custom";
+
+
+      document.getElementById(
+        "fromDate"
+      ).style.display =
+        custom
+          ? "block"
+          : "none";
+
+
+      document.getElementById(
+        "toDate"
+      ).style.display =
+        custom
+          ? "block"
+          : "none";
+
+    }
+  );
+
+
+// ============================================================
+// CSV EXPORT
+// ============================================================
+
+function csvEscape(value) {
+
+  const str =
+    String(value ?? "");
+
+
+  if (
+    str.includes(",") ||
+    str.includes('"') ||
+    str.includes("\n")
+  ) {
+
+    return `"${str.replace(
+      /"/g,
+      '""'
+    )}"`;
+
+  }
+
+
+  return str;
+}
+
+
+function downloadCSV(
+  filename,
+  rows
+) {
+
+  if (!rows.length) {
+
+    alert(
+      "No data available."
+    );
+
+    return;
+  }
+
+
+  const csv =
+    rows
+      .map(
+        row =>
+          row
+            .map(csvEscape)
+            .join(",")
+      )
+      .join("\n");
+
+
+  const blob =
+    new Blob(
+      ["\ufeff" + csv],
+      {
+        type:
+          "text/csv;charset=utf-8;"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+
+  const a =
+    document.createElement(
+      "a"
+    );
+
+
+  a.href = url;
+  a.download = filename;
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+  URL.revokeObjectURL(url);
+}
+
+
+function exportCSV(type) {
+
+  if (!CA_DATA) {
+    alert("Load CA report first.");
+    return;
+  }
+
+
+  let rows = [];
+
+
+  if (type === "sales") {
+
+    rows.push([
+      "Date",
+      "Invoice",
+      "Customer",
+      "GSTIN",
+      "Taxable",
+      "CGST",
+      "SGST",
+      "IGST",
+      "Total",
+      "Payment"
+    ]);
+
+
+    CA_DATA.sales.forEach(
+      b => {
+
+        rows.push([
+          dateOnly(
+            b.createdAt ||
+            b.bill_date
+          ),
+
+          b.invoice_no,
+
+          b.customer_name,
+
+          b.customer_gstin,
+
+          b.taxable_value,
+
+          b.cgst_amount,
+
+          b.sgst_amount,
+
+          b.igst_amount,
+
+          b.grand_total,
+
+          b.payment_mode
+        ]);
+
+      }
+    );
+  }
+
+
+  else if (type === "purchases") {
+
+    rows.push([
+      "Date",
+      "Supplier",
+      "GSTIN",
+      "Invoice",
+      "Taxable",
+      "GST",
+      "Total"
+    ]);
+
+
+    CA_DATA.purchases.forEach(
+      p => {
+
+        rows.push([
+          dateOnly(
+            p.invoice_date ||
+            p.createdAt
+          ),
+
+          p.supplier,
+
+          p.supplier_gstin,
+
+          p.invoice_number,
+
+          p.taxable_amount,
+
+          p.gst_total,
+
+          p.grand_total
+        ]);
+
+      }
+    );
+  }
+
+
+  else if (type === "hsn") {
+
+    rows.push([
+      "HSN",
+      "Qty",
+      "Taxable",
+      "CGST",
+      "SGST",
+      "IGST",
+      "Total"
+    ]);
+
+
+    CA_DATA.hsn.forEach(
+      h => {
+
+        rows.push([
+          h.hsn,
+          h.qty,
+          h.taxable,
+          h.cgst,
+          h.sgst,
+          h.igst,
+          h.total
+        ]);
+
+      }
+    );
+  }
+
+
+  else if (type === "ledgers") {
+
+    rows.push([
+      "Party",
+      "Type",
+      "GSTIN",
+      "Transactions",
+      "Amount",
+      "Paid",
+      "Balance"
+    ]);
+
+
+    CA_DATA.ledgers.forEach(
+      l => {
+
+        rows.push([
+          l.name,
+          l.type,
+          l.gstin,
+          l.transactions,
+          l.amount,
+          l.paid,
+          l.balance
+        ]);
+
+      }
+    );
+  }
+
+
+  else if (type === "stock") {
+
+    rows.push([
+      "Product",
+      "Category",
+      "HSN",
+      "Stock Qty",
+      "Purchase Price",
+      "Stock Value",
+      "Sale Value"
+    ]);
+
+
+    CA_DATA.stock.forEach(
+      p => {
+
+        rows.push([
+          p.name,
+          p.category,
+          p.hsn_code,
+          p.stock_qty,
+          p.purchase_price,
+          p.stock_value,
+          p.sale_value
+        ]);
+
+      }
+    );
+  }
+
+
+  else if (type === "gst") {
+
+    const g =
+      CA_DATA.summary.gst;
+
+
+    rows.push([
+      "Tax",
+      "Output",
+      "Input",
+      "Difference"
+    ]);
+
+
+    rows.push([
+      "CGST",
+      g.outputCGST,
+      g.inputCGST,
+      g.outputCGST -
+      g.inputCGST
+    ]);
+
+
+    rows.push([
+      "SGST",
+      g.outputSGST,
+      g.inputSGST,
+      g.outputSGST -
+      g.inputSGST
+    ]);
+
+
+    rows.push([
+      "IGST",
+      g.outputIGST,
+      g.inputIGST,
+      g.outputIGST -
+      g.inputIGST
+    ]);
+  }
+
+
+  downloadCSV(
+    `CA_${type}_${new Date().toISOString().slice(0,10)}.csv`,
+    rows
+  );
+}
+
+
+// ============================================================
+// PRINT PANEL
+// ============================================================
+
+function printPanel(type) {
+
+  document.querySelectorAll(
+    ".panel"
+  ).forEach(
+    p => p.classList.remove(
+      "print-active"
+    )
+  );
+
+
+  const panel =
+    document.getElementById(
+      `panel-${type}`
+    );
+
+
+  panel.classList.add(
+    "print-active"
+  );
+
+
+  window.print();
+
+
+  setTimeout(
+    () => {
+      panel.classList.remove(
+        "print-active"
+      );
+    },
+    1000
+  );
+}
+
+
+// ============================================================
+// REPORT PDF
+// ============================================================
+
+function downloadReportPDF(type) {
+
+  const tab =
+    type === "purchases"
+      ? "purchases"
+      : type;
+
+
+  const button =
+    document.querySelector(
+      `[data-tab="${tab}"]`
+    );
+
+
+  if (button) {
+    button.click();
+  }
+
+
+  setTimeout(
+    () => {
+      printPanel(tab);
+    },
+    200
+  );
+}
+
+
+// ============================================================
+// COMPLETE PDF
+// ============================================================
+
+function downloadCompletePDF() {
+
+  alert(
+    "Complete CA report is ready. Use the browser Print dialog and select 'Save as PDF'."
+  );
+
+
+  printAll();
+}
+
+
+// ============================================================
+// PRINT ALL
+// ============================================================
+
+function printAll() {
+
+  document.querySelectorAll(
+    ".panel"
+  ).forEach(
+    p =>
+      p.classList.add(
+        "print-active"
+      )
+  );
+
+
+  window.print();
+
+
+  setTimeout(
+    () => {
+
+      document.querySelectorAll(
+        ".panel"
+      ).forEach(
+        p =>
+          p.classList.remove(
+            "print-active"
+          )
+      );
+
+    },
+    1200
+  );
+}
+
+
+// ============================================================
+// DATA HEALTH
+// ============================================================
+
+async function runHealthCheck() {
+
+  try {
+
+    showLoading(true);
+
+
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/ca/health`
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+        "Health check failed"
+      );
+    }
+
+
+    let html = "";
+
+
+    if (
+      data.issues &&
+      data.issues.length
+    ) {
+
+      html += `
+        <div style="margin-bottom:12px">
+          <strong>
+            ${data.issues.length}
+            issue(s) found
+          </strong>
+        </div>
+      `;
+
+
+      data.issues.forEach(
+        issue => {
+
+          html += `
+            <div class="issue">
+              ${escapeHTML(issue)}
+            </div>
+          `;
+
+        }
+      );
+
+    } else {
+
+      html = `
+        <div class="success">
+          ✓ No major data issues found.
+          Your current accounting data passed the basic checks.
+        </div>
+      `;
+
+    }
+
+
+    document.getElementById(
+      "healthResult"
+    ).innerHTML =
+      html;
+
+
+  } catch (error) {
+
+    alert(
+      error.message
+    );
+
+  } finally {
+
+    showLoading(false);
+
+  }
+}
+
+
+// ============================================================
+// INITIAL LOAD
+// ============================================================
+
+loadCA();
+</script>
+
+</body>
+</html>

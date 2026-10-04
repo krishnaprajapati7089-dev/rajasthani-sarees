@@ -18,50 +18,69 @@ async function nextInvoiceNo() {
     .sort({ createdAt: -1 })
     .select('invoice_no');
 
-  if (!lastBill || !lastBill.invoice_no) return 'INV-000001';
+  if (!lastBill || !lastBill.invoice_no) {
+    return 'INV-000001';
+  }
 
   const match = String(lastBill.invoice_no).match(/(\d+)$/);
-  if (!match) return 'INV-000001';
+
+  if (!match) {
+    return 'INV-000001';
+  }
 
   return `INV-${String(Number(match[1]) + 1).padStart(6, '0')}`;
 }
 
 
 function round2(value) {
-  return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+  return Math.round(
+    (Number(value) + Number.EPSILON) * 100
+  ) / 100;
 }
 
 
-/*
-  Selling price is GST-INCLUSIVE.
+// ============================================================
+// PREPARE BILL ITEMS
+//
+// IMPORTANT:
+// Selling price/rate is GST-INCLUSIVE.
+//
+// The frontend sends:
+// rate = FINAL price charged to customer
+//
+// Example:
+// Inventory selling price = 800
+// Billing screen price    = 700
+//
+// Backend uses 700.
+// It does NOT take 700 and apply another discount to it.
+//
+// discount_percent is kept for compatibility with existing
+// bills/API. The billing page sends 0 when rate is already the
+// final customer price.
+// ============================================================
 
-  IMPORTANT:
-  The frontend can send a custom selling price using:
-
-      line.rate
-
-  If line.rate is provided, that price is used.
-
-  If line.rate is not provided, the product's default
-  selling_price is used.
-
-  discount_percent is then applied to that selling price.
-*/
 async function prepareBillItems(
   items,
   interstate,
   extraDiscount = 0,
   stockOverrides = {}
 ) {
+
   if (!Array.isArray(items) || items.length === 0) {
-    throw new Error('Bill must contain at least one product');
+    throw new Error(
+      'Bill must contain at least one product'
+    );
   }
 
   const prepared = [];
   const requiredByProduct = {};
 
+
   for (const line of items) {
-    const productId = String(line.product_id || '').trim();
+
+    const productId =
+      String(line.product_id || '').trim();
 
     if (!productId) {
       throw new Error(
@@ -69,7 +88,9 @@ async function prepareBillItems(
       );
     }
 
-    const product = await Product.findById(productId);
+
+    const product =
+      await Product.findById(productId);
 
     if (!product) {
       throw new Error(
@@ -78,11 +99,9 @@ async function prepareBillItems(
     }
 
 
-    // ========================================================
-    // QUANTITY
-    // ========================================================
+    const qty =
+      Number(line.qty);
 
-    const qty = Number(line.qty);
 
     if (!Number.isFinite(qty) || qty <= 0) {
       throw new Error(
@@ -90,10 +109,6 @@ async function prepareBillItems(
       );
     }
 
-
-    // ========================================================
-    // AVAILABLE STOCK
-    // ========================================================
 
     const available =
       Object.prototype.hasOwnProperty.call(
@@ -109,63 +124,64 @@ async function prepareBillItems(
 
 
     // ========================================================
-    // PRICE
+    // IMPORTANT FIX
+    //
+    // Use the price/rate sent by the billing page.
+    //
+    // If billing sends:
+    // rate = 700
+    //
+    // then sellingPrice = 700.
+    //
+    // We only fall back to inventory selling_price when
+    // billing does not send a rate.
     // ========================================================
 
-    /*
-      IMPORTANT FIX:
+    const requestedRate =
+      Number(
+        line.rate ??
+        line.selling_price ??
+        line.price
+      );
 
-      Earlier code always used:
-
-          product.selling_price
-
-      That meant edited selling price from billing page
-      was ignored.
-
-      Now:
-
-      1. If frontend sends line.rate, use it.
-      2. Otherwise use product.selling_price.
-    */
-
-    const requestedRate = Number(line.rate);
 
     const sellingPrice =
       Number.isFinite(requestedRate) &&
       requestedRate >= 0
         ? requestedRate
-        : (Number(product.selling_price) || 0);
+        : (
+            Number(product.selling_price) || 0
+          );
 
 
-    // MRP is only the product MRP.
     const mrp =
-      Number(product.mrp || product.selling_price) || 0;
+      Number(
+        product.mrp ||
+        product.selling_price
+      ) || 0;
 
 
     const gstRate =
       Number(product.gst_rate) || 0;
 
 
-    // ========================================================
-    // LINE GROSS
-    // ========================================================
-
-    // Selling price is GST inclusive.
+    // Selling price is already GST inclusive.
     const grossInclusive =
-      round2(qty * sellingPrice);
+      round2(
+        qty * sellingPrice
+      );
 
 
-    // ========================================================
-    // LINE DISCOUNT
-    // ========================================================
-
-    const discountPercent = Math.max(
-      0,
-      Math.min(
-        100,
-        Number(line.discount_percent) || 0
-      )
-    );
+    // Normally billing page sends 0 because its rate
+    // is already the FINAL customer price.
+    const discountPercent =
+      Math.max(
+        0,
+        Math.min(
+          100,
+          Number(line.discount_percent) || 0
+        )
+      );
 
 
     const lineDiscount =
@@ -183,17 +199,15 @@ async function prepareBillItems(
       );
 
 
-    // ========================================================
-    // GST
-    // ========================================================
-
     let taxable =
       inclusiveAfterLineDiscount;
 
     let gstAmount = 0;
 
 
+    // GST is included inside selling price.
     if (gstRate > 0) {
+
       taxable =
         inclusiveAfterLineDiscount /
         (1 + gstRate / 100);
@@ -222,14 +236,12 @@ async function prepareBillItems(
         : 0;
 
 
-    // ========================================================
-    // PREPARED ITEM
-    // ========================================================
-
     prepared.push({
+
       product,
 
-      product_id: product._id,
+      product_id:
+        product._id,
 
       product_name:
         product.name,
@@ -250,8 +262,10 @@ async function prepareBillItems(
 
       mrp,
 
-      // THIS NOW CONTAINS THE EDITED SELLING PRICE
-      rate: sellingPrice,
+      // IMPORTANT:
+      // This is now the actual rate entered in billing.
+      rate:
+        sellingPrice,
 
       discount_percent:
         discountPercent,
@@ -285,14 +299,11 @@ async function prepareBillItems(
     });
 
 
-    // ========================================================
-    // STOCK VALIDATION
-    // ========================================================
-
     if (
       available <
       requiredByProduct[productId]
     ) {
+
       throw new Error(
         `Insufficient stock for ${product.name}. Available: ${available}`
       );
@@ -300,9 +311,9 @@ async function prepareBillItems(
   }
 
 
-  // ==========================================================
-  // TOTAL BEFORE BILL DISCOUNT
-  // ==========================================================
+  // ============================================================
+  // BILL LEVEL DISCOUNT
+  // ============================================================
 
   let totalInclusive =
     prepared.reduce(
@@ -314,10 +325,6 @@ async function prepareBillItems(
       0
     );
 
-
-  // ==========================================================
-  // BILL LEVEL DISCOUNT
-  // ==========================================================
 
   let billDiscount =
     Math.max(
@@ -334,16 +341,14 @@ async function prepareBillItems(
 
 
   /*
-    Allocate bill-level discount proportionally
-    between all products.
-
-    This keeps GST mathematically correct.
+    Allocate bill-level discount proportionally.
   */
 
   if (
     billDiscount > 0 &&
     totalInclusive > 0
   ) {
+
     let allocated = 0;
 
 
@@ -356,10 +361,12 @@ async function prepareBillItems(
 
         const share =
           isLast
+
             ? round2(
                 billDiscount -
                 allocated
               )
+
             : round2(
                 billDiscount *
                 (
@@ -395,6 +402,7 @@ async function prepareBillItems(
         if (
           Number(item.gst_rate) > 0
         ) {
+
           taxable =
             inclusiveAfterAllDiscounts /
             (
@@ -438,9 +446,9 @@ async function prepareBillItems(
   }
 
 
-  // ==========================================================
+  // ============================================================
   // FINAL TOTALS
-  // ==========================================================
+  // ============================================================
 
   totalInclusive =
     prepared.reduce(
@@ -497,9 +505,11 @@ async function prepareBillItems(
     );
 
 
-  // Round final payable amount to nearest rupee.
+  // Final customer payable amount.
   const grandTotal =
-    Math.round(totalInclusive);
+    Math.round(
+      totalInclusive
+    );
 
 
   const roundOff =
@@ -509,98 +519,110 @@ async function prepareBillItems(
     );
 
 
-  // ==========================================================
-  // BILL ITEMS
-  // ==========================================================
+  // ============================================================
+  // SAVE BILL ITEMS
+  // ============================================================
 
   const billItems =
-    prepared.map(item => ({
-      product_id:
-        item.product_id,
+    prepared.map(
+      item => ({
 
-      product_name:
-        item.product_name,
+        product_id:
+          item.product_id,
 
-      category:
-        item.category,
+        product_name:
+          item.product_name,
 
-      barcode_number:
-        item.barcode_number,
+        category:
+          item.category,
 
-      hsn_code:
-        item.hsn_code,
+        barcode_number:
+          item.barcode_number,
 
-      unit:
-        item.unit,
+        hsn_code:
+          item.hsn_code,
 
-      qty:
-        item.qty,
+        unit:
+          item.unit,
 
-      mrp:
-        item.mrp,
+        qty:
+          item.qty,
 
-      /*
-        This is the actual selling price used
-        for this bill.
-      */
-      rate:
-        item.rate,
+        mrp:
+          item.mrp,
 
-      discount_percent:
-        item.discount_percent,
+        rate:
+          item.rate,
 
-      taxable_value:
-        round2(
-          item.taxable_value
-        ),
+        discount_percent:
+          item.discount_percent,
 
-      gst_rate:
-        item.gst_rate,
+        taxable_value:
+          round2(
+            item.taxable_value
+          ),
 
-      cgst_amount:
-        round2(
-          item.cgst_amount
-        ),
+        gst_rate:
+          item.gst_rate,
 
-      sgst_amount:
-        round2(
-          item.sgst_amount
-        ),
+        cgst_amount:
+          round2(
+            item.cgst_amount
+          ),
 
-      igst_amount:
-        round2(
-          item.igst_amount
-        ),
+        sgst_amount:
+          round2(
+            item.sgst_amount
+          ),
 
-      line_total:
-        round2(
-          item.line_total
-        )
-    }));
+        igst_amount:
+          round2(
+            item.igst_amount
+          ),
+
+        line_total:
+          round2(
+            item.line_total
+          )
+      })
+    );
 
 
   return {
+
     prepared,
 
     billItems,
 
     subtotal:
-      round2(taxableTotal),
+      round2(
+        taxableTotal
+      ),
 
     taxable_value:
-      round2(taxableTotal),
+      round2(
+        taxableTotal
+      ),
 
     cgst_amount:
-      round2(cgstTotal),
+      round2(
+        cgstTotal
+      ),
 
     sgst_amount:
-      round2(sgstTotal),
+      round2(
+        sgstTotal
+      ),
 
     igst_amount:
-      round2(igstTotal),
+      round2(
+        igstTotal
+      ),
 
     discount_amount:
-      round2(billDiscount),
+      round2(
+        billDiscount
+      ),
 
     grand_total:
       grandTotal,
@@ -609,7 +631,9 @@ async function prepareBillItems(
       roundOff,
 
     totalInclusive:
-      round2(totalInclusive)
+      round2(
+        totalInclusive
+      )
   };
 }
 
@@ -619,10 +643,13 @@ async function prepareBillItems(
 // ============================================================
 
 function getOldStockOverrides(bill) {
+
   const overrides = {};
 
 
-  for (const item of bill.items || []) {
+  for (
+    const item of bill.items || []
+  ) {
 
     const id =
       String(
@@ -655,13 +682,18 @@ async function applyStockChange(
   prepared,
   direction
 ) {
+
   const quantities = {};
 
 
-  for (const item of prepared) {
+  for (
+    const item of prepared
+  ) {
 
     const id =
-      String(item.product_id);
+      String(
+        item.product_id
+      );
 
 
     quantities[id] =
@@ -678,7 +710,8 @@ async function applyStockChange(
     const [
       productId,
       qty
-    ] of Object.entries(
+    ]
+    of Object.entries(
       quantities
     )
   ) {
@@ -690,6 +723,7 @@ async function applyStockChange(
 
 
     if (!product) {
+
       throw new Error(
         `Product not found: ${productId}`
       );
@@ -700,13 +734,13 @@ async function applyStockChange(
       Number(
         product.stock_qty || 0
       ) +
-      direction *
-      qty;
+      direction * qty;
 
 
     if (
       product.stock_qty < 0
     ) {
+
       throw new Error(
         `Insufficient stock for ${product.name}. Available: ${
           Number(product.stock_qty || 0) + qty
@@ -738,12 +772,15 @@ router.get(
           });
 
 
-      res.json(bills);
+      res.json(
+        bills
+      );
 
     } catch (err) {
 
       res.status(500).json({
-        error: err.message
+        error:
+          err.message
       });
 
     }
@@ -775,16 +812,18 @@ router.get(
             error:
               'Bill not found'
           });
-
       }
 
 
-      res.json(bill);
+      res.json(
+        bill
+      );
 
     } catch (err) {
 
       res.status(500).json({
-        error: err.message
+        error:
+          err.message
       });
 
     }
@@ -817,7 +856,9 @@ router.post(
 
 
       const interstate =
-        Boolean(is_interstate);
+        Boolean(
+          is_interstate
+        );
 
 
       const calculation =
@@ -828,8 +869,7 @@ router.post(
         );
 
 
-      // Reduce stock only after
-      // complete bill validation.
+      // Reduce stock only after full validation.
       await applyStockChange(
         calculation.prepared,
         -1
@@ -907,7 +947,9 @@ router.post(
 
       res
         .status(201)
-        .json(bill);
+        .json(
+          bill
+        );
 
     } catch (err) {
 
@@ -923,7 +965,6 @@ router.post(
           error:
             err.message
         });
-
     }
   }
 );
@@ -931,11 +972,6 @@ router.post(
 
 // ============================================================
 // EDIT / UPDATE BILL
-//
-// PUT /api/bills/:id
-//
-// Old bill stock is virtually returned first.
-// New bill is then validated.
 // ============================================================
 
 router.put(
@@ -958,7 +994,6 @@ router.put(
             error:
               'Bill not found'
           });
-
       }
 
 
@@ -973,7 +1008,6 @@ router.put(
             error:
               'Cancelled bills cannot be edited'
           });
-
       }
 
 
@@ -991,41 +1025,34 @@ router.put(
       } = req.body;
 
 
-      // ======================================================
-      // OLD STOCK
-      // ======================================================
-
+      // Restore old quantities virtually.
       const oldStock =
         getOldStockOverrides(
           bill
         );
 
 
-      // ======================================================
-      // FIND ALL PRODUCTS
-      // ======================================================
-
       const productIds =
         new Set([
+
           ...Object.keys(
             oldStock
           ),
 
-          ...(Array.isArray(items)
-            ? items.map(
-                item =>
-                  String(
-                    item.product_id ||
-                    ''
-                  )
-              )
-            : [])
+          ...(
+            Array.isArray(items)
+              ? items.map(
+                  item =>
+                    String(
+                      item.product_id ||
+                      ''
+                    )
+                )
+              : []
+          )
+
         ]);
 
-
-      // ======================================================
-      // VIRTUAL STOCK
-      // ======================================================
 
       const virtualStock = {};
 
@@ -1035,8 +1062,9 @@ router.put(
         of productIds
       ) {
 
-        if (!productId)
+        if (!productId) {
           continue;
+        }
 
 
         const product =
@@ -1053,28 +1081,15 @@ router.put(
               error:
                 `Product not found: ${productId}`
             });
-
         }
 
 
-        /*
-          Current stock + old bill quantity
-
-          This makes the old bill quantity
-          available again while validating
-          the edited bill.
-        */
-
-        virtualStock[
-          productId
-        ] =
+        virtualStock[productId] =
           Number(
             product.stock_qty || 0
           ) +
           Number(
-            oldStock[
-              productId
-            ] || 0
+            oldStock[productId] || 0
           );
       }
 
@@ -1085,10 +1100,6 @@ router.put(
         );
 
 
-      // ======================================================
-      // CALCULATE NEW BILL
-      // ======================================================
-
       const calculation =
         await prepareBillItems(
           items,
@@ -1098,41 +1109,32 @@ router.put(
         );
 
 
-      // ======================================================
-      // NET STOCK CHANGES
-      // ======================================================
+      // ========================================================
+      // NET STOCK CHANGE
+      // ========================================================
 
       const netChanges = {};
 
-
-      /*
-        Add old bill quantities back.
-      */
 
       for (
         const [
           productId,
           qty
-        ] of Object.entries(
+        ]
+        of Object.entries(
           oldStock
         )
       ) {
 
-        netChanges[
-          productId
-        ] =
+        netChanges[productId] =
           Number(
-            netChanges[
-              productId
-            ] || 0
+            netChanges[productId] || 0
           ) +
-          Number(qty || 0);
+          Number(
+            qty || 0
+          );
       }
 
-
-      /*
-        Remove new bill quantities.
-      */
 
       for (
         const item
@@ -1145,13 +1147,9 @@ router.put(
           );
 
 
-        netChanges[
-          productId
-        ] =
+        netChanges[productId] =
           Number(
-            netChanges[
-              productId
-            ] || 0
+            netChanges[productId] || 0
           ) -
           Number(
             item.qty || 0
@@ -1159,21 +1157,19 @@ router.put(
       }
 
 
-      // ======================================================
-      // APPLY STOCK CHANGES
-      // ======================================================
-
       for (
         const [
           productId,
           change
-        ] of Object.entries(
+        ]
+        of Object.entries(
           netChanges
         )
       ) {
 
-        if (!change)
+        if (!change) {
           continue;
+        }
 
 
         const product =
@@ -1187,7 +1183,6 @@ router.put(
           throw new Error(
             `Product not found: ${productId}`
           );
-
         }
 
 
@@ -1195,7 +1190,9 @@ router.put(
           Number(
             product.stock_qty || 0
           ) +
-          Number(change);
+          Number(
+            change
+          );
 
 
         if (
@@ -1205,7 +1202,6 @@ router.put(
           throw new Error(
             `Stock would become negative for ${product.name}`
           );
-
         }
 
 
@@ -1213,9 +1209,9 @@ router.put(
       }
 
 
-      // ======================================================
+      // ========================================================
       // UPDATE BILL
-      // ======================================================
+      // ========================================================
 
       bill.customer_name =
         customer_name ||
@@ -1285,13 +1281,6 @@ router.put(
         calculation.grand_total;
 
 
-      /*
-        IMPORTANT:
-
-        calculation.billItems now contains
-        the edited rate from the frontend.
-      */
-
       bill.items =
         calculation.billItems;
 
@@ -1299,7 +1288,9 @@ router.put(
       await bill.save();
 
 
-      res.json(bill);
+      res.json(
+        bill
+      );
 
     } catch (err) {
 
@@ -1315,7 +1306,6 @@ router.put(
           error:
             err.message
         });
-
     }
   }
 );
@@ -1345,7 +1335,6 @@ router.post(
             error:
               'Bill not found'
           });
-
       }
 
 
@@ -1360,14 +1349,13 @@ router.post(
             error:
               'Bill is already cancelled'
           });
-
       }
 
 
-      // Return sold stock.
       await applyStockChange(
         bill.items.map(
           item => ({
+
             product_id:
               item.product_id,
 
@@ -1375,6 +1363,7 @@ router.post(
               Number(
                 item.qty || 0
               )
+
           })
         ),
         1
@@ -1388,7 +1377,9 @@ router.post(
       await bill.save();
 
 
-      res.json(bill);
+      res.json(
+        bill
+      );
 
     } catch (err) {
 
@@ -1404,7 +1395,6 @@ router.post(
           error:
             err.message
         });
-
     }
   }
 );
@@ -1412,9 +1402,6 @@ router.post(
 
 // ============================================================
 // DELETE BILL
-//
-// Permanently removes bill.
-// Stock is restored first.
 // ============================================================
 
 router.delete(
@@ -1437,18 +1424,8 @@ router.delete(
             error:
               'Bill not found'
           });
-
       }
 
-
-      /*
-        If bill is active,
-        return its sold stock.
-
-        If already cancelled,
-        stock has already been returned,
-        so do NOT return it again.
-      */
 
       if (
         bill.status !==
@@ -1456,8 +1433,10 @@ router.delete(
       ) {
 
         await applyStockChange(
+
           bill.items.map(
             item => ({
+
               product_id:
                 item.product_id,
 
@@ -1465,8 +1444,10 @@ router.delete(
                 Number(
                   item.qty || 0
                 )
+
             })
           ),
+
           1
         );
       }
@@ -1478,11 +1459,13 @@ router.delete(
 
 
       res.json({
+
         message:
           'Bill deleted',
 
         id:
           req.params.id
+
       });
 
     } catch (err) {
@@ -1499,7 +1482,6 @@ router.delete(
           error:
             err.message
         });
-
     }
   }
 );
@@ -1528,7 +1510,6 @@ router.get(
           .send(
             'Bill not found'
           );
-
       }
 
 
@@ -1540,11 +1521,15 @@ router.get(
 
       const html =
         renderInvoiceHTML({
+
           bill,
+
           items:
             bill.items,
+
           shop:
             shop || {}
+
         });
 
 
@@ -1565,14 +1550,9 @@ router.get(
         .send(
           'Failed to generate invoice'
         );
-
     }
   }
 );
 
-
-// ============================================================
-// EXPORT
-// ============================================================
 
 module.exports = router;

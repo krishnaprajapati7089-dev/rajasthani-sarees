@@ -22,13 +22,16 @@ async function nextInvoiceNo() {
     return 'INV-000001';
   }
 
-  const match = String(lastBill.invoice_no).match(/(\d+)$/);
+  const match =
+    String(lastBill.invoice_no).match(/(\d+)$/);
 
   if (!match) {
     return 'INV-000001';
   }
 
-  return `INV-${String(Number(match[1]) + 1).padStart(6, '0')}`;
+  return `INV-${String(
+    Number(match[1]) + 1
+  ).padStart(6, '0')}`;
 }
 
 
@@ -42,22 +45,31 @@ function round2(value) {
 // ============================================================
 // PREPARE BILL ITEMS
 //
-// IMPORTANT:
-// Selling price/rate is GST-INCLUSIVE.
+// IMPORTANT PRICE RULE
 //
-// The frontend sends:
-// rate = FINAL price charged to customer
+// The billing page sends:
+//
+//     rate = FINAL selling price charged to customer
 //
 // Example:
-// Inventory selling price = 800
-// Billing screen price    = 700
 //
-// Backend uses 700.
-// It does NOT take 700 and apply another discount to it.
+//     MRP             = 850
+//     Selling Price   = 700
+//     Discount shown  = 17.65%
 //
-// discount_percent is kept for compatibility with existing
-// bills/API. The billing page sends 0 when rate is already the
-// final customer price.
+// FINAL CUSTOMER PRICE = 700
+//
+// The 17.65% is already represented by:
+//     850 -> 700
+//
+// Therefore backend MUST NOT do:
+//
+//     700 - 17.65%
+//
+// Otherwise:
+//     700 -> 576
+//
+// This was the problem.
 // ============================================================
 
 async function prepareBillItems(
@@ -67,20 +79,33 @@ async function prepareBillItems(
   stockOverrides = {}
 ) {
 
-  if (!Array.isArray(items) || items.length === 0) {
+  if (
+    !Array.isArray(items) ||
+    items.length === 0
+  ) {
     throw new Error(
       'Bill must contain at least one product'
     );
   }
 
+
   const prepared = [];
+
   const requiredByProduct = {};
 
+
+
+  // ==========================================================
+  // PROCESS EACH ITEM
+  // ==========================================================
 
   for (const line of items) {
 
     const productId =
-      String(line.product_id || '').trim();
+      String(
+        line.product_id || ''
+      ).trim();
+
 
     if (!productId) {
       throw new Error(
@@ -90,7 +115,10 @@ async function prepareBillItems(
 
 
     const product =
-      await Product.findById(productId);
+      await Product.findById(
+        productId
+      );
+
 
     if (!product) {
       throw new Error(
@@ -103,39 +131,52 @@ async function prepareBillItems(
       Number(line.qty);
 
 
-    if (!Number.isFinite(qty) || qty <= 0) {
+    if (
+      !Number.isFinite(qty) ||
+      qty <= 0
+    ) {
       throw new Error(
         `Invalid quantity for product: ${product.name}`
       );
     }
 
 
+    // --------------------------------------------------------
+    // AVAILABLE STOCK
+    // --------------------------------------------------------
+
     const available =
       Object.prototype.hasOwnProperty.call(
         stockOverrides,
         productId
       )
-        ? Number(stockOverrides[productId])
-        : Number(product.stock_qty || 0);
+        ? Number(
+            stockOverrides[productId]
+          )
+        : Number(
+            product.stock_qty || 0
+          );
 
 
     requiredByProduct[productId] =
-      (requiredByProduct[productId] || 0) + qty;
+      (
+        requiredByProduct[productId] ||
+        0
+      ) + qty;
 
 
-    // ========================================================
-    // IMPORTANT FIX
+    // --------------------------------------------------------
+    // FINAL SELLING PRICE
     //
-    // Use the price/rate sent by the billing page.
+    // Priority:
     //
-    // If billing sends:
-    // rate = 700
+    // 1. line.rate
+    // 2. line.selling_price
+    // 3. line.price
+    // 4. product.selling_price
     //
-    // then sellingPrice = 700.
-    //
-    // We only fall back to inventory selling_price when
-    // billing does not send a rate.
-    // ========================================================
+    // The billing page's entered price is authoritative.
+    // --------------------------------------------------------
 
     const requestedRate =
       Number(
@@ -146,58 +187,101 @@ async function prepareBillItems(
 
 
     const sellingPrice =
-      Number.isFinite(requestedRate) &&
+      Number.isFinite(
+        requestedRate
+      ) &&
       requestedRate >= 0
+
         ? requestedRate
-        : (
-            Number(product.selling_price) || 0
+
+        : Number(
+            product.selling_price || 0
           );
 
+
+    // --------------------------------------------------------
+    // MRP
+    // --------------------------------------------------------
 
     const mrp =
       Number(
         product.mrp ||
-        product.selling_price
-      ) || 0;
-
-
-    const gstRate =
-      Number(product.gst_rate) || 0;
-
-
-    // Selling price is already GST inclusive.
-    const grossInclusive =
-      round2(
-        qty * sellingPrice
+        product.selling_price ||
+        0
       );
 
 
-    // Normally billing page sends 0 because its rate
-    // is already the FINAL customer price.
+    // --------------------------------------------------------
+    // GST RATE
+    // --------------------------------------------------------
+
+    const gstRate =
+      Number(
+        product.gst_rate || 0
+      );
+
+
+    // --------------------------------------------------------
+    // GROSS FINAL CUSTOMER AMOUNT
+    //
+    // Example:
+    //
+    // qty = 1
+    // sellingPrice = 700
+    //
+    // grossInclusive = 700
+    // --------------------------------------------------------
+
+    const grossInclusive =
+      round2(
+        qty *
+        sellingPrice
+      );
+
+
+    // --------------------------------------------------------
+    // DISPLAYED DISCOUNT
+    //
+    // IMPORTANT:
+    //
+    // This percentage is already represented in sellingPrice.
+    //
+    // Example:
+    // MRP = 850
+    // Selling price = 700
+    // Discount = 17.65%
+    //
+    // DO NOT subtract this discount again.
+    //
+    // We store it only for the bill/invoice display.
+    // --------------------------------------------------------
+
     const discountPercent =
       Math.max(
         0,
         Math.min(
           100,
-          Number(line.discount_percent) || 0
+          Number(
+            line.discount_percent
+          ) || 0
         )
       );
 
 
-    const lineDiscount =
-      round2(
-        grossInclusive *
-        discountPercent /
-        100
-      );
+    // IMPORTANT:
+    // NO SECOND DISCOUNT HERE.
+    const lineDiscount = 0;
 
 
     const inclusiveAfterLineDiscount =
       round2(
-        grossInclusive -
-        lineDiscount
+        grossInclusive
       );
 
+
+    // --------------------------------------------------------
+    // GST INCLUDED IN SELLING PRICE
+    // --------------------------------------------------------
 
     let taxable =
       inclusiveAfterLineDiscount;
@@ -205,18 +289,25 @@ async function prepareBillItems(
     let gstAmount = 0;
 
 
-    // GST is included inside selling price.
     if (gstRate > 0) {
 
       taxable =
         inclusiveAfterLineDiscount /
-        (1 + gstRate / 100);
+        (
+          1 +
+          gstRate / 100
+        );
+
 
       gstAmount =
         inclusiveAfterLineDiscount -
         taxable;
     }
 
+
+    // --------------------------------------------------------
+    // CGST / SGST / IGST
+    // --------------------------------------------------------
 
     const cgst =
       interstate
@@ -235,6 +326,10 @@ async function prepareBillItems(
         ? gstAmount
         : 0;
 
+
+    // --------------------------------------------------------
+    // PREPARED ITEM
+    // --------------------------------------------------------
 
     prepared.push({
 
@@ -262,11 +357,11 @@ async function prepareBillItems(
 
       mrp,
 
-      // IMPORTANT:
-      // This is now the actual rate entered in billing.
+      // FINAL customer price
       rate:
         sellingPrice,
 
+      // Display/reference only
       discount_percent:
         discountPercent,
 
@@ -294,10 +389,15 @@ async function prepareBillItems(
       igst_amount:
         igst,
 
+      // FINAL line amount
       line_total:
         inclusiveAfterLineDiscount
     });
 
+
+    // --------------------------------------------------------
+    // STOCK VALIDATION
+    // --------------------------------------------------------
 
     if (
       available <
@@ -311,16 +411,26 @@ async function prepareBillItems(
   }
 
 
-  // ============================================================
-  // BILL LEVEL DISCOUNT
-  // ============================================================
+
+  // ==========================================================
+  // BILL LEVEL EXTRA DISCOUNT
+  //
+  // This is different from the MRP -> selling price difference.
+  //
+  // If the user enters a separate bill-level discount amount,
+  // that amount is still applied.
+  // ==========================================================
 
   let totalInclusive =
     prepared.reduce(
-      (sum, item) =>
+      (
+        sum,
+        item
+      ) =>
         sum +
         Number(
-          item._inclusiveBeforeExtra || 0
+          item._inclusiveBeforeExtra ||
+          0
         ),
       0
     );
@@ -329,20 +439,25 @@ async function prepareBillItems(
   let billDiscount =
     Math.max(
       0,
-      Number(extraDiscount) || 0
+      Number(
+        extraDiscount
+      ) || 0
     );
 
 
   billDiscount =
     Math.min(
       billDiscount,
-      round2(totalInclusive)
+      round2(
+        totalInclusive
+      )
     );
 
 
-  /*
-    Allocate bill-level discount proportionally.
-  */
+
+  // ==========================================================
+  // ALLOCATE BILL LEVEL DISCOUNT
+  // ==========================================================
 
   if (
     billDiscount > 0 &&
@@ -353,10 +468,14 @@ async function prepareBillItems(
 
 
     prepared.forEach(
-      (item, index) => {
+      (
+        item,
+        index
+      ) => {
 
         const isLast =
-          index === prepared.length - 1;
+          index ===
+          prepared.length - 1;
 
 
         const share =
@@ -380,7 +499,8 @@ async function prepareBillItems(
 
         allocated =
           round2(
-            allocated + share
+            allocated +
+            share
           );
 
 
@@ -396,18 +516,24 @@ async function prepareBillItems(
         let taxable =
           inclusiveAfterAllDiscounts;
 
-        let gstAmount = 0;
+
+        let gstAmount =
+          0;
 
 
         if (
-          Number(item.gst_rate) > 0
+          Number(
+            item.gst_rate
+          ) > 0
         ) {
 
           taxable =
             inclusiveAfterAllDiscounts /
             (
               1 +
-              Number(item.gst_rate) / 100
+              Number(
+                item.gst_rate
+              ) / 100
             );
 
 
@@ -446,13 +572,17 @@ async function prepareBillItems(
   }
 
 
-  // ============================================================
+
+  // ==========================================================
   // FINAL TOTALS
-  // ============================================================
+  // ==========================================================
 
   totalInclusive =
     prepared.reduce(
-      (sum, item) =>
+      (
+        sum,
+        item
+      ) =>
         sum +
         Number(
           item.line_total || 0
@@ -463,7 +593,10 @@ async function prepareBillItems(
 
   const taxableTotal =
     prepared.reduce(
-      (sum, item) =>
+      (
+        sum,
+        item
+      ) =>
         sum +
         Number(
           item.taxable_value || 0
@@ -474,7 +607,10 @@ async function prepareBillItems(
 
   const cgstTotal =
     prepared.reduce(
-      (sum, item) =>
+      (
+        sum,
+        item
+      ) =>
         sum +
         Number(
           item.cgst_amount || 0
@@ -485,7 +621,10 @@ async function prepareBillItems(
 
   const sgstTotal =
     prepared.reduce(
-      (sum, item) =>
+      (
+        sum,
+        item
+      ) =>
         sum +
         Number(
           item.sgst_amount || 0
@@ -496,7 +635,10 @@ async function prepareBillItems(
 
   const igstTotal =
     prepared.reduce(
-      (sum, item) =>
+      (
+        sum,
+        item
+      ) =>
         sum +
         Number(
           item.igst_amount || 0
@@ -505,7 +647,18 @@ async function prepareBillItems(
     );
 
 
-  // Final customer payable amount.
+  // ----------------------------------------------------------
+  // FINAL CUSTOMER PAYABLE
+  //
+  // Example:
+  //
+  // Selling price = 700
+  // GST included = 33.33
+  // Taxable      = 666.67
+  //
+  // Grand total  = 700
+  // ----------------------------------------------------------
+
   const grandTotal =
     Math.round(
       totalInclusive
@@ -519,9 +672,10 @@ async function prepareBillItems(
     );
 
 
-  // ============================================================
-  // SAVE BILL ITEMS
-  // ============================================================
+
+  // ==========================================================
+  // BILL ITEMS TO SAVE
+  // ==========================================================
 
   const billItems =
     prepared.map(
@@ -551,9 +705,11 @@ async function prepareBillItems(
         mrp:
           item.mrp,
 
+        // FINAL customer selling price
         rate:
           item.rate,
 
+        // MRP-based displayed discount
         discount_percent:
           item.discount_percent,
 
@@ -587,6 +743,11 @@ async function prepareBillItems(
       })
     );
 
+
+
+  // ==========================================================
+  // RETURN CALCULATION
+  // ==========================================================
 
   return {
 
@@ -638,17 +799,21 @@ async function prepareBillItems(
 }
 
 
+
 // ============================================================
-// OLD BILL STOCK
+// GET OLD BILL STOCK
 // ============================================================
 
-function getOldStockOverrides(bill) {
+function getOldStockOverrides(
+  bill
+) {
 
   const overrides = {};
 
 
   for (
-    const item of bill.items || []
+    const item
+    of bill.items || []
   ) {
 
     const id =
@@ -657,7 +822,9 @@ function getOldStockOverrides(bill) {
       );
 
 
-    if (!id) continue;
+    if (!id) {
+      continue;
+    }
 
 
     overrides[id] =
@@ -674,8 +841,13 @@ function getOldStockOverrides(bill) {
 }
 
 
+
 // ============================================================
-// STOCK CHANGE
+// APPLY STOCK CHANGE
+//
+// direction:
+//   -1 = sale
+//   +1 = restore
 // ============================================================
 
 async function applyStockChange(
@@ -687,7 +859,8 @@ async function applyStockChange(
 
 
   for (
-    const item of prepared
+    const item
+    of prepared
   ) {
 
     const id =
@@ -698,7 +871,8 @@ async function applyStockChange(
 
     quantities[id] =
       (
-        quantities[id] || 0
+        quantities[id] ||
+        0
       ) +
       Number(
         item.qty || 0
@@ -734,7 +908,10 @@ async function applyStockChange(
       Number(
         product.stock_qty || 0
       ) +
-      direction * qty;
+      (
+        direction *
+        qty
+      );
 
 
     if (
@@ -743,7 +920,9 @@ async function applyStockChange(
 
       throw new Error(
         `Insufficient stock for ${product.name}. Available: ${
-          Number(product.stock_qty || 0) + qty
+          Number(
+            product.stock_qty || 0
+          ) + qty
         }`
       );
     }
@@ -754,13 +933,17 @@ async function applyStockChange(
 }
 
 
+
 // ============================================================
 // GET ALL BILLS
 // ============================================================
 
 router.get(
   '/',
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -778,14 +961,22 @@ router.get(
 
     } catch (err) {
 
+      console.error(
+        'Get bills error:',
+        err
+      );
+
+
       res.status(500).json({
+
         error:
           err.message
-      });
 
+      });
     }
   }
 );
+
 
 
 // ============================================================
@@ -794,7 +985,10 @@ router.get(
 
 router.get(
   '/:id',
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -809,8 +1003,10 @@ router.get(
         return res
           .status(404)
           .json({
+
             error:
               'Bill not found'
+
           });
       }
 
@@ -821,14 +1017,22 @@ router.get(
 
     } catch (err) {
 
+      console.error(
+        'Get bill error:',
+        err
+      );
+
+
       res.status(500).json({
+
         error:
           err.message
-      });
 
+      });
     }
   }
 );
+
 
 
 // ============================================================
@@ -837,7 +1041,10 @@ router.get(
 
 router.post(
   '/',
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -861,6 +1068,10 @@ router.post(
         );
 
 
+      // --------------------------------------------------------
+      // CALCULATE COMPLETE BILL
+      // --------------------------------------------------------
+
       const calculation =
         await prepareBillItems(
           items,
@@ -869,16 +1080,27 @@ router.post(
         );
 
 
-      // Reduce stock only after full validation.
+      // --------------------------------------------------------
+      // REDUCE STOCK
+      // --------------------------------------------------------
+
       await applyStockChange(
         calculation.prepared,
         -1
       );
 
 
+      // --------------------------------------------------------
+      // NEW INVOICE NUMBER
+      // --------------------------------------------------------
+
       const invoice_no =
         await nextInvoiceNo();
 
+
+      // --------------------------------------------------------
+      // CREATE BILL
+      // --------------------------------------------------------
 
       const bill =
         await Bill.create({
@@ -890,13 +1112,16 @@ router.post(
             'Walk-in Customer',
 
           customer_phone:
-            customer_phone || '',
+            customer_phone ||
+            '',
 
           customer_gstin:
-            customer_gstin || '',
+            customer_gstin ||
+            '',
 
           customer_state:
-            customer_state || '',
+            customer_state ||
+            '',
 
           is_interstate:
             interstate,
@@ -910,7 +1135,9 @@ router.post(
             'Paid',
 
           paid_amount:
-            Number(paid_amount) ||
+            Number(
+              paid_amount
+            ) ||
             calculation.grand_total,
 
           subtotal:
@@ -962,12 +1189,15 @@ router.post(
       res
         .status(400)
         .json({
+
           error:
             err.message
+
         });
     }
   }
 );
+
 
 
 // ============================================================
@@ -976,7 +1206,10 @@ router.post(
 
 router.put(
   '/:id',
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -991,8 +1224,10 @@ router.put(
         return res
           .status(404)
           .json({
+
             error:
               'Bill not found'
+
           });
       }
 
@@ -1005,8 +1240,10 @@ router.put(
         return res
           .status(400)
           .json({
+
             error:
               'Cancelled bills cannot be edited'
+
           });
       }
 
@@ -1025,7 +1262,14 @@ router.put(
       } = req.body;
 
 
-      // Restore old quantities virtually.
+
+      // --------------------------------------------------------
+      // VIRTUAL OLD STOCK
+      //
+      // Existing bill quantities are temporarily considered
+      // available again for validation.
+      // --------------------------------------------------------
+
       const oldStock =
         getOldStockOverrides(
           bill
@@ -1041,6 +1285,7 @@ router.put(
 
           ...(
             Array.isArray(items)
+
               ? items.map(
                   item =>
                     String(
@@ -1048,6 +1293,7 @@ router.put(
                       ''
                     )
                 )
+
               : []
           )
 
@@ -1078,8 +1324,10 @@ router.put(
           return res
             .status(400)
             .json({
+
               error:
                 `Product not found: ${productId}`
+
             });
         }
 
@@ -1093,6 +1341,11 @@ router.put(
           );
       }
 
+
+
+      // --------------------------------------------------------
+      // CALCULATE UPDATED BILL
+      // --------------------------------------------------------
 
       const interstate =
         Boolean(
@@ -1109,13 +1362,18 @@ router.put(
         );
 
 
-      // ========================================================
-      // NET STOCK CHANGE
-      // ========================================================
+
+      // --------------------------------------------------------
+      // NET STOCK CHANGES
+      //
+      // OLD BILL STOCK IS RETURNED
+      // NEW BILL STOCK IS REMOVED
+      // --------------------------------------------------------
 
       const netChanges = {};
 
 
+      // Add old quantities back
       for (
         const [
           productId,
@@ -1128,7 +1386,8 @@ router.put(
 
         netChanges[productId] =
           Number(
-            netChanges[productId] || 0
+            netChanges[productId] ||
+            0
           ) +
           Number(
             qty || 0
@@ -1136,6 +1395,7 @@ router.put(
       }
 
 
+      // Remove new quantities
       for (
         const item
         of calculation.prepared
@@ -1149,13 +1409,19 @@ router.put(
 
         netChanges[productId] =
           Number(
-            netChanges[productId] || 0
+            netChanges[productId] ||
+            0
           ) -
           Number(
             item.qty || 0
           );
       }
 
+
+
+      // --------------------------------------------------------
+      // APPLY NET STOCK CHANGES
+      // --------------------------------------------------------
 
       for (
         const [
@@ -1209,9 +1475,10 @@ router.put(
       }
 
 
-      // ========================================================
+
+      // --------------------------------------------------------
       // UPDATE BILL
-      // ========================================================
+      // --------------------------------------------------------
 
       bill.customer_name =
         customer_name ||
@@ -1219,15 +1486,18 @@ router.put(
 
 
       bill.customer_phone =
-        customer_phone || '';
+        customer_phone ||
+        '';
 
 
       bill.customer_gstin =
-        customer_gstin || '';
+        customer_gstin ||
+        '';
 
 
       bill.customer_state =
-        customer_state || '';
+        customer_state ||
+        '';
 
 
       bill.is_interstate =
@@ -1245,7 +1515,9 @@ router.put(
 
 
       bill.paid_amount =
-        Number(paid_amount) ||
+        Number(
+          paid_amount
+        ) ||
         calculation.grand_total;
 
 
@@ -1303,12 +1575,15 @@ router.put(
       res
         .status(400)
         .json({
+
           error:
             err.message
+
         });
     }
   }
 );
+
 
 
 // ============================================================
@@ -1317,7 +1592,10 @@ router.put(
 
 router.post(
   '/:id/cancel',
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -1332,8 +1610,10 @@ router.post(
         return res
           .status(404)
           .json({
+
             error:
               'Bill not found'
+
           });
       }
 
@@ -1346,13 +1626,17 @@ router.post(
         return res
           .status(400)
           .json({
+
             error:
               'Bill is already cancelled'
+
           });
       }
 
 
+      // Restore stock
       await applyStockChange(
+
         bill.items.map(
           item => ({
 
@@ -1366,6 +1650,7 @@ router.post(
 
           })
         ),
+
         1
       );
 
@@ -1392,21 +1677,30 @@ router.post(
       res
         .status(400)
         .json({
+
           error:
             err.message
+
         });
     }
   }
 );
 
 
+
 // ============================================================
 // DELETE BILL
+//
+// Permanently deletes the bill.
+// Stock is restored first for an active bill.
 // ============================================================
 
 router.delete(
   '/:id',
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -1421,12 +1715,16 @@ router.delete(
         return res
           .status(404)
           .json({
+
             error:
               'Bill not found'
+
           });
       }
 
 
+      // If bill is active,
+      // return its stock to inventory.
       if (
         bill.status !==
         'CANCELLED'
@@ -1479,21 +1777,27 @@ router.delete(
       res
         .status(500)
         .json({
+
           error:
             err.message
+
         });
     }
   }
 );
 
 
+
 // ============================================================
-// INVOICE HTML
+// GENERATE INVOICE HTML
 // ============================================================
 
 router.get(
   '/:id/invoice',
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -1515,7 +1819,10 @@ router.get(
 
       const shop =
         await ShopProfile.findOne({
-          key: 'main'
+
+          key:
+            'main'
+
         });
 
 
@@ -1535,7 +1842,9 @@ router.get(
 
       res
         .type('html')
-        .send(html);
+        .send(
+          html
+        );
 
     } catch (err) {
 
@@ -1555,4 +1864,10 @@ router.get(
 );
 
 
-module.exports = router;
+
+// ============================================================
+// EXPORT
+// ============================================================
+
+module.exports =
+  router;

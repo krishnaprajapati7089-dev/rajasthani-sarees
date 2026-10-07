@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,8 +48,8 @@ input:focus,select:focus{outline:2px solid var(--champagne-light);border-color:v
 table{width:100%;min-width:1180px;border-collapse:collapse;table-layout:fixed}
 th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
 th{font-size:12px;color:var(--graphite-soft);font-weight:600;white-space:nowrap;text-align:left}
-td input{width:100%;min-width:0;padding:8px}
-.summary{max-width:560px;width:100%;margin:0 auto}
+td input,td select{width:100%;min-width:0;padding:8px}
+.summary{max-width:560px;width:100%;margin:0 auto 18px}
 .summary-row{display:flex;justify-content:space-between;padding:8px 0}
 .summary-total{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line);font-size:20px;color:var(--emerald)}
 .actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
@@ -58,6 +57,7 @@ td input{width:100%;min-width:0;padding:8px}
 .status{display:none;padding:12px 14px;border-radius:8px;background:#E8F6F1;color:var(--emerald-dark);font-size:13px;margin-bottom:18px}
 .status.error{background:#FBEAE7;color:#B23A2E}
 .form-message{margin-top:8px;font-size:13px;color:var(--graphite-soft)}
+.form-message.error{color:#B23A2E}
 
 /* printable labels panel */
 .labels-grid{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px}
@@ -69,14 +69,24 @@ td input{width:100%;min-width:0;padding:8px}
 @media(max-width:900px){.primary-nav{display:none}.form-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr}.page-inner{padding:25px 16px}.page-header{align-items:flex-start;flex-direction:column}.brand-sub{display:none}.upload-box{padding:30px 18px}.summary{max-width:none}}
 
-#purchaseItems th:nth-child(1),#purchaseItems td:nth-child(1){width:150px}
-#purchaseItems th:nth-child(2),#purchaseItems td:nth-child(2){width:220px}
-#purchaseItems th:nth-child(3),#purchaseItems td:nth-child(3){width:100px}
-#purchaseItems th:nth-child(4),#purchaseItems td:nth-child(4){width:150px}
-#purchaseItems th:nth-child(5),#purchaseItems td:nth-child(5){width:75px}
-#purchaseItems th:nth-child(6),#purchaseItems td:nth-child(6){width:130px}
-#purchaseItems th:nth-child(7),#purchaseItems td:nth-child(7){width:150px}
-#purchaseItems th:nth-child(8),#purchaseItems td:nth-child(8){width:110px}
+/* Items table: 10 columns */
+#purchaseItems{min-width:0}
+.items-table{min-width:1200px}
+.items-table th:nth-child(1),.items-table td:nth-child(1){width:140px}
+.items-table th:nth-child(2),.items-table td:nth-child(2){width:190px}
+.items-table th:nth-child(3),.items-table td:nth-child(3){width:90px}
+.items-table th:nth-child(4),.items-table td:nth-child(4){width:130px}
+.items-table th:nth-child(5),.items-table td:nth-child(5){width:70px}
+.items-table th:nth-child(6),.items-table td:nth-child(6){width:120px}
+.items-table th:nth-child(7),.items-table td:nth-child(7){width:105px}
+.items-table th:nth-child(8),.items-table td:nth-child(8){width:120px}
+.items-table th:nth-child(9),.items-table td:nth-child(9){width:110px}
+.items-table th:nth-child(10),.items-table td:nth-child(10){width:60px}
+
+.margin-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(90deg,rgba(16,80,64,.045),rgba(201,162,74,.08));border-radius:10px;padding:12px 14px;margin-bottom:16px}
+.margin-bar label{font-weight:700;color:var(--emerald);font-size:13px}
+.margin-bar input{width:100px;font-weight:700;border-color:var(--champagne)}
+.margin-bar .pct{font-weight:700;color:var(--emerald)}
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .bill-search-row{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:10px;align-items:center}
@@ -95,26 +105,28 @@ td input{width:100%;min-width:0;padding:8px}
 .btn-delete:hover{background:#FBEAE7;border-color:#B23A2E}
 .charges-row{align-items:center;gap:16px}.charges-row label{font-weight:600}.charges-row .discount-control input{width:120px}
 
+/* GST % row */
+.total-gst-row{background:linear-gradient(90deg,rgba(16,80,64,.045),rgba(201,162,74,.08));border-radius:10px;padding:10px 12px}
+.total-gst-row label{font-weight:700;color:var(--emerald)}
+.total-gst-row input{font-weight:700;border-color:var(--champagne)}
+.total-gst-row input:focus{box-shadow:0 0 0 4px rgba(201,162,74,.16)}
 
-/* Total GST input */
-.total-gst-row{
-  background:linear-gradient(90deg,rgba(16,80,64,.045),rgba(201,162,74,.08));
-  border-radius:10px;
-  padding:10px 12px;
-}
-.total-gst-row label{
-  font-weight:700;
-  color:var(--emerald);
-}
-.total-gst-row input{
-  font-weight:700;
-  border-color:var(--champagne);
-}
-.total-gst-row input:focus{
-  box-shadow:0 0 0 4px rgba(201,162,74,.16);
-}
+/* Payments / Dr-Cr ledger */
+.pay-panel{max-width:960px;margin:0 auto 18px}
+.pay-table{min-width:820px}
+.pay-table th:nth-child(1),.pay-table td:nth-child(1){width:150px}
+.pay-table th:nth-child(2),.pay-table td:nth-child(2){width:140px}
+.pay-table th:nth-child(3),.pay-table td:nth-child(3){width:130px}
+.pay-table th:nth-child(4),.pay-table td:nth-child(4){width:140px}
+.pay-table th:nth-child(5),.pay-table td:nth-child(5){width:auto}
+.pay-table th:nth-child(6),.pay-table td:nth-child(6){width:60px}
+.pay-note{background:#FFF9EA;border:1px solid var(--champagne-light);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--graphite-soft);margin-bottom:14px}
+.pay-totals{max-width:460px;margin:18px 0 0 auto}
+.balance-row{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line);font-size:18px;font-weight:700}
+.balance-row.cr{color:#B23A2E}
+.balance-row.dr{color:var(--emerald)}
 
-/* NEW PREMIUM EMERALD + CHAMPAGNE THEME */
+/* PREMIUM EMERALD + CHAMPAGNE THEME */
 body{overflow-x:hidden;background:radial-gradient(circle at 15% 0%,rgba(214,181,107,.10),transparent 28%),var(--ivory)}
 body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 20%,rgba(214,181,107,.035),transparent 70%);animation:ambientGlow 9s ease-in-out infinite alternate;z-index:-1}
 .site-header{background:rgba(255,255,255,.92);backdrop-filter:blur(14px);box-shadow:0 8px 30px rgba(7,63,53,.07)}
@@ -224,9 +236,17 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
   <!-- Items -->
   <section class="panel">
     <h2>3. Purchased Items</h2>
-    <p class="form-message">Enter the MRP, which is also used as the Selling Price. GST is entered once on the total amount in the Bill Summary below.</p>
+
+    <div class="margin-bar">
+      <label for="defaultMargin">Default Margin on Purchase Rate</label>
+      <input id="defaultMargin" type="number" min="0" step="0.01" value="70" inputmode="decimal">
+      <span class="pct">%</span>
+      <button class="btn-ghost" type="button" style="padding:8px 14px" onclick="applyDefaultMarginToAll()">Apply to all rows</button>
+      <span class="form-message" style="margin:0">MRP = Purchase Rate + Margin %. You can still edit MRP or the row's Margin % directly.</span>
+    </div>
+
     <div class="table-wrapper">
-      <table>
+      <table class="items-table">
         <thead>
           <tr>
             <th>Item Code (barcode)</th>
@@ -234,31 +254,20 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
             <th>HSN</th>
             <th>Category</th>
             <th>Qty</th>
-            <th>MRP</th>
             <th>Purchase Rate</th>
+            <th>Margin %</th>
+            <th>MRP</th>
             <th>Amount</th>
             <th></th>
           </tr>
         </thead>
-        <tbody id="purchaseItems">
-          <tr>
-            <td><input class="itemCode" placeholder="Blank = auto-generate"></td>
-            <td><input class="description" value="Saree"></td>
-            <td><input class="hsn" value="5407"></td>
-            <td><input class="category" placeholder="e.g. Silk"></td>
-            <td><input class="qty" type="number" min="1" value="1" oninput="calculateTotal()"></td>
-            <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP / Selling Price"></td>
-            <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
-            <td class="amount">₹0.00</td>
-            <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
-          </tr>
-        </tbody>
+        <tbody id="purchaseItems"></tbody>
       </table>
     </div>
     <p class="form-message">
-      <strong>MRP:</strong> printed maximum retail price and customer selling price.
       <strong>Purchase Rate:</strong> price paid to supplier.
-      <strong>GST:</strong> enter the total GST amount once in Bill Summary.
+      <strong>Margin %:</strong> profit added on the purchase rate (default 70%).
+      <strong>MRP:</strong> auto-calculated, also used as the customer Selling Price.
     </p>
     <button class="btn-ghost" style="margin-top:15px" onclick="addItem()">＋ Add Item Row</button>
   </section>
@@ -266,16 +275,16 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
   <!-- Totals -->
   <section class="panel summary">
     <h2>4. Bill Summary</h2>
-    <div class="summary-row"><span>Taxable Amount</span><strong id="taxable">₹0.00</strong></div>
+    <div class="summary-row"><span>Taxable Amount (GST bill amount)</span><strong id="taxable">₹0.00</strong></div>
     <div class="summary-row total-gst-row">
-      <label for="totalGstAmount">GST on Total Amount</label>
+      <label for="gstPercent">GST % on Bill Amount</label>
       <div class="discount-control">
-        <span>₹</span>
-        <input id="totalGstAmount" type="number" min="0" step="0.01" value="0"
-               inputmode="decimal" placeholder="Enter GST amount">
+        <input id="gstPercent" type="number" min="0" max="100" step="0.01" value="5"
+               inputmode="decimal" placeholder="e.g. 5">
+        <span>%</span>
       </div>
     </div>
-    <div class="summary-row"><span>GST Entered</span><strong id="gstTotal">₹0.00</strong></div>
+    <div class="summary-row"><span id="gstLabel">GST Amount (5%)</span><strong id="gstTotal">₹0.00</strong></div>
     <div class="summary-row charges-row">
       <label for="extraCharges">Extra / Shipping Charges</label>
       <div class="discount-control">
@@ -293,8 +302,37 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
     </div>
     <div class="summary-row"><span>Discount Amount</span><strong id="dealerDiscountAmount">₹0.00</strong></div>
     <div class="summary-total"><span>Net Total</span><strong id="grandTotal">₹0.00</strong></div>
+  </section>
+
+  <!-- Payments / Cr-Dr -->
+  <section class="panel pay-panel">
+    <h2>5. Payments &amp; Supplier Account (Cr / Dr)</h2>
+    <div class="pay-note">
+      <strong>Dr</strong> = money you paid to the supplier (advance, cash, online).
+      <strong>Cr</strong> = extra amount credited to the supplier's account (e.g. old balance you owe).
+      GST is charged only on the bill amount above — <strong>cash payments carry no GST</strong>.
+    </div>
+    <div class="table-wrapper">
+      <table class="pay-table">
+        <thead>
+          <tr><th>Entry Type</th><th>Mode</th><th>Amount (₹)</th><th>Date</th><th>Note</th><th></th></tr>
+        </thead>
+        <tbody id="paymentRows"></tbody>
+      </table>
+    </div>
+    <button class="btn-ghost" style="margin-top:15px" type="button" onclick="addPayment()">＋ Add Dr / Cr Entry</button>
+
+    <div class="pay-totals">
+      <div class="summary-row"><span>Net Bill Total (Cr to supplier)</span><strong id="payNet">₹0.00</strong></div>
+      <div class="summary-row"><span>Advance Paid (Dr)</span><strong id="payAdvance">₹0.00</strong></div>
+      <div class="summary-row"><span>Cash Paid (Dr, no GST)</span><strong id="payCash">₹0.00</strong></div>
+      <div class="summary-row"><span>Other Dr (Online / Cheque)</span><strong id="payOther">₹0.00</strong></div>
+      <div class="summary-row"><span>Extra Cr entries</span><strong id="payCr">₹0.00</strong></div>
+      <div class="balance-row cr" id="balanceRow"><span id="balanceLabel">Balance Payable (Cr)</span><strong id="balanceAmount">₹0.00</strong></div>
+    </div>
+
     <div id="purchaseMessage" class="form-message"></div>
-    <div class="actions">
+    <div class="actions" style="margin-top:14px">
       <button class="btn-ghost" onclick="clearForm()">Clear</button>
       <button class="btn-primary" id="confirmBtn" onclick="confirmPurchase()">✓ Confirm &amp; Add to Inventory</button>
     </div>
@@ -302,7 +340,7 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
 
   <!-- Printable labels (shown after a successful save) -->
   <section class="panel" id="labelsPanel" style="display:none">
-    <h2>5. Print Barcode Labels</h2>
+    <h2>6. Print Barcode Labels</h2>
     <p class="form-message">Stick these on the sarees. Scanning one on the New Bill page adds that saree automatically.</p>
     <div class="labels-grid" id="labelsGrid"></div>
     <div class="actions" style="margin-top:16px">
@@ -318,29 +356,40 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
 
 <script>
 const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
+const DEFAULT_GST_PERCENT = 5;
+const DEFAULT_MARGIN_PERCENT = 70;
 const fileInput = document.getElementById('billFile');
 const preview = document.getElementById('preview');
 const previewImage = document.getElementById('previewImage');
 let currentLabels = [];
 
-
+/* ---------- helpers ---------- */
 function generateUniqueBillNumber() {
-  const now = new Date();
-  const stamp = [
-    String(now.getFullYear()).slice(-2),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0")
-  ].join("");
-  const time = String(Date.now()).slice(-6);
-  const random = Math.floor(100 + Math.random() * 900);
   return 'P' + Math.floor(100000 + Math.random() * 900000);
 }
 
-function getDealerDiscountPercent() {
-  return Math.min(100, Math.max(0, Number(document.getElementById("dealerDiscount")?.value || 0)));
+function num(v){ return Number(v) || 0; }
+function round2(v){ return Math.round((Number(v) + Number.EPSILON) * 100) / 100; }
+function money(v){ return '₹' + Number(v || 0).toFixed(2); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function escapeHtml(value){
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+  }[ch]));
 }
 
-document.getElementById('invoiceDate').value = new Date().toISOString().slice(0,10);
+function getDealerDiscountPercent() {
+  return Math.min(100, Math.max(0, num(document.getElementById("dealerDiscount")?.value)));
+}
+function getGstPercent() {
+  return Math.min(100, Math.max(0, num(document.getElementById("gstPercent")?.value)));
+}
+function getDefaultMargin() {
+  return Math.max(0, num(document.getElementById("defaultMargin")?.value));
+}
+
+document.getElementById('invoiceDate').value = todayStr();
 
 fileInput.addEventListener('change', function(){
   const file = this.files[0];
@@ -355,76 +404,65 @@ fileInput.addEventListener('change', function(){
   }
 });
 
-function escapeHtml(value){
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
-  }[ch]));
-}
-
-function calculateTotal(){
-  let taxable = 0;
-
-  document.querySelectorAll('#purchaseItems tr').forEach(row=>{
-    const qty = Number(row.querySelector('.qty')?.value || 0);
-    const rate = Number(row.querySelector('.rate')?.value || 0);
-    const base = qty * rate;
-
-    taxable += base;
-
-    const amount = row.querySelector('.amount');
-    if(amount) amount.textContent = '₹' + base.toFixed(2);
-  });
-
-  const gstAmount = Math.max(
-    0,
-    Number(document.getElementById('totalGstAmount')?.value || 0)
-  );
-
-  const extraCharges = Math.max(
-    0,
-    Number(document.getElementById('extraCharges')?.value || 0)
-  );
-
-  const totalBeforeDiscount = taxable + gstAmount + extraCharges;
-  const discountPercent = getDealerDiscountPercent();
-  const discountAmount = totalBeforeDiscount * discountPercent / 100;
-  const netTotal = Math.max(0, totalBeforeDiscount - discountAmount);
-
-  document.getElementById('taxable').textContent =
-    '₹' + taxable.toFixed(2);
-
-  document.getElementById('gstTotal').textContent =
-    '₹' + gstAmount.toFixed(2);
-
-  document.getElementById('dealerDiscountAmount').textContent =
-    '₹' + discountAmount.toFixed(2);
-
-  document.getElementById('grandTotal').textContent =
-    '₹' + netTotal.toFixed(2);
-}
-
-document.getElementById('dealerDiscount').addEventListener('input', calculateTotal);
-document.getElementById('extraCharges').addEventListener('input', calculateTotal);
-document.getElementById('totalGstAmount').addEventListener('input', calculateTotal);
-
-function addItem(){
-  const tbody = document.getElementById('purchaseItems');
-  const row = document.createElement('tr');
-
-  row.innerHTML = `
-    <td><input class="itemCode" placeholder="Blank = auto-generate"></td>
-    <td><input class="description" placeholder="Supplier name"></td>
-    <td><input class="hsn" value="5407" placeholder="HSN"></td>
-    <td><input class="category" placeholder="e.g. Silk"></td>
-    <td><input class="qty" type="number" min="1" value="1" oninput="calculateTotal()"></td>
-    <td><input class="mrp" type="number" min="0" step="0.01" value="0" placeholder="MRP / Selling Price"></td>
-    <td><input class="rate" type="number" min="0" step="0.01" value="0" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
-    <td class="amount">₹0.00</td>
+/* ---------- item rows + margin ---------- */
+function itemRowHtml(v = {}){
+  const rate = num(v.rate);
+  const margin = v.margin_percent !== undefined && v.margin_percent !== null
+    ? v.margin_percent : getDefaultMargin();
+  const mrp = v.mrp !== undefined ? num(v.mrp) : round2(rate * (1 + num(margin) / 100));
+  return `
+    <td><input class="itemCode" value="${escapeHtml(v.item_code || '')}" placeholder="Blank = auto-generate"></td>
+    <td><input class="description" value="${escapeHtml(v.description ?? 'Saree')}" placeholder="Description"></td>
+    <td><input class="hsn" value="${escapeHtml(v.hsn_code || '5407')}" placeholder="HSN"></td>
+    <td><input class="category" value="${escapeHtml(v.category || '')}" placeholder="e.g. Silk"></td>
+    <td><input class="qty" type="number" min="1" value="${num(v.qty) || 1}" oninput="calculateTotal()"></td>
+    <td><input class="rate" type="number" min="0" step="0.01" value="${rate}" placeholder="Purchase Rate" oninput="onRateInput(this)"></td>
+    <td><input class="margin" type="number" min="0" step="0.01" value="${round2(num(margin))}" placeholder="Margin %" oninput="onMarginInput(this)"></td>
+    <td><input class="mrp" type="number" min="0" step="0.01" value="${mrp}" placeholder="MRP" oninput="onMrpInput(this)"></td>
+    <td class="amount">${money(num(v.qty || 1) * rate)}</td>
     <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
   `;
+}
 
-  tbody.appendChild(row);
-  syncDescriptionsToSupplier();
+function onRateInput(el){
+  const row = el.closest('tr');
+  const rate = num(row.querySelector('.rate').value);
+  const margin = num(row.querySelector('.margin').value);
+  row.querySelector('.mrp').value = round2(rate * (1 + margin / 100));
+  calculateTotal();
+}
+
+function onMarginInput(el){
+  const row = el.closest('tr');
+  const rate = num(row.querySelector('.rate').value);
+  const margin = num(row.querySelector('.margin').value);
+  row.querySelector('.mrp').value = round2(rate * (1 + margin / 100));
+}
+
+function onMrpInput(el){
+  const row = el.closest('tr');
+  const rate = num(row.querySelector('.rate').value);
+  const mrp = num(row.querySelector('.mrp').value);
+  if (rate > 0) {
+    row.querySelector('.margin').value = round2((mrp - rate) / rate * 100);
+  }
+}
+
+function applyDefaultMarginToAll(){
+  const margin = getDefaultMargin();
+  document.querySelectorAll('#purchaseItems tr').forEach(row => {
+    const rate = num(row.querySelector('.rate').value);
+    row.querySelector('.margin').value = margin;
+    row.querySelector('.mrp').value = round2(rate * (1 + margin / 100));
+  });
+}
+
+function addItem(values = {}){
+  const row = document.createElement('tr');
+  row.innerHTML = itemRowHtml(values);
+  document.getElementById('purchaseItems').appendChild(row);
+  if (!values.description && values.description !== '') syncDescriptionsToSupplier();
+  calculateTotal();
 }
 
 function removeItem(button){
@@ -434,6 +472,121 @@ function removeItem(button){
   calculateTotal();
 }
 
+/* ---------- payments (Cr / Dr) ---------- */
+function paymentRowHtml(p = {}){
+  const type = p.type === 'Cr' ? 'Cr' : 'Dr';
+  const mode = p.mode || 'Advance';
+  const modes = ['Advance', 'Cash', 'Online / UPI', 'Cheque', 'Other'];
+  return `
+    <td>
+      <select class="payType" onchange="calculateTotal()">
+        <option value="Dr" ${type === 'Dr' ? 'selected' : ''}>Dr — Paid to supplier</option>
+        <option value="Cr" ${type === 'Cr' ? 'selected' : ''}>Cr — Credit to supplier</option>
+      </select>
+    </td>
+    <td>
+      <select class="payMode" onchange="calculateTotal()">
+        ${modes.map(m => `<option value="${m}" ${m === mode ? 'selected' : ''}>${m}</option>`).join('')}
+      </select>
+    </td>
+    <td><input class="payAmount" type="number" min="0" step="0.01" value="${num(p.amount)}" oninput="calculateTotal()"></td>
+    <td><input class="payDate" type="date" value="${escapeHtml(p.date ? String(p.date).slice(0,10) : todayStr())}"></td>
+    <td><input class="payNote" value="${escapeHtml(p.note || '')}" placeholder="Optional note"></td>
+    <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removePayment(this)">✕</button></td>
+  `;
+}
+
+function addPayment(values = {}){
+  const row = document.createElement('tr');
+  row.innerHTML = paymentRowHtml(values);
+  document.getElementById('paymentRows').appendChild(row);
+  calculateTotal();
+}
+
+function removePayment(button){
+  button.closest('tr').remove();
+  calculateTotal();
+}
+
+function collectPayments(){
+  const list = [];
+  document.querySelectorAll('#paymentRows tr').forEach(row => {
+    const amount = num(row.querySelector('.payAmount')?.value);
+    if (amount <= 0) return;
+    list.push({
+      type: row.querySelector('.payType').value,
+      mode: row.querySelector('.payMode').value,
+      amount,
+      date: row.querySelector('.payDate').value,
+      note: row.querySelector('.payNote').value.trim()
+    });
+  });
+  return list;
+}
+
+/* ---------- totals ---------- */
+function calculateTotal(){
+  let taxable = 0;
+
+  document.querySelectorAll('#purchaseItems tr').forEach(row=>{
+    const qty = num(row.querySelector('.qty')?.value);
+    const rate = num(row.querySelector('.rate')?.value);
+    const base = qty * rate;
+    taxable += base;
+    const amount = row.querySelector('.amount');
+    if(amount) amount.textContent = money(base);
+  });
+
+  // GST only on the real bill amount, entered as a percentage.
+  const gstPercent = getGstPercent();
+  const gstAmount = taxable * gstPercent / 100;
+  const extraCharges = Math.max(0, num(document.getElementById('extraCharges')?.value));
+
+  const totalBeforeDiscount = taxable + gstAmount + extraCharges;
+  const discountPercent = getDealerDiscountPercent();
+  const discountAmount = totalBeforeDiscount * discountPercent / 100;
+  const netTotal = Math.max(0, totalBeforeDiscount - discountAmount);
+
+  document.getElementById('taxable').textContent = money(taxable);
+  document.getElementById('gstLabel').textContent = `GST Amount (${gstPercent}%)`;
+  document.getElementById('gstTotal').textContent = money(gstAmount);
+  document.getElementById('dealerDiscountAmount').textContent = money(discountAmount);
+  document.getElementById('grandTotal').textContent = money(netTotal);
+
+  // Supplier account: bill is Cr (payable). Dr entries reduce it. No GST on cash.
+  let advance = 0, cash = 0, otherDr = 0, extraCr = 0;
+  collectPayments().forEach(p => {
+    if (p.type === 'Cr') { extraCr += p.amount; return; }
+    if (p.mode === 'Advance') advance += p.amount;
+    else if (p.mode === 'Cash') cash += p.amount;
+    else otherDr += p.amount;
+  });
+
+  const balance = netTotal + extraCr - advance - cash - otherDr;
+
+  document.getElementById('payNet').textContent = money(netTotal);
+  document.getElementById('payAdvance').textContent = money(advance);
+  document.getElementById('payCash').textContent = money(cash);
+  document.getElementById('payOther').textContent = money(otherDr);
+  document.getElementById('payCr').textContent = money(extraCr);
+
+  const row = document.getElementById('balanceRow');
+  if (balance >= 0) {
+    row.className = 'balance-row cr';
+    document.getElementById('balanceLabel').textContent = 'Balance Payable to Supplier (Cr)';
+  } else {
+    row.className = 'balance-row dr';
+    document.getElementById('balanceLabel').textContent = 'Excess Paid / Advance with Supplier (Dr)';
+  }
+  document.getElementById('balanceAmount').textContent = money(Math.abs(balance));
+
+  return { taxable, gstPercent, gstAmount, extraCharges, discountAmount, netTotal, advance, cash, otherDr, extraCr, balance };
+}
+
+['dealerDiscount','extraCharges','gstPercent'].forEach(id =>
+  document.getElementById(id).addEventListener('input', calculateTotal)
+);
+
 function setPurchaseMessage(msg, type=""){
   const el = document.getElementById('purchaseMessage');
   el.textContent = msg || "";
@@ -441,169 +594,86 @@ function setPurchaseMessage(msg, type=""){
 }
 
 function collectItems(){
-  const rows = document.querySelectorAll('#purchaseItems tr');
   const items = [];
+  const gstPercent = getGstPercent();
 
-  rows.forEach(row => {
-    const description =
-      row.querySelector('.description')?.value.trim();
-
-    const qty =
-      Number(row.querySelector('.qty')?.value) || 0;
-
+  document.querySelectorAll('#purchaseItems tr').forEach(row => {
+    const description = row.querySelector('.description')?.value.trim();
+    const qty = num(row.querySelector('.qty')?.value);
     if (!description || qty <= 0) return;
 
-    const mrp =
-      Number(row.querySelector('.mrp')?.value) || 0;
-
-    const purchaseRate =
-      Number(row.querySelector('.rate')?.value) || 0;
+    const mrp = num(row.querySelector('.mrp')?.value);
+    const purchaseRate = num(row.querySelector('.rate')?.value);
+    const margin = num(row.querySelector('.margin')?.value);
 
     items.push({
-      item_code:
-        row.querySelector('.itemCode')?.value.trim() || '',
-
+      item_code: row.querySelector('.itemCode')?.value.trim() || '',
       description,
-
-      hsn_code:
-        row.querySelector('.hsn')?.value.trim() || '5407',
-
-      category:
-        row.querySelector('.category')?.value.trim() || '',
-
+      hsn_code: row.querySelector('.hsn')?.value.trim() || '5407',
+      category: row.querySelector('.category')?.value.trim() || '',
       qty,
-
       mrp,
-
+      margin_percent: margin,
       purchase_rate: purchaseRate,
-
       rate: purchaseRate,
-
-      // MRP is the selling price.
-      selling_price: mrp,
-
-      // This is replaced below with an effective total GST rate
-      // so the existing backend can store the entered total GST.
-      gst_rate: 0
+      selling_price: mrp,      // MRP is the selling price
+      gst_rate: gstPercent     // GST % applied on the bill amount
     });
   });
 
   return items;
 }
 
+/* ---------- save ---------- */
 async function confirmPurchase(){
-  const supplier =
-    document.getElementById('supplier').value.trim();
-
-  const invoiceNumber =
-    document.getElementById('invoiceNumber').value.trim();
-
+  const supplier = document.getElementById('supplier').value.trim();
+  const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
   const items = collectItems();
 
-  if (!supplier) {
-    setPurchaseMessage(
-      'Please enter the supplier name.',
-      'error'
-    );
-    return;
-  }
-
-  if (!invoiceNumber) {
-    setPurchaseMessage(
-      'Please enter the invoice number.',
-      'error'
-    );
-    return;
-  }
-
-  if (!items.length) {
-    setPurchaseMessage(
-      'Add at least one item with a description and quantity.',
-      'error'
-    );
-    return;
-  }
+  if (!supplier) { setPurchaseMessage('Please enter the supplier name.', 'error'); return; }
+  if (!invoiceNumber) { setPurchaseMessage('Please enter the invoice number.', 'error'); return; }
+  if (!items.length) { setPurchaseMessage('Add at least one item with a description and quantity.', 'error'); return; }
 
   for (const item of items) {
     if (item.mrp <= 0) {
-      setPurchaseMessage(
-        `Please enter the MRP / Selling Price for "${item.description}".`,
-        'error'
-      );
-      return;
-    }
-
-    if (item.purchase_rate < 0) {
-      setPurchaseMessage(
-        `Please enter a valid Purchase Rate for "${item.description}".`,
-        'error'
-      );
+      setPurchaseMessage(`Please enter the Purchase Rate / MRP for "${item.description}".`, 'error');
       return;
     }
   }
 
-  const taxableTotal = items.reduce(
-    (sum, item) => sum + (Number(item.qty) * Number(item.purchase_rate)),
-    0
-  );
-
-  const totalGstAmount = Math.max(
-    0,
-    Number(document.getElementById('totalGstAmount')?.value || 0)
-  );
-
-  /*
-    The current backend calculates GST from gst_rate for each item.
-    Because GST is now entered once on the total amount, calculate one
-    effective rate that produces the exact entered GST total.
-  */
-  const effectiveGstRate =
-    taxableTotal > 0
-      ? (totalGstAmount / taxableTotal) * 100
-      : 0;
-
-  items.forEach(item => {
-    item.gst_rate = effectiveGstRate;
-  });
+  const t = calculateTotal();
+  const payments = collectPayments();
 
   const payload = {
     supplier,
-    supplier_gstin:
-      document.getElementById('supplierGstin').value.trim(),
+    supplier_gstin: document.getElementById('supplierGstin').value.trim(),
+    invoice_number: invoiceNumber,
+    invoice_date: document.getElementById('invoiceDate').value,
+    supplier_state: document.getElementById('supplierState').value.trim(),
+    reference: document.getElementById('reference').value.trim(),
+    unique_bill_number: document.getElementById('uniqueBillNumber').value,
+    dealer_discount_percent: getDealerDiscountPercent(),
+    extra_charges: t.extraCharges,
 
-    invoice_number:
-      invoiceNumber,
+    gst_percent: t.gstPercent,
+    total_gst_amount: round2(t.gstAmount),
+    default_margin_percent: getDefaultMargin(),
 
-    invoice_date:
-      document.getElementById('invoiceDate').value,
-
-    supplier_state:
-      document.getElementById('supplierState').value.trim(),
-
-    reference:
-      document.getElementById('reference').value.trim(),
-
-    unique_bill_number:
-      document.getElementById('uniqueBillNumber').value,
-
-    dealer_discount_percent:
-      getDealerDiscountPercent(),
-
-    extra_charges:
-      Math.max(0, Number(document.getElementById('extraCharges')?.value || 0)),
-
-    total_gst_amount:
-      Math.max(0, Number(document.getElementById('totalGstAmount')?.value || 0)),
+    // Supplier account (Cr / Dr)
+    payments,
+    advance_paid: round2(t.advance),
+    cash_paid: round2(t.cash),
+    other_paid: round2(t.otherDr),
+    extra_credit: round2(t.extraCr),
+    balance_amount: round2(Math.abs(t.balance)),
+    balance_type: t.balance >= 0 ? 'Cr' : 'Dr',
 
     items
   };
 
-  const btn =
-    document.getElementById('confirmBtn');
-
+  const btn = document.getElementById('confirmBtn');
   btn.disabled = true;
   btn.textContent = 'Saving...';
-
   setPurchaseMessage('Saving purchase bill...');
 
   try {
@@ -614,118 +684,65 @@ async function confirmPurchase(){
         : `${API_BASE_URL}/api/purchases`,
       {
         method: editingId ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }
     );
 
-    const data =
-      await response.json();
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not save purchase');
 
-    if (!response.ok) {
-      throw new Error(
-        data.error || 'Could not save purchase'
-      );
-    }
-
-    const statusEl =
-      document.getElementById('successMessage');
-
+    const statusEl = document.getElementById('successMessage');
     statusEl.textContent =
-      `Purchase bill saved successfully. Stock updated — total ₹${Number(data.grand_total || 0).toFixed(2)}.`;
-
+      `Purchase bill saved successfully. Stock updated — total ₹${Number(data.grand_total || t.netTotal).toFixed(2)}.`;
     statusEl.className = 'status';
     statusEl.style.display = 'block';
-
     setPurchaseMessage('');
 
-    // QR printing is optional. A QR error must NOT turn a saved
-    // purchase into a "NOT saved" error.
+    // QR printing is optional; an error here must not look like a failed save.
     try {
-      await showLabelsForProducts(
-        data.products || []
-      );
+      await showLabelsForProducts(data.products || []);
     } catch (qrError) {
-      console.error(
-        'QR label error:',
-        qrError
-      );
-
+      console.error('QR label error:', qrError);
       setPurchaseMessage(
         'Purchase was saved successfully, but QR labels could not be generated. Stock and product data are already saved.',
         'error'
       );
     }
 
-    // Prepare the page immediately for a completely new purchase bill.
     resetForNewPurchase();
-
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
   } catch (err) {
-    console.error(
-      'Purchase save error:',
-      err
-    );
-
-    const statusEl =
-      document.getElementById('successMessage');
-
-    statusEl.textContent =
-      'Purchase was NOT saved: ' + err.message;
-
-    statusEl.className =
-      'status error';
-
-    statusEl.style.display =
-      'block';
-
+    console.error('Purchase save error:', err);
+    const statusEl = document.getElementById('successMessage');
+    statusEl.textContent = 'Purchase was NOT saved: ' + err.message;
+    statusEl.className = 'status error';
+    statusEl.style.display = 'block';
     setPurchaseMessage('');
-
   } finally {
     btn.disabled = false;
-    btn.textContent =
-      '✓ Confirm & Add to Inventory';
-    delete btn.dataset.editId;
-    delete btn.dataset.editing;
+    btn.textContent = '✓ Confirm & Add to Inventory';
     delete btn.dataset.editId;
     delete btn.dataset.editing;
   }
 }
 
+/* ---------- labels ---------- */
 async function showLabelsForProducts(products){
   if (!products || !products.length) return;
 
-  if (
-    typeof QRCode === 'undefined' ||
-    typeof QRCode.toDataURL !== 'function'
-  ) {
-    throw new Error(
-      'QR code library failed to load.'
-    );
+  if (typeof QRCode === 'undefined' || typeof QRCode.toDataURL !== 'function') {
+    throw new Error('QR code library failed to load.');
   }
 
   currentLabels = [];
 
   for (const p of products) {
-    const barcode =
-      String(p.barcode || '').trim();
-
+    const barcode = String(p.barcode || '').trim();
     if (!barcode) continue;
 
-    const dataUrl =
-      await QRCode.toDataURL(
-        barcode,
-        {
-          width: 200,
-          margin: 1
-        }
-      );
+    const dataUrl = await QRCode.toDataURL(barcode, { width: 200, margin: 1 });
 
     currentLabels.push({
       name: p.name || 'Product',
@@ -737,37 +754,22 @@ async function showLabelsForProducts(products){
 
   if (!currentLabels.length) return;
 
-  const grid =
-    document.getElementById('labelsGrid');
-
-  grid.innerHTML =
+  document.getElementById('labelsGrid').innerHTML =
     currentLabels.map(l => `
       <div class="label-card">
         <img src="${l.dataUrl}" alt="QR code">
-        <div class="lc-name">
-          ${escapeHtml(l.name)}
-        </div>
-        <div class="lc-code">
-          ${escapeHtml(l.barcode)}
-        </div>
+        <div class="lc-name">${escapeHtml(l.name)}</div>
+        <div class="lc-code">${escapeHtml(l.barcode)}</div>
         ${l.price ? `
           <div style="font-size:12px;font-weight:700;margin-top:3px;color:var(--emerald)">
             Selling ₹${l.price.toLocaleString('en-IN')}
-          </div>
-        ` : ''}
+          </div>` : ''}
       </div>
     `).join('');
 
-  document.getElementById(
-    'labelsPanel'
-  ).style.display = 'block';
-
-  document.getElementById(
-    'labelsPanel'
-  ).scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
+  const panel = document.getElementById('labelsPanel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function buildLabelSheetHtml(labels){
@@ -787,26 +789,9 @@ function buildLabelSheetHtml(labels){
     .label-card img{width:130px;height:130px}
     .label-name{font-weight:700;font-size:12.5px;margin-top:8px}
     .label-code{font-size:11px;color:#555;letter-spacing:1px;margin-top:2px;font-family:'Courier New',monospace}
-    .label-price{font-size:12.5px;font-weight:700;margin-top:3px;color:#5E1620}
+    .label-price{font-size:12.5px;font-weight:700;margin-top:3px;color:#0B6B57}
     @media print{ body{padding:0} }
-  
-/* NEW PREMIUM EMERALD + CHAMPAGNE THEME */
-body{overflow-x:hidden;background:radial-gradient(circle at 15% 0%,rgba(214,181,107,.10),transparent 28%),var(--ivory)}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 20%,rgba(214,181,107,.035),transparent 70%);animation:ambientGlow 9s ease-in-out infinite alternate;z-index:-1}
-.site-header{background:rgba(255,255,255,.92);backdrop-filter:blur(14px);box-shadow:0 8px 30px rgba(7,63,53,.07)}
-.brand-name{transition:letter-spacing .3s ease,text-shadow .3s ease}.brand:hover .brand-name{letter-spacing:1px;text-shadow:0 0 18px rgba(214,181,107,.35)}
-.nav-link{position:relative;transition:color .25s ease,background .25s ease,transform .25s ease}.nav-link:hover{transform:translateY(-2px)}
-.nav-link.is-active:after{content:"";position:absolute;left:18px;right:18px;bottom:4px;height:2px;background:linear-gradient(90deg,var(--emerald),var(--champagne));border-radius:99px;animation:navLine .35s ease}
-.btn-primary{box-shadow:0 8px 18px rgba(11,107,87,.18);transition:transform .25s ease,box-shadow .25s ease,background .25s ease}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(11,107,87,.25);background:var(--emerald-dark)}
-.btn-ghost{transition:transform .25s ease,background .25s ease,border-color .25s ease,box-shadow .25s ease}.btn-ghost:hover{transform:translateY(-2px);background:var(--mint);border-color:var(--champagne);box-shadow:0 8px 18px rgba(7,63,53,.08)}
-.page-header{animation:fadeUp .65s cubic-bezier(.2,.8,.2,1) both}.panel{box-shadow:0 10px 28px rgba(7,63,53,.055);transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;animation:fadeUp .7s cubic-bezier(.2,.8,.2,1) both}.panel:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(7,63,53,.10);border-color:rgba(214,181,107,.55)}
-input,select{transition:border-color .25s ease,box-shadow .25s ease,transform .2s ease}input:hover,select:hover{border-color:#B9D2CA}input:focus,select:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px rgba(11,107,87,.10);transform:translateY(-1px)}
-.upload-box{transition:transform .3s ease,background .3s ease,border-color .3s ease,box-shadow .3s ease}.upload-box:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(11,107,87,.10);border-color:var(--emerald)}
-th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background .2s ease,transform .2s ease}tbody tr:hover{background:var(--mint);transform:scale(1.002)}
-.summary-total{color:var(--emerald);background:linear-gradient(90deg,transparent,rgba(214,181,107,.08),transparent)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}@keyframes navLine{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}@keyframes ambientGlow{from{opacity:.55;transform:translateX(-2%)}to{opacity:1;transform:translateX(2%)}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-</style></head><body>
+  </style></head><body>
     <div class="label-sheet">${cards}</div>
     <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 300); };<\/script>
   </body></html>`;
@@ -819,7 +804,7 @@ function printAllLabels(){
   w.document.close();
 }
 
-
+/* ---------- saved bill search / edit / delete ---------- */
 async function searchPurchaseBills() {
   const query = document.getElementById("billSearch").value.trim();
   const status = document.getElementById("billSearchStatus");
@@ -837,9 +822,7 @@ async function searchPurchaseBills() {
   wrapper.hidden = true;
 
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/purchases/search?q=${encodeURIComponent(query)}`
-    );
+    const response = await fetch(`${API_BASE_URL}/api/purchases/search?q=${encodeURIComponent(query)}`);
     const data = await response.json();
 
     if (!response.ok) throw new Error(data.error || "Could not search purchase bills.");
@@ -872,48 +855,61 @@ async function searchPurchaseBills() {
   }
 }
 
-
 async function editPurchaseBill(id) {
   if (!id) return;
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/purchases/${encodeURIComponent(id)}`);
     const bill = await response.json();
-
     if (!response.ok) throw new Error(bill.error || "Could not load purchase bill.");
 
     document.getElementById("supplier").value = bill.supplier || "";
     document.getElementById("supplierGstin").value = bill.supplier_gstin || "";
     document.getElementById("invoiceNumber").value = bill.invoice_number || "";
-    document.getElementById("invoiceDate").value = bill.invoice_date
-      ? String(bill.invoice_date).slice(0,10) : "";
+    document.getElementById("invoiceDate").value = bill.invoice_date ? String(bill.invoice_date).slice(0,10) : "";
     document.getElementById("supplierState").value = bill.supplier_state || "";
     document.getElementById("reference").value = bill.reference || "";
     document.getElementById("uniqueBillNumber").value = bill.unique_bill_number || generateUniqueBillNumber();
     document.getElementById("dealerDiscount").value = bill.dealer_discount_percent || 0;
     document.getElementById("extraCharges").value = bill.extra_charges || 0;
-    document.getElementById("totalGstAmount").value = bill.gst_total || 0;
+    document.getElementById("defaultMargin").value = bill.default_margin_percent ?? DEFAULT_MARGIN_PERCENT;
+
+    // GST %: use the saved percentage, else the item rate, else derive from the saved GST amount.
+    const items = bill.items || [];
+    const taxable = items.reduce((s, it) => s + num(it.qty) * num(it.rate || it.purchase_rate), 0);
+    let gstPct = bill.gst_percent;
+    if (gstPct === undefined || gstPct === null) {
+      gstPct = items.length && items[0].gst_rate !== undefined
+        ? num(items[0].gst_rate)
+        : (taxable > 0 ? num(bill.gst_total) / taxable * 100 : DEFAULT_GST_PERCENT);
+    }
+    document.getElementById("gstPercent").value = round2(gstPct);
 
     const tbody = document.getElementById("purchaseItems");
     tbody.innerHTML = "";
-
-    (bill.items || []).forEach((item, index) => {
+    items.forEach(item => {
+      const rate = num(item.rate || item.purchase_rate);
+      const mrp = num(item.mrp);
+      const margin = item.margin_percent !== undefined && item.margin_percent !== null
+        ? num(item.margin_percent)
+        : (rate > 0 ? round2((mrp - rate) / rate * 100) : getDefaultMargin());
       const row = document.createElement("tr");
-      row.innerHTML = `
-        <td><input class="itemCode" value="${escapeHtml(item.item_code || "")}" placeholder="Blank = auto-generate"></td>
-        <td><input class="description" value="${escapeHtml(item.description || "")}" placeholder="Description"></td>
-        <td><input class="hsn" value="${escapeHtml(item.hsn_code || "5407")}" placeholder="HSN"></td>
-        <td><input class="category" value="${escapeHtml(item.category || "")}" placeholder="Category"></td>
-        <td><input class="qty" type="number" min="1" value="${Number(item.qty || 1)}" oninput="calculateTotal()"></td>
-        <td><input class="mrp" type="number" min="0" step="0.01" value="${Number(item.mrp || 0)}" placeholder="MRP"></td>
-        <td><input class="rate" type="number" min="0" step="0.01" value="${Number(item.rate || item.purchase_rate || 0)}" placeholder="Purchase Rate" oninput="calculateTotal()"></td>
-        <td class="amount">₹${Number(item.amount || 0).toFixed(2)}</td>
-        <td><button class="btn-ghost" type="button" style="padding:6px 10px" onclick="removeItem(this)">✕</button></td>
-      `;
+      row.innerHTML = itemRowHtml({
+        item_code: item.item_code, description: item.description ?? '',
+        hsn_code: item.hsn_code, category: item.category,
+        qty: item.qty, rate, mrp, margin_percent: margin
+      });
       tbody.appendChild(row);
     });
+    if (!items.length) addItem();
 
-    if (!bill.items || !bill.items.length) addItem();
+    const payBody = document.getElementById("paymentRows");
+    payBody.innerHTML = "";
+    (bill.payments || []).forEach(p => {
+      const row = document.createElement("tr");
+      row.innerHTML = paymentRowHtml(p);
+      payBody.appendChild(row);
+    });
 
     const confirmBtn = document.getElementById("confirmBtn");
     confirmBtn.textContent = "✓ Update Purchase Bill";
@@ -936,11 +932,8 @@ async function deletePurchaseBill(id, billNumber) {
   if (!confirm(`Delete ${label}? This will also reverse the stock added by this purchase.`)) return;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/purchases/${encodeURIComponent(id)}`, {
-      method: "DELETE"
-    });
+    const response = await fetch(`${API_BASE_URL}/api/purchases/${encodeURIComponent(id)}`, { method: "DELETE" });
     const data = await response.json();
-
     if (!response.ok) throw new Error(data.error || "Could not delete purchase bill.");
 
     document.getElementById("billSearchStatus").textContent =
@@ -948,8 +941,7 @@ async function deletePurchaseBill(id, billNumber) {
     await searchPurchaseBills();
   } catch (error) {
     console.error(error);
-    document.getElementById("billSearchStatus").textContent =
-      "Delete failed: " + error.message;
+    document.getElementById("billSearchStatus").textContent = "Delete failed: " + error.message;
   }
 }
 
@@ -967,33 +959,29 @@ document.getElementById("billSearch").addEventListener("keydown", event => {
   }
 });
 
-function resetForNewPurchase(){
-  const formIds = [
-    'supplier',
-    'supplierGstin',
-    'invoiceNumber',
-    'supplierState',
-    'reference'
-  ];
+/* ---------- reset / clear ---------- */
+function syncDescriptionsToSupplier(){
+  const supplier = document.getElementById('supplier')?.value.trim() || '';
+  document.querySelectorAll('#purchaseItems .description').forEach(input => {
+    input.value = supplier;
+  });
+}
 
-  formIds.forEach(id => {
+function resetForNewPurchase(){
+  ['supplier','supplierGstin','invoiceNumber','supplierState','reference'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
 
-  document.getElementById('invoiceDate').value =
-    new Date().toISOString().slice(0,10);
-
-  document.getElementById('uniqueBillNumber').value =
-    generateUniqueBillNumber();
-
+  document.getElementById('invoiceDate').value = todayStr();
+  document.getElementById('uniqueBillNumber').value = generateUniqueBillNumber();
   document.getElementById('dealerDiscount').value = '0';
   document.getElementById('extraCharges').value = '0';
-  document.getElementById('totalGstAmount').value = '0';
+  document.getElementById('gstPercent').value = String(DEFAULT_GST_PERCENT);
+  document.getElementById('defaultMargin').value = String(DEFAULT_MARGIN_PERCENT);
 
-  const tbody = document.getElementById('purchaseItems');
-  tbody.innerHTML = '';
-
+  document.getElementById('purchaseItems').innerHTML = '';
+  document.getElementById('paymentRows').innerHTML = '';
   addItem();
 
   const confirmBtn = document.getElementById('confirmBtn');
@@ -1001,31 +989,17 @@ function resetForNewPurchase(){
   delete confirmBtn.dataset.editing;
   confirmBtn.textContent = '✓ Confirm & Add to Inventory';
 
-  document.getElementById('labelsPanel').style.display = 'none';
-
-  setPurchaseMessage(
-    'Purchase saved. The form is ready for a new bill.'
-  );
-
+  setPurchaseMessage('Purchase saved. The form is ready for a new bill.');
   calculateTotal();
 }
 
-
-function syncDescriptionsToSupplier(){
-  const supplier =
-    document.getElementById('supplier')?.value.trim() || '';
-
-  document.querySelectorAll('#purchaseItems .description')
-    .forEach(input => {
-      input.value = supplier;
-    });
-}
-
-
 function clearForm(){
   document.getElementById('purchaseItems').innerHTML = '';
+  document.getElementById('paymentRows').innerHTML = '';
   document.getElementById('dealerDiscount').value = '0';
   document.getElementById('extraCharges').value = '0';
+  document.getElementById('gstPercent').value = String(DEFAULT_GST_PERCENT);
+  document.getElementById('defaultMargin').value = String(DEFAULT_MARGIN_PERCENT);
   document.getElementById('uniqueBillNumber').value = generateUniqueBillNumber();
   addItem();
   document.getElementById('successMessage').style.display = 'none';
@@ -1034,10 +1008,11 @@ function clearForm(){
   calculateTotal();
 }
 
+/* ---------- init ---------- */
 document.getElementById('uniqueBillNumber').value = generateUniqueBillNumber();
-
 document.getElementById('supplier').addEventListener('input', syncDescriptionsToSupplier);
-
+document.getElementById('defaultMargin').addEventListener('change', applyDefaultMarginToAll);
+addItem();
 calculateTotal();
 </script>
 

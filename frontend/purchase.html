@@ -92,7 +92,7 @@ td input,td select{width:100%;min-width:0;padding:8px}
 .bill-search-row{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:10px;align-items:center}
 .bill-search-row input{height:42px}
 .bill-results-wrapper{margin-top:16px}
-.bill-results-table{min-width:720px}
+.bill-results-table{min-width:980px}
 .bill-results-table tbody tr:hover{background:var(--mint)}
 .discount-row{align-items:center;gap:16px}
 .discount-control{display:flex;align-items:center;gap:6px}
@@ -227,7 +227,7 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
     <div id="billSearchStatus" class="form-message" role="status" aria-live="polite"></div>
     <div class="table-wrapper bill-results-wrapper" id="billResultsWrapper" hidden>
       <table class="bill-results-table">
-        <thead><tr><th>Bill Number</th><th>Party Name</th><th>Invoice Number</th><th>Date</th><th>Total</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Bill Number</th><th>Party Name</th><th>Invoice Number</th><th>Date</th><th>Bill Total</th><th>Paid (Dr)</th><th>Balance</th><th>Actions</th></tr></thead>
         <tbody id="billSearchResults"></tbody>
       </table>
     </div>
@@ -301,7 +301,9 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
       </div>
     </div>
     <div class="summary-row"><span>Discount Amount</span><strong id="dealerDiscountAmount">₹0.00</strong></div>
-    <div class="summary-total"><span>Net Total</span><strong id="grandTotal">₹0.00</strong></div>
+    <div class="summary-total"><span>Net Total (Bill Amount)</span><strong id="grandTotal">₹0.00</strong></div>
+    <div class="summary-row"><span>Less: Paid to Supplier (Dr)</span><strong id="sumPaid">₹0.00</strong></div>
+    <div class="balance-row cr" id="sumBalanceRow"><span id="sumBalanceLabel">Balance Payable (Cr)</span><strong id="sumBalance">₹0.00</strong></div>
   </section>
 
   <!-- Payments / Cr-Dr -->
@@ -580,6 +582,13 @@ function calculateTotal(){
   }
   document.getElementById('balanceAmount').textContent = money(Math.abs(balance));
 
+  // Mirror the balance in the Bill Summary so it is visible next to the Net Total.
+  document.getElementById('sumPaid').textContent = money(advance + cash + otherDr);
+  document.getElementById('sumBalanceRow').className = 'balance-row ' + (balance >= 0 ? 'cr' : 'dr');
+  document.getElementById('sumBalanceLabel').textContent =
+    balance >= 0 ? 'Balance Payable (Cr)' : 'Excess Paid / Advance (Dr)';
+  document.getElementById('sumBalance').textContent = money(Math.abs(balance));
+
   return { taxable, gstPercent, gstAmount, extraCharges, discountAmount, netTotal, advance, cash, otherDr, extraCr, balance };
 }
 
@@ -694,7 +703,9 @@ async function confirmPurchase(){
 
     const statusEl = document.getElementById('successMessage');
     statusEl.textContent =
-      `Purchase bill saved successfully. Stock updated — total ₹${Number(data.grand_total || t.netTotal).toFixed(2)}.`;
+      `Purchase bill saved successfully. Stock updated — bill total ₹${Number(data.grand_total || t.netTotal).toFixed(2)}. ` +
+      `Paid ₹${(Number(data.advance_paid || 0) + Number(data.cash_paid || 0) + Number(data.other_paid || 0)).toFixed(2)}, ` +
+      `balance ₹${Number(data.balance_amount ?? Math.abs(t.balance)).toFixed(2)} ${data.balance_type || (t.balance >= 0 ? 'Cr' : 'Dr')}.`;
     statusEl.className = 'status';
     statusEl.style.display = 'block';
     setPurchaseMessage('');
@@ -840,6 +851,8 @@ async function searchPurchaseBills() {
         <td>${escapeHtml(bill.invoice_number || "—")}</td>
         <td>${escapeHtml(bill.invoice_date ? String(bill.invoice_date).slice(0,10) : "—")}</td>
         <td>₹${Number(bill.grand_total ?? bill.total ?? 0).toFixed(2)}</td>
+        <td>₹${(Number(bill.advance_paid || 0) + Number(bill.cash_paid || 0) + Number(bill.other_paid || 0)).toFixed(2)}</td>
+        <td><strong style="color:${bill.balance_type === 'Dr' ? 'var(--emerald)' : '#B23A2E'}">₹${Number(bill.balance_amount || 0).toFixed(2)} ${escapeHtml(bill.balance_type || '')}</strong></td>
         <td class="bill-actions">
           <button class="btn-ghost bill-action" type="button" onclick="editPurchaseBill('${escapeHtml(bill._id)}')">Edit</button>
           <button class="btn-delete bill-action" type="button" onclick="deletePurchaseBill('${escapeHtml(bill._id)}', '${escapeHtml(bill.unique_bill_number || bill.invoice_number || '')}')">Delete</button>

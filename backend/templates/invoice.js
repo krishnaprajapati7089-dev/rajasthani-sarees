@@ -393,11 +393,8 @@ function renderInvoiceHTML({
    ========================================================== */
 
 @page {
-
-  size: A4;
-
-  margin: 14mm;
-
+  size: A4 portrait;
+  margin: 5mm;
 }
 
 
@@ -1190,34 +1187,60 @@ table.items td.strong {
 
 
 /* ==========================================================
-   PRINT
+   PRINT — TWO IDENTICAL HALF-A4 COPIES
    ========================================================== */
 
 @media print {
-
-  .print-bar {
-
-    display:
-      none;
-
+  .print-bar { display: none !important; }
+  html, body {
+    width: 200mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-
-
-  body {
-
-    background:
-      #fff;
-
-  }
-
-
   .sheet {
-
-    max-width:
-      none;
-
+    box-sizing: border-box;
+    width: 161.29%;
+    max-width: none !important;
+    height: 230mm;
+    margin: 0 !important;
+    padding: 0;
+    overflow: hidden;
+    zoom: 0.62;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
-
+  .sheet + .sheet {
+    border-top: 0.3mm dashed #999;
+    padding-top: 2mm;
+  }
+  .top { padding-bottom: 6px; margin-bottom: 7px; border-bottom-width: 2px; }
+  .shop-name { font-size: 18px; margin-bottom: 2px; }
+  .shop-meta { font-size: 9px; line-height: 1.25; }
+  .invoice-tag .label { font-size: 9px; padding: 3px 7px; margin-bottom: 3px; }
+  .invoice-tag table { font-size: 9px; }
+  .parties { gap: 7px; margin-bottom: 7px; }
+  .party-box { padding: 5px 7px; border-radius: 3px; }
+  .party-box h4 { font-size: 8px; margin-bottom: 3px; }
+  .party-box .name { font-size: 10px; }
+  .party-box .line { font-size: 8px; line-height: 1.25; }
+  .supply-badge { font-size: 8px; margin-top: 3px; padding: 2px 5px; }
+  table.items { margin-bottom: 2px; }
+  table.items th { font-size: 7px; padding: 4px 3px; }
+  table.items td { font-size: 8px; padding: 3px; }
+  .item-name { font-size: 8px; margin-bottom: 1px; }
+  .item-category, .barcode-number { font-size: 7px; margin-bottom: 1px; }
+  .hsn, .sub { font-size: 6.5px; }
+  .totals-wrap { margin-top: 4px; }
+  .totals { width: 220px; font-size: 8px; }
+  .totals .row { padding: 2px 0; }
+  .totals .row.grand { font-size: 11px; padding-top: 4px; margin-top: 2px; }
+  .words { margin-top: 5px; padding: 5px 7px; border-radius: 3px; font-size: 8px; }
+  .footer { margin-top: 8px; padding-top: 6px; font-size: 7.5px; }
+  .sign-line { margin-top: 15px; width: 120px; padding-top: 2px; }
+  .note-line { margin-top: 4px; font-size: 7px; }
 }
 
 </style>
@@ -1924,6 +1947,18 @@ table.items td.strong {
 
 
 </div>
+
+<script>
+  // Print two identical copies of the saved invoice on one A4 sheet.
+  window.addEventListener('DOMContentLoaded', function () {
+    const original = document.querySelector('.sheet');
+    if (!original || document.querySelector('.sheet-copy')) return;
+    const duplicate = original.cloneNode(true);
+    duplicate.classList.add('sheet-copy');
+    duplicate.setAttribute('aria-label', 'Second copy of the same invoice');
+    original.after(duplicate);
+  });
+</script>
 
 </body>
 

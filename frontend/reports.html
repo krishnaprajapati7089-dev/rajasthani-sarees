@@ -1529,18 +1529,18 @@ td strong{
  <div class="kpi-card">
 
   <div class="kpi-label">
-    Average Bill
+    Net Sale
   </div>
 
   <div
     class="kpi-value"
-    id="kpiAvgBill"
+    id="kpiNetSale"
   >
     ₹0
   </div>
 
   <div class="kpi-sub">
-    Sales ÷ bills
+    Total sales − UPI payments
   </div>
 
  </div>
@@ -1819,6 +1819,11 @@ td strong{
       <div class="label">Average UPI Payment</div>
       <div class="value" id="upiAverageAmount">₹0</div>
     </div>
+    <div class="upi-stat">
+      <div class="label">Net Cash Sale</div>
+      <div class="value" id="netCashSaleAmount">₹0</div>
+      <div class="note">Total sales − UPI payments</div>
+    </div>
   </div>
   <div class="quick-filters upi-period-buttons" aria-label="UPI sale date filters">
     <button type="button" onclick="setUpiPeriod('today')">Today</button>
@@ -1861,7 +1866,7 @@ td strong{
       </tbody>
     </table>
   </div>
-  <p class="note">This section identifies bills whose saved payment method contains UPI. It can only show online UPI payments if the billing system saves the payment method and any UPI reference/transaction ID with each bill.</p>
+  <p class="note">Net Cash Sale = total active sales for the selected date range minus UPI payments for that range. For bills paid partly by cash and partly by UPI, billing must save the separate UPI amount or payment history; otherwise the exact UPI portion cannot be inferred reliably.</p>
 </section>
 
 <!-- ========================================================
@@ -2512,14 +2517,7 @@ function renderKpis(
     money(gst);
 
 
-  document.getElementById(
-    "kpiAvgBill"
-  ).textContent =
-    money(
-      bills.length
-        ? sales / bills.length
-        : 0
-    );
+
 
 
   const from =
@@ -3515,9 +3513,56 @@ function getPaymentMethod(b){
   return values.find(v => typeof v === "string" && v.trim()) || "";
 }
 
+function getPaymentHistory(b){
+  const histories = [
+    b.payment_history, b.paymentHistory,
+    b.payments, b.transactions,
+    b.payment_details?.history, b.payment?.history
+  ];
+  for(const history of histories){
+    if(Array.isArray(history) && history.length) return history;
+  }
+  return [];
+}
+
+function paymentEntryMethod(entry){
+  return String(
+    entry?.payment_mode || entry?.paymentMode ||
+    entry?.payment_method || entry?.paymentMethod ||
+    entry?.method || entry?.mode || entry?.type || ""
+  ).toLowerCase().replace(/[ _-]+/g,"");
+}
+
+function paymentEntryAmount(entry){
+  const values = [
+    entry?.amount, entry?.paid_amount, entry?.paidAmount,
+    entry?.amount_received, entry?.amountReceived,
+    entry?.payment_amount, entry?.paymentAmount, entry?.value
+  ];
+  for(const value of values){
+    if(value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value))){
+      return Math.max(0, num(value));
+    }
+  }
+  return 0;
+}
+
 function isUpiPayment(b){
   const method = String(getPaymentMethod(b)).toLowerCase().replace(/[ _-]+/g,"");
-  return method.includes("upi") || method.includes("phonepe") ||
+  const history = getPaymentHistory(b);
+  const historyHasUpi = history.some(entry => {
+    const entryMethod = paymentEntryMethod(entry);
+    return entryMethod.includes("upi") || entryMethod.includes("phonepe") ||
+      entryMethod.includes("googlepay") || entryMethod.includes("gpay") ||
+      entryMethod.includes("paytmupi") || entryMethod.includes("bhim");
+  });
+  const explicitUpiAmount = [
+    b.upi_amount, b.upiAmount, b.upi_paid_amount, b.upiPaidAmount,
+    b.online_upi_amount, b.onlineUpiAmount
+  ].some(value => value !== undefined && value !== null && value !== "" && num(value) > 0);
+
+  return historyHasUpi || explicitUpiAmount ||
+    method.includes("upi") || method.includes("phonepe") ||
     method.includes("googlepay") || method.includes("gpay") ||
     method.includes("paytmupi") || method.includes("bhim");
 }
@@ -3531,17 +3576,69 @@ function getUpiReference(b){
     b.payment_details?.transaction_id, b.payment_details?.reference,
     b.payment?.transaction_id, b.payment?.reference
   ];
-  return values.find(v => v !== undefined && v !== null && String(v).trim()) || "—";
+  const direct = values.find(v => v !== undefined && v !== null && String(v).trim());
+  if(direct) return direct;
+
+  const upiEntry = getPaymentHistory(b).find(entry => {
+    const method = paymentEntryMethod(entry);
+    return method.includes("upi") || method.includes("phonepe") ||
+      method.includes("googlepay") || method.includes("gpay") ||
+      method.includes("paytmupi") || method.includes("bhim");
+  });
+  return upiEntry
+    ? (upiEntry.upi_reference || upiEntry.upiReference || upiEntry.reference || upiEntry.transaction_id || upiEntry.utr || "—")
+    : "—";
 }
 
 function getUpiAmount(b){
-  const values = [
-    b.paid_amount, b.paidAmount, b.amount_paid, b.amountPaid,
-    b.payment_amount, b.paymentAmount, b.grand_total, b.grandTotal,
-    b.total_amount, b.totalAmount
+  // Prefer an explicit UPI-only amount when the bill stores split tenders.
+  const explicitValues = [
+    b.upi_amount, b.upiAmount, b.upi_paid_amount, b.upiPaidAmount,
+    b.online_upi_amount, b.onlineUpiAmount,
+    b.payment_breakdown?.upi, b.paymentBreakdown?.upi,
+    b.payment_details?.upi_amount, b.payment_details?.upiAmount
   ];
-  for(const v of values){
-    if(v !== undefined && v !== null && v !== "" && Number.isFinite(Number(v))) return num(v);
+  for(const value of explicitValues){
+    if(value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value))){
+      return Math.max(0, num(value));
+    }
+  }
+
+  // If individual payments are stored, sum only entries made via UPI.
+  const history = getPaymentHistory(b);
+  if(history.length){
+    const upiEntries = history.filter(entry => {
+      const method = paymentEntryMethod(entry);
+      return method.includes("upi") || method.includes("phonepe") ||
+        method.includes("googlepay") || method.includes("gpay") ||
+        method.includes("paytmupi") || method.includes("bhim");
+    });
+    if(upiEntries.length){
+      return upiEntries.reduce((sum, entry) => sum + paymentEntryAmount(entry), 0);
+    }
+  }
+
+  const method = String(getPaymentMethod(b)).toLowerCase().replace(/[ _-]+/g,"");
+  // For legacy bills recorded wholly as UPI, the paid amount is the UPI amount.
+  // Do not treat the entire payment as UPI if the saved method is mixed cash + UPI.
+  const isMixedCashUpi = method.includes("cash") &&
+    (method.includes("upi") || method.includes("phonepe") || method.includes("googlepay") || method.includes("gpay"));
+  if(isMixedCashUpi) return 0;
+
+  const isWholeBillUpi = method.includes("upi") || method.includes("phonepe") ||
+    method.includes("googlepay") || method.includes("gpay") ||
+    method.includes("paytmupi") || method.includes("bhim");
+  if(isWholeBillUpi){
+    const values = [
+      b.paid_amount, b.paidAmount, b.amount_received, b.amountReceived,
+      b.amount_paid, b.amountPaid, b.payment_amount, b.paymentAmount,
+      b.grand_total, b.grandTotal, b.total_amount, b.totalAmount
+    ];
+    for(const value of values){
+      if(value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value))){
+        return Math.max(0, num(value));
+      }
+    }
   }
   return 0;
 }
@@ -3600,9 +3697,23 @@ function renderUpiPayments(){
   });
   const total = upiBills.reduce((sum,b) => sum + getUpiAmount(b), 0);
 
+  // Net cash sale = total active sales in the selected date range minus UPI received.
+  // Use the same date range as the UPI section so the figures are comparable.
+  const periodSales = (allBills || []).reduce((sum,b) => {
+    if(isCancelled(b)) return sum;
+    const dateKey = localDateKey(billDateValue(b));
+    if(!dateKey || (from && dateKey < from) || (to && dateKey > to)) return sum;
+    return sum + num(b.grand_total ?? b.grandTotal ?? b.total_amount ?? b.totalAmount);
+  }, 0);
+  const netCashSale = periodSales - total;
+
   document.getElementById("upiTotalAmount").textContent = money(total);
   document.getElementById("upiTransactionCount").textContent = upiBills.length.toLocaleString("en-IN");
   document.getElementById("upiAverageAmount").textContent = money(upiBills.length ? total / upiBills.length : 0);
+  const netCashEl = document.getElementById("netCashSaleAmount");
+  if(netCashEl) netCashEl.textContent = money(netCashSale);
+  const topNetSaleEl = document.getElementById("kpiNetSale");
+  if(topNetSaleEl) topNetSaleEl.textContent = money(netCashSale);
   document.getElementById("upiPeriodLabel").textContent =
     `${from || "Beginning"} → ${to || "Today onward"} • ${matches.length} matching transaction(s)`;
 

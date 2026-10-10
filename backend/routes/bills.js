@@ -41,6 +41,27 @@ function round2(value) {
   ) / 100;
 }
 
+function getPaymentStatus(total, paid) {
+  const billTotal = round2(Math.max(0, Number(total) || 0));
+  const paidTotal = round2(Math.max(0, Number(paid) || 0));
+  if (paidTotal <= 0) return 'Unpaid';
+  if (paidTotal >= billTotal) return 'Paid';
+  return 'Partial';
+}
+
+function validatePaymentAmount(amount, total, label = 'Received amount') {
+  const value = Number(amount);
+  const billTotal = round2(Math.max(0, Number(total) || 0));
+
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error(`${label} must be a valid amount of ₹0 or more`);
+  }
+  if (value > billTotal) {
+    throw new Error(`${label} cannot be greater than the bill total (₹${billTotal.toFixed(2)})`);
+  }
+  return round2(value);
+}
+
 
 // ============================================================
 // PREPARE BILL ITEMS
@@ -1057,6 +1078,7 @@ router.post(
         payment_mode,
         payment_status,
         paid_amount,
+        amount_received,
         discount_amount,
         items
       } = req.body;
@@ -1131,14 +1153,50 @@ router.post(
             'Cash',
 
           payment_status:
-            payment_status ||
-            'Paid',
+            getPaymentStatus(
+              calculation.grand_total,
+              validatePaymentAmount(
+                amount_received ?? paid_amount ?? calculation.grand_total,
+                calculation.grand_total
+              )
+            ),
 
           paid_amount:
-            Number(
-              paid_amount
-            ) ||
-            calculation.grand_total,
+            validatePaymentAmount(
+              amount_received ?? paid_amount ?? calculation.grand_total,
+              calculation.grand_total
+            ),
+
+          amount_received:
+            validatePaymentAmount(
+              amount_received ?? paid_amount ?? calculation.grand_total,
+              calculation.grand_total
+            ),
+
+          outstanding_amount:
+            round2(
+              calculation.grand_total -
+              validatePaymentAmount(
+                amount_received ?? paid_amount ?? calculation.grand_total,
+                calculation.grand_total
+              )
+            ),
+
+          payment_history:
+            validatePaymentAmount(
+              amount_received ?? paid_amount ?? calculation.grand_total,
+              calculation.grand_total
+            ) > 0
+              ? [{
+                  amount: validatePaymentAmount(
+                    amount_received ?? paid_amount ?? calculation.grand_total,
+                    calculation.grand_total
+                  ),
+                  date: new Date(),
+                  mode: payment_mode || 'Cash',
+                  note: 'Initial payment at bill creation'
+                }]
+              : [],
 
           subtotal:
             calculation.subtotal,
@@ -1257,6 +1315,7 @@ router.put(
         payment_mode,
         payment_status,
         paid_amount,
+        amount_received,
         discount_amount,
         items
       } = req.body;
@@ -1506,20 +1565,31 @@ router.put(
 
       bill.payment_mode =
         payment_mode ||
+        bill.payment_mode ||
         'Cash';
 
+      // Preserve the saved collection when the edit form does not send
+      // a payment value. Do not turn a zero payment into a full payment.
+      const editedPaidAmount = validatePaymentAmount(
+        amount_received ?? paid_amount ?? bill.paid_amount ?? 0,
+        calculation.grand_total,
+        'Received amount'
+      );
 
-      bill.payment_status =
-        payment_status ||
-        'Paid';
+      bill.paid_amount = editedPaidAmount;
+      bill.amount_received = editedPaidAmount;
+      bill.outstanding_amount = round2(
+        calculation.grand_total - editedPaidAmount
+      );
+      bill.payment_status = getPaymentStatus(
+        calculation.grand_total,
+        editedPaidAmount
+      );
 
-
-      bill.paid_amount =
-        Number(
-          paid_amount
-        ) ||
-        calculation.grand_total;
-
+      // Existing payment history is retained when editing bill details.
+      if (!Array.isArray(bill.payment_history)) {
+        bill.payment_history = [];
+      }
 
       bill.subtotal =
         calculation.subtotal;
@@ -1584,6 +1654,89 @@ router.put(
   }
 );
 
+
+
+// ============================================================
+// RECORD A CUSTOMER PAYMENT / INSTALMENT
+// POST /api/bills/:id/payments
+// Body: { amount, payment_mode, date?, note? }
+// ============================================================
+
+router.post(
+  '/:id/payments',
+  async (req, res) => {
+    try {
+      const bill = await Bill.findById(req.params.id);
+
+      if (!bill) {
+        return res.status(404).json({ error: 'Bill not found' });
+      }
+
+      if (String(bill.status || 'ACTIVE').toUpperCase() === 'CANCELLED') {
+        return res.status(400).json({ error: 'Cannot collect payment for a cancelled bill' });
+      }
+
+      const amount = Number(req.body.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return res.status(400).json({ error: 'Payment amount must be greater than ₹0' });
+      }
+
+      const total = round2(Number(bill.grand_total) || 0);
+      const currentPaid = round2(
+        Number(
+          bill.amount_received ??
+          bill.paid_amount ??
+          0
+        ) || 0
+      );
+      const outstanding = round2(Math.max(0, total - currentPaid));
+
+      if (amount > outstanding + 0.001) {
+        return res.status(400).json({
+          error: `Payment exceeds pending amount. Pending: ₹${outstanding.toFixed(2)}`
+        });
+      }
+
+      const newPaid = round2(currentPaid + amount);
+      const paymentDate = req.body.date ? new Date(req.body.date) : new Date();
+
+      if (Number.isNaN(paymentDate.getTime())) {
+        return res.status(400).json({ error: 'Invalid payment date' });
+      }
+
+      const entry = {
+        amount: round2(amount),
+        date: paymentDate,
+        mode: String(req.body.payment_mode || req.body.mode || bill.payment_mode || 'Cash').trim(),
+        note: String(req.body.note || '').trim()
+      };
+
+      if (!Array.isArray(bill.payment_history)) {
+        bill.payment_history = [];
+      }
+      bill.payment_history.push(entry);
+      bill.paid_amount = newPaid;
+      bill.amount_received = newPaid;
+      bill.outstanding_amount = round2(Math.max(0, total - newPaid));
+      bill.payment_status = getPaymentStatus(total, newPaid);
+
+      await bill.save();
+
+      return res.json({
+        message: 'Payment recorded successfully',
+        bill,
+        payment: entry,
+        paid_amount: newPaid,
+        amount_received: newPaid,
+        outstanding_amount: bill.outstanding_amount,
+        payment_status: bill.payment_status
+      });
+    } catch (err) {
+      console.error('Record payment error:', err);
+      return res.status(400).json({ error: err.message });
+    }
+  }
+);
 
 
 // ============================================================

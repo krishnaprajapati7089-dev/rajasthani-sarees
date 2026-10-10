@@ -334,6 +334,54 @@ input{
 
 .mobile-panel{
  display:none;
+ position:fixed;
+ top:calc(var(--header-h) + 10px);
+ right:20px;
+ z-index:1200;
+ width:min(300px,calc(100vw - 28px));
+ max-height:calc(100vh - var(--header-h) - 24px);
+ overflow:auto;
+ background:rgba(255,255,255,.98);
+ border:1px solid var(--line);
+ border-radius:16px;
+ padding:12px;
+ box-shadow:0 18px 50px rgba(6,63,53,.20);
+ backdrop-filter:blur(14px);
+}
+
+.mobile-panel.open{
+ display:block;
+ animation:rise .18s ease both;
+}
+
+.mobile-panel .drawer-links{
+ display:grid;
+ gap:5px;
+}
+
+.mobile-panel .nav-link{
+ display:block;
+ padding:12px 14px;
+ border-radius:10px;
+ color:var(--emerald);
+}
+
+.mobile-panel .nav-link:hover,
+.mobile-panel .nav-link.is-active{
+ background:#eef6f2;
+}
+
+.mobile-panel .drawer-caption{
+ padding:8px 12px 10px;
+ color:var(--muted);
+ font-size:10px;
+ font-weight:800;
+ letter-spacing:1.2px;
+ text-transform:uppercase;
+}
+
+@media(max-width:600px){
+ .mobile-panel{right:14px;}
 }
 
 
@@ -974,6 +1022,58 @@ td strong{
 
 
 /* =========================================================
+   ONLINE UPI PAYMENTS
+   ========================================================= */
+.upi-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:16px;
+}
+.upi-stat{
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:linear-gradient(135deg,#f7fbf8,#fffaf0);
+}
+.upi-stat .label{
+  color:var(--muted);
+  font-size:10.5px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.upi-stat .value{
+  color:var(--emerald);
+  font:700 22px "Playfair Display",serif;
+  margin-top:6px;
+}
+.upi-controls{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  margin:12px 0 14px;
+}
+.upi-controls .filter-group{min-width:145px;flex:1}
+.upi-controls .filter-group input{
+  width:100%;
+  min-width:0;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  outline:none;
+  background:#fff;
+}
+.upi-controls .filter-group input:focus{border-color:var(--champagne)}
+.upi-controls .upi-search-group{flex:2;min-width:220px}
+.upi-period-buttons{margin:8px 0 12px}
+.upi-period-buttons button.is-selected{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+@media(max-width:600px){
+  .upi-summary{grid-template-columns:1fr}
+}
+
+/* =========================================================
    ANIMATIONS
    ========================================================= */
 
@@ -1044,7 +1144,7 @@ td strong{
  }
 
  .menu-toggle{
-   display:block;
+   display:inline-flex;
  }
 
  .kpi-row{
@@ -1075,6 +1175,30 @@ td strong{
 
  .header-inner{
    padding:0 14px;
+   gap:10px;
+ }
+
+ /* Phone header: menu on the left, logo on the opposite side */
+ .header-actions{
+   order:1;
+   margin-right:auto;
+   margin-left:0;
+ }
+
+ .header-actions .menu-toggle{
+   display:inline-flex;
+   align-items:center;
+   justify-content:center;
+   flex-shrink:0;
+ }
+
+ .brand{
+   order:2;
+   margin-left:auto;
+ }
+
+ .brand-name{
+   font-size:15px;
  }
 
  .brand-sub{
@@ -1245,16 +1369,13 @@ td strong{
    </a>
 
    <button
-     class="icon-btn"
-     onclick="rsLogout()"
-     title="Logout"
-   >
-     ⏻
-   </button>
-
-   <button
      class="menu-toggle"
      id="menuToggle"
+     type="button"
+     aria-label="Open navigation menu"
+     aria-controls="mobilePanel"
+     aria-expanded="false"
+     title="Open navigation menu"
    >
     <span></span>
    </button>
@@ -1676,6 +1797,72 @@ td strong{
 
 </section>
 
+
+<!-- ========================================================
+     ONLINE UPI PAYMENTS
+     ======================================================== -->
+<section class="panel" id="upiPaymentsPanel">
+  <div class="panel-title">
+    <h2>Online UPI Payments</h2>
+    <span class="page-info" id="upiPeriodLabel">Based on selected date range</span>
+  </div>
+  <div class="upi-summary">
+    <div class="upi-stat">
+      <div class="label">UPI Payments Total</div>
+      <div class="value" id="upiTotalAmount">₹0</div>
+    </div>
+    <div class="upi-stat">
+      <div class="label">UPI Transactions</div>
+      <div class="value" id="upiTransactionCount">0</div>
+    </div>
+    <div class="upi-stat">
+      <div class="label">Average UPI Payment</div>
+      <div class="value" id="upiAverageAmount">₹0</div>
+    </div>
+  </div>
+  <div class="quick-filters upi-period-buttons" aria-label="UPI sale date filters">
+    <button type="button" onclick="setUpiPeriod('today')">Today</button>
+    <button type="button" onclick="setUpiPeriod('yesterday')">Yesterday</button>
+    <button type="button" onclick="setUpiPeriod('month')">This Month</button>
+    <button type="button" onclick="setUpiPeriod('all')">All Time</button>
+  </div>
+  <div class="upi-controls">
+    <div class="filter-group">
+      <label for="upiFromDate">From Date</label>
+      <input type="date" id="upiFromDate">
+    </div>
+    <div class="filter-group">
+      <label for="upiToDate">To Date</label>
+      <input type="date" id="upiToDate">
+    </div>
+    <button class="btn btn-primary" type="button" onclick="applyUpiDateFilter()">Apply Dates</button>
+    <div class="filter-group upi-search-group">
+      <label for="upiSearch">Search UPI Payments</label>
+      <input type="search" id="upiSearch" placeholder="Invoice, customer, UPI ID or reference" autocomplete="off">
+    </div>
+    <button class="btn btn-ghost" type="button" onclick="clearUpiSearch()">Clear Search</button>
+  </div>
+  <div class="table-message" id="upiMessage" style="display:none"></div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Date &amp; Time</th>
+          <th>Invoice</th>
+          <th>Customer</th>
+          <th>Payment Method</th>
+          <th>UPI Reference / ID</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="upiPaymentsTable">
+        <tr class="empty-row"><td colspan="7">Loading UPI payments…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">This section identifies bills whose saved payment method contains UPI. It can only show online UPI payments if the billing system saves the payment method and any UPI reference/transaction ID with each bill.</p>
+</section>
 
 <!-- ========================================================
      GST REPORT
@@ -2257,6 +2444,7 @@ function renderAll(){
   );
 
   renderBills();
+  renderUpiPayments();
 
 }
 
@@ -3313,6 +3501,163 @@ async function loadReports(){
 
 
 /* =========================================================
+   ONLINE UPI PAYMENTS
+   ========================================================= */
+
+function getPaymentMethod(b){
+  const values = [
+    b.payment_method, b.paymentMethod, b.payment_mode, b.paymentMode,
+    b.payment_type, b.paymentType, b.mode_of_payment, b.modeOfPayment,
+    b.pay_method, b.payMethod, b.transaction_method,
+    b.payment_details?.method, b.payment_details?.mode,
+    b.payment?.method, b.payment?.mode
+  ];
+  return values.find(v => typeof v === "string" && v.trim()) || "";
+}
+
+function isUpiPayment(b){
+  const method = String(getPaymentMethod(b)).toLowerCase().replace(/[ _-]+/g,"");
+  return method.includes("upi") || method.includes("phonepe") ||
+    method.includes("googlepay") || method.includes("gpay") ||
+    method.includes("paytmupi") || method.includes("bhim");
+}
+
+function getUpiReference(b){
+  const values = [
+    b.upi_transaction_id, b.upiTransactionId, b.upi_reference,
+    b.upiReference, b.transaction_id, b.transactionId,
+    b.utr, b.utr_number, b.utrNumber, b.payment_reference,
+    b.paymentReference, b.reference_no, b.referenceNo,
+    b.payment_details?.transaction_id, b.payment_details?.reference,
+    b.payment?.transaction_id, b.payment?.reference
+  ];
+  return values.find(v => v !== undefined && v !== null && String(v).trim()) || "—";
+}
+
+function getUpiAmount(b){
+  const values = [
+    b.paid_amount, b.paidAmount, b.amount_paid, b.amountPaid,
+    b.payment_amount, b.paymentAmount, b.grand_total, b.grandTotal,
+    b.total_amount, b.totalAmount
+  ];
+  for(const v of values){
+    if(v !== undefined && v !== null && v !== "" && Number.isFinite(Number(v))) return num(v);
+  }
+  return 0;
+}
+
+function getUpiDateBounds(){
+  return {
+    from: document.getElementById("upiFromDate")?.value || "",
+    to: document.getElementById("upiToDate")?.value || ""
+  };
+}
+
+function setUpiPeriod(type){
+  const today = indiaToday();
+  let from = today;
+  let to = today;
+  if(type === "yesterday") from = to = addDays(today, -1);
+  if(type === "month") from = today.slice(0, 7) + "-01";
+  if(type === "all"){ from = ""; to = ""; }
+  document.getElementById("upiFromDate").value = from;
+  document.getElementById("upiToDate").value = to;
+  document.querySelectorAll(".upi-period-buttons button").forEach(button => {
+    button.classList.toggle("is-selected", button.getAttribute("onclick") === `setUpiPeriod('${type}')`);
+  });
+  renderUpiPayments();
+}
+
+function applyUpiDateFilter(){
+  const {from, to} = getUpiDateBounds();
+  if(from && to && from > to){
+    alert("From Date cannot be later than To Date.");
+    return;
+  }
+  document.querySelectorAll(".upi-period-buttons button").forEach(button => button.classList.remove("is-selected"));
+  renderUpiPayments();
+}
+
+function renderUpiPayments(){
+  const body = document.getElementById("upiPaymentsTable");
+  if(!body) return;
+
+  const q = (document.getElementById("upiSearch")?.value || "").trim().toLowerCase();
+  const {from, to} = getUpiDateBounds();
+  const upiBills = (allBills || []).filter(b => {
+    if(isCancelled(b) || !isUpiPayment(b)) return false;
+    const dateKey = localDateKey(billDateValue(b));
+    if(!dateKey) return false;
+    return (!from || dateKey >= from) && (!to || dateKey <= to);
+  });
+  const matches = upiBills.filter(b => {
+    if(!q) return true;
+    const haystack = [
+      b.invoice_no, b.invoiceNo, b.customer_name, b.customer,
+      getPaymentMethod(b), getUpiReference(b), b.customer_phone, b.phone
+    ].map(v => String(v ?? "")).join(" ").toLowerCase();
+    return haystack.includes(q);
+  });
+  const total = upiBills.reduce((sum,b) => sum + getUpiAmount(b), 0);
+
+  document.getElementById("upiTotalAmount").textContent = money(total);
+  document.getElementById("upiTransactionCount").textContent = upiBills.length.toLocaleString("en-IN");
+  document.getElementById("upiAverageAmount").textContent = money(upiBills.length ? total / upiBills.length : 0);
+  document.getElementById("upiPeriodLabel").textContent =
+    `${from || "Beginning"} → ${to || "Today onward"} • ${matches.length} matching transaction(s)`;
+
+  if(!matches.length){
+    body.innerHTML = '<tr class="empty-row"><td colspan="7">No UPI payments found for the selected dates.</td></tr>';
+  } else {
+    body.innerHTML = matches.slice().sort((a,b) =>
+      new Date(billDateValue(b) || 0) - new Date(billDateValue(a) || 0)
+    ).map(b => {
+      const status = String(b.payment_status || b.paymentStatus || b.status || "Recorded");
+      const method = getPaymentMethod(b) || "UPI";
+      return `<tr>
+        <td>${escapeHtml(fmtDateTime(billDateValue(b)))}</td>
+        <td><strong>#${escapeHtml(b.invoice_no || b.invoiceNo || "—")}</strong></td>
+        <td>${escapeHtml(b.customer_name || b.customer || "Walk-in customer")}</td>
+        <td>${escapeHtml(method)}</td>
+        <td>${escapeHtml(getUpiReference(b))}</td>
+        <td><strong>${money(getUpiAmount(b))}</strong></td>
+        <td><span class="status-pill ${/due|unpaid|pending|failed/i.test(status) ? "due" : "paid"}">${escapeHtml(status)}</span></td>
+      </tr>`;
+    }).join("");
+  }
+
+  const message = document.getElementById("upiMessage");
+  const anyMethodStored = allBills.some(b => getPaymentMethod(b));
+  message.style.display = upiBills.length || anyMethodStored ? "none" : "block";
+  message.className = "table-message";
+  message.textContent = allBills.length
+    ? "No UPI-tagged bills were found in this date range. Confirm billing.html saves a payment method such as UPI/PhonePe/Google Pay with each bill."
+    : "Bills have not loaded yet.";
+}
+
+function clearUpiSearch(){
+  const input = document.getElementById("upiSearch");
+  if(input) input.value = "";
+  renderUpiPayments();
+}
+
+const upiFromDateEl = document.getElementById("upiFromDate");
+const upiToDateEl = document.getElementById("upiToDate");
+if(upiFromDateEl && upiToDateEl){
+  upiFromDateEl.value = indiaToday();
+  upiToDateEl.value = indiaToday();
+  document.querySelectorAll(".upi-period-buttons button").forEach(button => {
+    button.classList.toggle("is-selected", button.getAttribute("onclick") === "setUpiPeriod('today')");
+  });
+}
+
+const upiSearchEl = document.getElementById("upiSearch");
+if(upiSearchEl){
+  upiSearchEl.addEventListener("input", renderUpiPayments);
+}
+
+
+/* =========================================================
    GST REPORT
    ========================================================= */
 
@@ -3766,101 +4111,71 @@ if(gstMonthEl){
 
 
 /* =========================================================
-   MOBILE MENU
+   RESPONSIVE DRAWER MENU — DESKTOP + MOBILE
    ========================================================= */
 
-const menuToggleEl =
-  document.getElementById(
-    "menuToggle"
-  );
+const menuToggleEl = document.getElementById("menuToggle");
+const mobilePanelEl = document.getElementById("mobilePanel");
 
+function closeNavigationDrawer(){
+  if(!menuToggleEl || !mobilePanelEl) return;
+  mobilePanelEl.classList.remove("open");
+  menuToggleEl.setAttribute("aria-expanded", "false");
+  menuToggleEl.setAttribute("aria-label", "Open navigation menu");
+}
 
-if(menuToggleEl){
+function buildNavigationDrawer(){
+  if(!mobilePanelEl) return;
+  mobilePanelEl.innerHTML = `
+    <div class="drawer-caption">Rajastani Saree · Navigation</div>
+    <nav class="drawer-links" aria-label="Quick navigation">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="billing.html" class="nav-link">＋ New Bill</a>
+      <a href="inventory.html" class="nav-link">Inventory</a>
+      <a href="purchase.html" class="nav-link">Purchase Bill</a>
+      <a href="reports.html" class="nav-link is-active" aria-current="page">Reports & UPI Sales</a>
+      <a href="accounts.html" class="nav-link">Accounts</a>
+    </nav>
+  `;
+}
 
-  menuToggleEl.addEventListener(
-    "click",
-    () => {
+if(menuToggleEl && mobilePanelEl){
+  menuToggleEl.setAttribute("aria-controls", "mobilePanel");
+  menuToggleEl.setAttribute("aria-expanded", "false");
+  menuToggleEl.setAttribute("aria-label", "Open navigation menu");
+  menuToggleEl.setAttribute("type", "button");
+  buildNavigationDrawer();
 
-      const p =
-        document.getElementById(
-          "mobilePanel"
-        );
-
-
-      p.classList.toggle(
-        "open"
-      );
-
-
-      if(
-        p.classList.contains(
-          "open"
-        )
-      ){
-
-        p.innerHTML = `
-
-          <div
-            style="
-              background:#fff;
-              padding:18px;
-              border-radius:
-                0 0 14px 14px;
-              display:grid;
-              gap:7px
-            "
-          >
-
-            <a
-              href="dashboard.html"
-              class="nav-link"
-            >
-              Dashboard
-            </a>
-
-            <a
-              href="billing.html"
-              class="nav-link"
-            >
-              New Bill
-            </a>
-
-            <a
-              href="inventory.html"
-              class="nav-link"
-            >
-              Inventory
-            </a>
-
-            <a
-              href="purchase.html"
-              class="nav-link"
-            >
-              Purchase Bill
-            </a>
-
-            <a
-              href="reports.html"
-              class="nav-link is-active"
-            >
-              Reports
-            </a>
-
-          </div>
-
-        `;
-
-      }
-
-      else{
-
-        p.innerHTML = "";
-
-      }
-
+  menuToggleEl.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const willOpen = !mobilePanelEl.classList.contains("open");
+    if(willOpen){
+      mobilePanelEl.classList.add("open");
+      menuToggleEl.setAttribute("aria-expanded", "true");
+      menuToggleEl.setAttribute("aria-label", "Close navigation menu");
+    } else {
+      closeNavigationDrawer();
     }
-  );
+  });
 
+  mobilePanelEl.addEventListener("click", (event) => {
+    const link = event.target.closest("a");
+    if(link) closeNavigationDrawer();
+    event.stopPropagation();
+  });
+
+  document.addEventListener("click", (event) => {
+    if(!mobilePanelEl.contains(event.target) && !menuToggleEl.contains(event.target)){
+      closeNavigationDrawer();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if(event.key === "Escape") closeNavigationDrawer();
+  });
+
+  window.addEventListener("resize", closeNavigationDrawer);
 }
 
 

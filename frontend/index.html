@@ -7,261 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<script>
-/* ============================================================
-   Rajasthani Saree — 6-digit PIN Lock
-   Inline version: no separate auth-lock.js required.
 
-   - First visit: create a 6-digit PIN and confirm it.
-   - Later: PIN is requested once per browser session/tab.
-   - 5 wrong attempts -> 30 second temporary lockout.
-   ============================================================ */
-(function () {
-  var PIN_KEY = 'rs_pin_hash';
-  var OK_KEY  = 'rs_unlocked';
-  var LOCK_KEY = 'rs_lock_until';
-
-  try {
-    if (sessionStorage.getItem(OK_KEY) === '1') return;
-  } catch (e) {}
-
-  var css = '\
-#rsLock{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;\
-background:radial-gradient(circle at 15% 20%,rgba(239,68,68,.30),transparent 32%),\
-radial-gradient(circle at 85% 15%,rgba(37,99,235,.32),transparent 34%),\
-radial-gradient(circle at 55% 90%,rgba(139,92,246,.30),transparent 38%),\
-linear-gradient(135deg,#0f172a,#1e1b4b 48%,#172554);font-family:Inter,Arial,sans-serif}\
-#rsLock:before{content:"";position:absolute;inset:0;background:rgba(255,255,255,.035);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);pointer-events:none}\
-#rsLock .box{position:relative;width:100%;max-width:370px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);border-radius:28px;padding:32px 28px;text-align:center;box-shadow:0 30px 90px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.25);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%)}\
-#rsLock .box:before{content:"";position:absolute;inset:1px;border-radius:27px;background:linear-gradient(135deg,rgba(255,255,255,.13),transparent 42%,rgba(34,211,238,.08));pointer-events:none}\
-#rsLock h2{position:relative;margin:0 0 8px;font-family:"Playfair Display",Georgia,serif;color:#fff;font-size:24px;letter-spacing:.1px}\
-#rsLock p{position:relative;margin:0 0 24px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.55}\
-#rsLock .dots{position:relative;display:flex;justify-content:center;gap:11px;margin-bottom:18px}\
-#rsLock .dots i{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.55);display:block;box-shadow:0 0 0 3px rgba(255,255,255,.025);transition:.2s ease}\
-#rsLock .dots i.on{background:linear-gradient(135deg,#22d3ee,#6366f1,#8b5cf6);border-color:#fff;box-shadow:0 0 14px rgba(99,102,241,.65)}\
-#rsLock input{position:absolute;opacity:0;pointer-events:none}\
-#rsLock .pad{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:14px}\
-#rsLock .pad button{padding:15px 0;font-size:19px;font-weight:700;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);color:#fff;border-radius:15px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease}\
-#rsLock .pad button:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.18)}\
-#rsLock .pad button:active{transform:scale(.95);background:linear-gradient(135deg,rgba(239,68,68,.35),rgba(139,92,246,.35),rgba(37,99,235,.35))}\
-#rsLock .msg{position:relative;min-height:18px;margin-top:14px;font-size:12px;font-weight:600;color:#fecdd3}\
-#rsLock .shake{animation:rsShake .35s}\
-@keyframes rsShake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}';
-
-  var style = document.createElement('style');
-  style.textContent = css;
-  document.head.appendChild(style);
-
-  var saved = null;
-  try {
-    saved = localStorage.getItem(PIN_KEY);
-  } catch (e) {}
-
-  var mode = saved ? 'enter' : 'create';
-  var first = '', value = '', fails = 0;
-
-  var overlay = document.createElement('div');
-  overlay.id = 'rsLock';
-  overlay.innerHTML =
-    '<div class="box"><h2></h2><p></p>' +
-    '<div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
-    '<input type="tel" inputmode="numeric" maxlength="6" autocomplete="off">' +
-    '<div class="pad"></div><div class="msg"></div></div>';
-
-  document.documentElement.appendChild(overlay);
-
-  var box = overlay.querySelector('.box'),
-      h2 = overlay.querySelector('h2'),
-      sub = overlay.querySelector('p'),
-      dots = overlay.querySelectorAll('.dots i'),
-      input = overlay.querySelector('input'),
-      pad = overlay.querySelector('.pad'),
-      msg = overlay.querySelector('.msg');
-
-  ['1','2','3','4','5','6','7','8','9','C','0','⌫'].forEach(function (k) {
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = k;
-
-    b.onclick = function () {
-      if (k === 'C') set('');
-      else if (k === '⌫') set(value.slice(0, -1));
-      else set(value + k);
-    };
-
-    pad.appendChild(b);
-  });
-
-  function hash(s) {
-    var salted = 'rajasthani-saree:' + s;
-
-    if (window.crypto && crypto.subtle && window.TextEncoder) {
-      return crypto.subtle.digest(
-        'SHA-256',
-        new TextEncoder().encode(salted)
-      ).then(function (buf) {
-        return Array.prototype.map.call(
-          new Uint8Array(buf),
-          function (x) {
-            return ('0' + x.toString(16)).slice(-2);
-          }
-        ).join('');
-      });
-    }
-
-    var h = 5381;
-
-    for (var i = 0; i < salted.length; i++) {
-      h = ((h << 5) + h + salted.charCodeAt(i)) | 0;
-    }
-
-    return Promise.resolve('f' + h);
-  }
-
-  function texts() {
-    if (mode === 'create') {
-      h2.textContent = 'Set your 6-digit PIN';
-      sub.textContent = 'This PIN will be asked every time you open the website.';
-    } else if (mode === 'confirm') {
-      h2.textContent = 'Confirm your PIN';
-      sub.textContent = 'Enter the same 6 digits again.';
-    } else {
-      h2.textContent = 'Enter PIN';
-      sub.textContent = 'Enter your 6-digit PIN to open Rajasthani Saree.';
-    }
-  }
-
-  function set(v) {
-    value = v.replace(/\D/g, '').slice(0, 6);
-    input.value = value;
-
-    dots.forEach(function (d, i) {
-      d.className = i < value.length ? 'on' : '';
-    });
-
-    if (value.length === 6) {
-      setTimeout(submit, 120);
-    }
-  }
-
-  function wrong(text) {
-    msg.textContent = text;
-    box.classList.remove('shake');
-    void box.offsetWidth;
-    box.classList.add('shake');
-    set('');
-  }
-
-  function unlock() {
-    try {
-      sessionStorage.setItem(OK_KEY, '1');
-    } catch (e) {}
-
-    overlay.remove();
-    style.remove();
-
-    if (document.body) {
-      document.body.style.overflow = '';
-    }
-  }
-
-  function submit() {
-    var until = 0;
-
-    try {
-      until = Number(localStorage.getItem(LOCK_KEY) || 0);
-    } catch (e) {}
-
-    if (mode === 'enter' && Date.now() < until) {
-      return wrong(
-        'Too many attempts. Try again in ' +
-        Math.ceil((until - Date.now()) / 1000) +
-        's'
-      );
-    }
-
-    var entered = value;
-
-    if (mode === 'create') {
-      first = entered;
-      mode = 'confirm';
-      msg.textContent = '';
-      set('');
-      texts();
-      return;
-    }
-
-    if (mode === 'confirm') {
-      if (entered !== first) {
-        mode = 'create';
-        first = '';
-        texts();
-        return wrong('PINs did not match. Start again.');
-      }
-
-      return hash(entered).then(function (h) {
-        try {
-          localStorage.setItem(PIN_KEY, h);
-        } catch (e) {}
-
-        unlock();
-      });
-    }
-
-    hash(entered).then(function (h) {
-      if (h === saved) {
-        try {
-          localStorage.removeItem(LOCK_KEY);
-        } catch (e) {}
-
-        unlock();
-      } else {
-        fails++;
-
-        if (fails >= 5) {
-          try {
-            localStorage.setItem(
-              LOCK_KEY,
-              String(Date.now() + 30000)
-            );
-          } catch (e) {}
-
-          fails = 0;
-          wrong('Too many attempts. Wait 30 seconds.');
-        } else {
-          wrong(
-            'Wrong PIN. ' +
-            (5 - fails) +
-            ' tries left.'
-          );
-        }
-      }
-    });
-  }
-
-  document.addEventListener('keydown', function (e) {
-    if (!document.getElementById('rsLock')) return;
-
-    if (/^\d$/.test(e.key)) {
-      set(value + e.key);
-    } else if (e.key === 'Backspace') {
-      set(value.slice(0, -1));
-    }
-  });
-
-  texts();
-
-  if (document.body) {
-    document.body.style.overflow = 'hidden';
-  } else {
-    document.addEventListener('DOMContentLoaded', function () {
-      if (document.getElementById('rsLock')) {
-        document.body.style.overflow = 'hidden';
-      }
-    });
-  }
-})();
-</script>
 
 <style>
 
@@ -1177,6 +923,28 @@ button:active,
   .bill-view-button:hover,.bill-newtab-button:hover,.bill-modal-close:hover{transform:none}
 }
 
+
+/* ===== LOGIN / REGISTER GATE ===== */
+#rsAuthGate{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 10% 10%,rgba(199,161,90,.22),transparent 30rem),linear-gradient(135deg,#092A25,#123C35 55%,#1B5A4E);font-family:Inter,system-ui,sans-serif}
+#rsAuthGate:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(240,217,162,.10) .7px,transparent .7px);background-size:18px 18px}
+.rs-auth-card{position:relative;width:100%;max-width:410px;padding:34px 30px;background:rgba(255,253,248,.97);border:1px solid rgba(199,161,90,.45);border-radius:24px;box-shadow:0 30px 90px rgba(0,0,0,.35);animation:rsAuthIn .45s cubic-bezier(.2,.8,.2,1) both}
+.rs-auth-brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px;color:#123C35;font-family:"Playfair Display",Georgia,serif;font-size:15px;font-weight:700;letter-spacing:1.5px}
+.rs-auth-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#123C35;color:#F0D9A2;font-size:22px}
+.rs-auth-card h1{margin:0 0 7px;color:#123C35;font-family:"Playfair Display",Georgia,serif;font-size:29px;text-align:center}
+.rs-auth-sub{margin:0 0 24px;color:#6C7773;text-align:center;font-size:13px;line-height:1.6}
+.rs-auth-card label{display:block;margin:14px 0 7px;color:#17221F;font-size:12px;font-weight:800}
+.rs-auth-card input{width:100%;min-height:47px;padding:12px 13px;border:1px solid rgba(18,60,53,.2);border-radius:11px;background:#fffdf8;color:#17221F;font-size:14px;outline:none}
+.rs-auth-card input:focus{border-color:#1B5A4E;box-shadow:0 0 0 3px rgba(27,90,78,.12)}
+.rs-auth-password{position:relative}.rs-auth-password input{padding-right:65px}
+.rs-auth-show{position:absolute;right:7px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#1B5A4E;font-size:12px;font-weight:800;cursor:pointer;padding:8px}
+.rs-auth-submit{width:100%;min-height:48px;margin-top:22px;border:0;border-radius:12px;background:linear-gradient(135deg,#1D6A5B,#0F4038);color:#fff;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 9px 22px rgba(9,42,37,.2);transition:transform .2s,box-shadow .2s}
+.rs-auth-submit:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(9,42,37,.26)}.rs-auth-submit:disabled{opacity:.6;cursor:wait;transform:none}
+.rs-auth-error{min-height:18px;margin-top:12px;color:#A63D45;font-size:12px;font-weight:700;line-height:1.5}
+.rs-auth-switch{margin-top:18px;color:#6C7773;text-align:center;font-size:12px}.rs-auth-switch button{border:0;background:none;color:#1B5A4E;font-weight:850;cursor:pointer}
+.rs-auth-foot{margin-top:20px;color:#8a918d;text-align:center;font-size:10px;letter-spacing:.5px}
+@keyframes rsAuthIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:480px){.rs-auth-card{padding:28px 22px;border-radius:20px}.rs-auth-card h1{font-size:26px}}
+
 </style>
 </head>
 <body>
@@ -1194,6 +962,29 @@ button:active,
   <div class="brand-intro-name">RAJASTHANI SAREE</div>
 </div>
 
+
+
+<!-- ===== ACCOUNT AUTHENTICATION GATE ===== -->
+<div id="rsAuthGate" role="dialog" aria-modal="true" aria-labelledby="rsAuthTitle">
+  <main class="rs-auth-card">
+    <div class="rs-auth-brand"><span class="rs-auth-mark" aria-hidden="true">✦</span><span>RAJASTHANI SAREE</span></div>
+    <h1 id="rsAuthTitle">Welcome back</h1>
+    <p class="rs-auth-sub" id="rsAuthSubtitle">Sign in to continue to your store dashboard.</p>
+    <form id="rsAuthForm" novalidate>
+      <label for="rsAuthUsername">Username</label>
+      <input id="rsAuthUsername" name="username" autocomplete="username" required maxlength="80" />
+      <label for="rsAuthPassword">Password</label>
+      <div class="rs-auth-password">
+        <input id="rsAuthPassword" name="password" type="password" autocomplete="current-password" required />
+        <button class="rs-auth-show" type="button" id="rsAuthToggle">Show</button>
+      </div>
+      <div class="rs-auth-error" id="rsAuthError" role="alert" aria-live="polite"></div>
+      <button class="rs-auth-submit" id="rsAuthSubmit" type="submit">Sign in</button>
+    </form>
+    <div class="rs-auth-switch" id="rsAuthSwitch">Don't have an account? <button type="button" id="rsAuthSwitchBtn">Create one</button></div>
+    <div class="rs-auth-foot">SECURE STORE ACCESS</div>
+  </main>
+</div>
 
 <header class="site-header">
   <div class="header-inner">
@@ -1481,6 +1272,7 @@ const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
 
 // ================= DASHBOARD DATA =================
 async function loadDashboard() {
+  if (!window.rsAuthenticated) return;
   try {
     const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
       headers: {
@@ -1769,6 +1561,8 @@ async function loadDashboard() {
 // /api/reports/sales-trend?days=7
 
 async function loadSalesChart() {
+
+  if (!window.rsAuthenticated) return;
 
   try {
 
@@ -2257,6 +2051,113 @@ document.addEventListener("keydown", (event) => {
 });
 
 
+</script>
+
+
+<script>
+// ===== ACCOUNT AUTHENTICATION =====
+// The backend must implement /api/login, /api/register, /api/logout and /api/me.
+// Cookie-based sessions require credentialed CORS on the Render backend.
+(function initStoreAuthentication() {
+  const $ = (id) => document.getElementById(id);
+  const gate = $("rsAuthGate");
+  if (!gate) return;
+
+  let mode = "login";
+  window.rsAuthenticated = false;
+
+  async function authApi(path, options = {}) {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method || "GET",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      credentials: "include"
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || data.message || "Authentication failed. Please try again.");
+    return data;
+  }
+
+  function setMode(nextMode) {
+    mode = nextMode;
+    const login = mode === "login";
+    $("rsAuthTitle").textContent = login ? "Welcome back" : "Create account";
+    $("rsAuthSubtitle").textContent = login
+      ? "Sign in to continue to your store dashboard."
+      : "Create your store login using a username and password.";
+    $("rsAuthSubmit").textContent = login ? "Sign in" : "Create account";
+    $("rsAuthPassword").autocomplete = login ? "current-password" : "new-password";
+    $("rsAuthSwitch").innerHTML = login
+      ? 'Don\'t have an account? <button type="button" id="rsAuthSwitchBtn">Create one</button>'
+      : 'Already registered? <button type="button" id="rsAuthSwitchBtn">Sign in</button>';
+    $("rsAuthSwitchBtn").addEventListener("click", () => {
+      setMode(login ? "register" : "login");
+    });
+    $("rsAuthError").textContent = "";
+  }
+
+  function enterStore(user) {
+    window.rsAuthenticated = true;
+    gate.remove();
+    // Load the dashboard data only after the backend confirms the session.
+    if (typeof loadDashboard === "function") loadDashboard();
+    if (typeof loadSalesChart === "function") loadSalesChart();
+    const avatar = document.querySelector(".avatar");
+    if (avatar && user && user.username) {
+      avatar.textContent = String(user.username).trim().slice(0, 2).toUpperCase();
+      avatar.title = `Signed in as ${user.username}`;
+    }
+  }
+
+  $("rsAuthForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const username = $("rsAuthUsername").value.trim();
+    const password = $("rsAuthPassword").value;
+    $("rsAuthError").textContent = "";
+    if (!username || !password) {
+      $("rsAuthError").textContent = "Please enter your username and password.";
+      return;
+    }
+    if (mode === "register" && password.length < 8) {
+      $("rsAuthError").textContent = "Use a password with at least 8 characters.";
+      return;
+    }
+
+    const submit = $("rsAuthSubmit");
+    submit.disabled = true;
+    submit.textContent = mode === "login" ? "Signing in…" : "Creating account…";
+    try {
+      const result = await authApi(mode === "login" ? "/api/login" : "/api/register", {
+        method: "POST",
+        body: { username, password }
+      });
+      if (!result.user) throw new Error("The server response did not include a user. Check your authentication API.");
+      $("rsAuthForm").reset();
+      enterStore(result.user);
+    } catch (error) {
+      $("rsAuthError").textContent = error.message || "Unable to sign in.";
+    } finally {
+      submit.disabled = false;
+      submit.textContent = mode === "login" ? "Sign in" : "Create account";
+    }
+  });
+
+  $("rsAuthToggle").addEventListener("click", () => {
+    const input = $("rsAuthPassword");
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    $("rsAuthToggle").textContent = show ? "Hide" : "Show";
+  });
+
+  // Hide the dashboard unless the backend confirms a valid session.
+  setMode("login");
+  authApi("/api/me").then(({ user }) => {
+    if (user) enterStore(user);
+  }).catch(() => {
+    window.rsAuthenticated = false;
+    gate.style.display = "flex";
+  });
+})();
 </script>
 
 </body>

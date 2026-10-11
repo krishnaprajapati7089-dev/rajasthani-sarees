@@ -3604,12 +3604,20 @@ async function collectPendingPayment(billId, invoiceNo){
    ========================================================= */
 
 function getPaymentMethod(b){
+  // Support payment field names used by different versions of bill documents.
   const values = [
     b.payment_method, b.paymentMethod, b.payment_mode, b.paymentMode,
     b.payment_type, b.paymentType, b.mode_of_payment, b.modeOfPayment,
-    b.pay_method, b.payMethod, b.transaction_method,
+    b.pay_method, b.payMethod, b.transaction_method, b.transactionMethod,
+    b.payment_method_name, b.paymentMethodName, b.payment_mode_name,
+    b.paymentModeName, b.paymentMethodLabel, b.paymentModeLabel,
+    b.method, b.mode,
     b.payment_details?.method, b.payment_details?.mode,
-    b.payment?.method, b.payment?.mode
+    b.payment_details?.payment_method, b.payment_details?.payment_mode,
+    b.payment?.method, b.payment?.mode,
+    b.payment?.payment_method, b.payment?.payment_mode,
+    b.payment_info?.method, b.payment_info?.mode,
+    b.paymentInfo?.method, b.paymentInfo?.mode
   ];
   return values.find(v => typeof v === "string" && v.trim()) || "";
 }
@@ -3618,7 +3626,8 @@ function getPaymentHistory(b){
   const histories = [
     b.payment_history, b.paymentHistory,
     b.payments, b.transactions,
-    b.payment_details?.history, b.payment?.history
+    b.payment_details?.history, b.payment?.history,
+    b.payment_info?.history, b.paymentInfo?.history
   ];
   for(const history of histories){
     if(Array.isArray(history) && history.length) return history;
@@ -3630,15 +3639,19 @@ function paymentEntryMethod(entry){
   return String(
     entry?.payment_mode || entry?.paymentMode ||
     entry?.payment_method || entry?.paymentMethod ||
-    entry?.method || entry?.mode || entry?.type || ""
-  ).toLowerCase().replace(/[ _-]+/g,"");
+    entry?.payment_type || entry?.paymentType ||
+    entry?.method || entry?.mode || entry?.type ||
+    entry?.paymentMethodName || entry?.paymentModeName || ""
+  ).toLowerCase().replace(/[\s_-]+/g,"");
 }
 
 function paymentEntryAmount(entry){
   const values = [
     entry?.amount, entry?.paid_amount, entry?.paidAmount,
     entry?.amount_received, entry?.amountReceived,
-    entry?.payment_amount, entry?.paymentAmount, entry?.value
+    entry?.payment_amount, entry?.paymentAmount,
+    entry?.received_amount, entry?.receivedAmount,
+    entry?.paid, entry?.received, entry?.value
   ];
   for(const value of values){
     if(value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value))){
@@ -3836,61 +3849,114 @@ function paymentEntryDate(entry, bill){
 }
 
 function isUpiMethod(methodValue){
-  const method = String(methodValue || "").toLowerCase().replace(/[ _-]+/g,"");
+  const method = String(methodValue || "").toLowerCase().replace(/[\s_-]+/g,"");
   return method.includes("upi") || method.includes("phonepe") ||
     method.includes("googlepay") || method.includes("gpay") ||
-    method.includes("paytmupi") || method.includes("bhim");
+    method.includes("paytmupi") || method.includes("bhim") ||
+    method === "paytm" || method.includes("qrpayment");
 }
 
 function getPaymentEntriesForBill(bill){
   const history = getPaymentHistory(bill);
   const paidTotal = getBillPaidAmount(bill);
-  const defaultMethod = getPaymentMethod(bill) || "Cash";
+
+  const explicitUpi = Math.max(0, num(
+    bill.upi_amount ?? bill.upiAmount ??
+    bill.upi_paid_amount ?? bill.upiPaidAmount ??
+    bill.online_upi_amount ?? bill.onlineUpiAmount ??
+    bill.payment_breakdown?.upi ?? bill.paymentBreakdown?.upi ??
+    bill.payment_details?.upi_amount ?? bill.payment_details?.upiAmount
+  ));
+
+  const billMethod = getPaymentMethod(bill);
+  const defaultMethod = billMethod || (explicitUpi > 0 ? "UPI" : "Cash");
 
   if(history.length){
-    const entries = history.map(entry => ({
-      amount: paymentEntryAmount(entry),
-      date: paymentEntryDate(entry, bill),
-      method: entry?.payment_mode || entry?.paymentMode || entry?.mode ||
-        entry?.payment_method || entry?.paymentMethod || entry?.method || defaultMethod,
-      reference: entry?.upi_reference || entry?.upiReference || entry?.reference ||
-        entry?.transaction_id || entry?.transactionId || entry?.utr || getUpiReference(bill),
-      note: entry?.note || ""
-    })).filter(entry => entry.amount > 0);
+    const entries = history.map(entry => {
+      const method =
+        entry?.payment_mode || entry?.paymentMode ||
+        entry?.mode || entry?.payment_method ||
+        entry?.paymentMethod || entry?.payment_type ||
+        entry?.paymentType || entry?.method || entry?.type ||
+        entry?.paymentMethodName || entry?.paymentModeName ||
+        defaultMethod;
 
-    // Legacy bills sometimes have a cumulative paid value with incomplete history.
-    // Keep the missing legacy amount on the original bill date instead of inventing
-    // a later collection date. New collections must be stored as separate entries.
+      return {
+        amount: paymentEntryAmount(entry),
+        date: paymentEntryDate(entry, bill),
+        method,
+        reference: entry?.upi_reference || entry?.upiReference ||
+          entry?.reference || entry?.transaction_id ||
+          entry?.transactionId || entry?.utr || getUpiReference(bill),
+        note: entry?.note || ""
+      };
+    }).filter(entry => entry.amount > 0);
+
     const recorded = entries.reduce((sum, entry) => sum + entry.amount, 0);
     const missing = Math.max(0, paidTotal - recorded);
+
     if(missing > 0.01){
-      entries.push({amount:missing, date:billDateValue(bill), method:defaultMethod,
-        reference:getUpiReference(bill), note:"Legacy payment without a separate history entry"});
+      const recordedUpi = entries
+        .filter(entry => isUpiMethod(entry.method))
+        .reduce((sum, entry) => sum + entry.amount, 0);
+      const missingUpi = Math.min(missing, Math.max(0, explicitUpi - recordedUpi));
+
+      if(missingUpi > 0.01){
+        entries.push({
+          amount: missingUpi,
+          date: billDateValue(bill),
+          method: "UPI",
+          reference: getUpiReference(bill),
+          note: "UPI amount saved on bill"
+        });
+      }
+
+      const remainingMissing = missing - missingUpi;
+      if(remainingMissing > 0.01){
+        entries.push({
+          amount: remainingMissing,
+          date: billDateValue(bill),
+          method: defaultMethod,
+          reference: getUpiReference(bill),
+          note: "Legacy payment without a separate history entry"
+        });
+      }
     }
+
     return entries;
   }
 
   if(paidTotal <= 0) return [];
 
-  // Compatibility for older bills without payment_history.
-  const explicitUpi = Math.max(0, num(
-    bill.upi_amount ?? bill.upiAmount ?? bill.upi_paid_amount ??
-    bill.upiPaidAmount ?? bill.online_upi_amount ?? bill.onlineUpiAmount
-  ));
-  const entries = [];
   if(explicitUpi > 0){
     const upiPart = Math.min(paidTotal, explicitUpi);
-    entries.push({amount:upiPart, date:billDateValue(bill), method:"UPI",
-      reference:getUpiReference(bill), note:"Legacy UPI payment"});
+    const entries = [{
+      amount: upiPart,
+      date: billDateValue(bill),
+      method: "UPI",
+      reference: getUpiReference(bill),
+      note: "UPI amount saved on bill"
+    }];
+
     if(paidTotal > upiPart){
-      entries.push({amount:paidTotal-upiPart, date:billDateValue(bill), method:"Cash",
-        reference:"—", note:"Legacy cash payment"});
+      entries.push({
+        amount: paidTotal - upiPart,
+        date: billDateValue(bill),
+        method: billMethod || "Cash",
+        reference: "—",
+        note: "Remaining received amount"
+      });
     }
-  } else {
-    entries.push({amount:paidTotal, date:billDateValue(bill), method:defaultMethod,
-      reference:getUpiReference(bill), note:"Legacy payment"});
+    return entries;
   }
-  return entries;
+
+  return [{
+    amount: paidTotal,
+    date: billDateValue(bill),
+    method: defaultMethod,
+    reference: getUpiReference(bill),
+    note: "Payment recorded on bill"
+  }];
 }
 
 function renderUpiPayments(){

@@ -1264,17 +1264,32 @@ async function loadExistingBill(){
     const cashInput = document.getElementById("cashAmountReceived");
     const upiInput = document.getElementById("upiAmountReceived");
     if(cashInput && upiInput){
-      const history = Array.isArray(bill.payment_history) ? bill.payment_history : [];
-      const historyCash = history.filter(p => String(p.mode || "").toLowerCase() === "cash")
-        .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-      const historyUpi = history.filter(p => String(p.mode || "").toLowerCase() === "upi")
-        .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+      const history = Array.isArray(bill.payment_history)
+        ? bill.payment_history
+        : (Array.isArray(bill.paymentHistory) ? bill.paymentHistory : []);
+      const historyMethod = p => String(
+        p.mode || p.method || p.payment_method || p.paymentMode || p.payment_method_name || ""
+      ).toLowerCase().replace(/[\\s_-]+/g, "");
+      const historyAmount = p => Number(
+        p.amount ?? p.paid_amount ?? p.paidAmount ?? p.received_amount ?? p.receivedAmount ?? 0
+      ) || 0;
+      const historyCash = history.filter(p => ["cash", "cashpayment"].includes(historyMethod(p)))
+        .reduce((sum, p) => sum + historyAmount(p), 0);
+      const historyUpi = history.filter(p => ["upi", "online", "onlinepayment", "phonepe", "gpay", "googlepay", "paytm", "bhim"].includes(historyMethod(p)))
+        .reduce((sum, p) => sum + historyAmount(p), 0);
       if(history.length && (historyCash > 0 || historyUpi > 0)){
         cashInput.value = round2(historyCash);
         upiInput.value = round2(historyUpi);
       } else {
-        cashInput.value = loadedMode.includes("cash") ? amountReceived : 0;
-        upiInput.value = loadedMode.includes("upi") && !loadedMode.includes("cash") ? amountReceived : 0;
+        const storedCash = Number(bill.cash_amount ?? bill.cashAmount ?? bill.cash_paid_amount ?? 0) || 0;
+        const storedUpi = Number(bill.upi_amount ?? bill.upiAmount ?? bill.upi_paid_amount ?? bill.online_upi_amount ?? 0) || 0;
+        if (storedCash > 0 || storedUpi > 0) {
+          cashInput.value = round2(storedCash);
+          upiInput.value = round2(storedUpi);
+        } else {
+          cashInput.value = loadedMode.includes("cash") ? amountReceived : 0;
+          upiInput.value = loadedMode.includes("upi") && !loadedMode.includes("cash") ? amountReceived : 0;
+        }
       }
     }
 
@@ -2237,6 +2252,22 @@ async function saveInvoice(){
     upi_amount: round2(Number(document.getElementById("upiAmountReceived").value || 0)),
     amount_received: round2(amountReceived),
     paid_amount: round2(amountReceived),
+
+    // Store each tender separately so Reports can identify UPI
+    // even when a bill is paid partly by Cash and partly by UPI.
+    payment_history: (() => {
+      const cash = round2(Number(document.getElementById("cashAmountReceived").value || 0));
+      const upi = round2(Number(document.getElementById("upiAmountReceived").value || 0));
+      const history = [];
+      if (cash > 0) history.push({ mode: "Cash", method: "Cash", amount: cash });
+      if (upi > 0) history.push({ mode: "UPI", method: "UPI", amount: upi });
+      return history;
+    })(),
+
+    payment_breakdown: {
+      cash: round2(Number(document.getElementById("cashAmountReceived").value || 0)),
+      upi: round2(Number(document.getElementById("upiAmountReceived").value || 0))
+    },
 
     outstanding_amount:
       round2(

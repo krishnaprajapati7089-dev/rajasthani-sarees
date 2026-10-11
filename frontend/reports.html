@@ -842,6 +842,18 @@ td strong{
  min-width:62px;
 }
 
+.action-buttons .btn-collect{
+ color:#fff;
+ background:var(--emerald);
+ border:1px solid var(--emerald);
+}
+
+.action-buttons .btn-collect:hover{
+ color:#fff;
+ background:var(--emerald-2);
+ border-color:var(--emerald-2);
+}
+
 .action-buttons .btn-edit{
  color:var(--emerald);
 
@@ -1418,11 +1430,6 @@ td strong{
     Sales & Reports
   </h1>
 
-  <p>
-    Track daily sales, monthly totals,
-    quantities sold and GST from your bills.
-  </p>
-
  </div>
 
 
@@ -1540,9 +1547,15 @@ td strong{
   </div>
 
   <div class="kpi-sub">
-    Total sales − UPI payments
+    Payments actually received in selected period
   </div>
 
+ </div>
+
+ <div class="kpi-card">
+  <div class="kpi-label">Total Borrowing / Pending</div>
+  <div class="kpi-value" id="kpiBorrowing">₹0</div>
+  <div class="kpi-sub">Outstanding balance across all active bills</div>
  </div>
 
 </div>
@@ -1822,7 +1835,7 @@ td strong{
     <div class="upi-stat">
       <div class="label">Net Cash Sale</div>
       <div class="value" id="netCashSaleAmount">₹0</div>
-      <div class="note">Total sales − UPI payments</div>
+      <div class="note">Payments received − UPI payments</div>
     </div>
   </div>
   <div class="quick-filters upi-period-buttons" aria-label="UPI sale date filters">
@@ -1866,7 +1879,7 @@ td strong{
       </tbody>
     </table>
   </div>
-  <p class="note">Net Cash Sale = total active sales for the selected date range minus UPI payments for that range. For bills paid partly by cash and partly by UPI, billing must save the separate UPI amount or payment history; otherwise the exact UPI portion cannot be inferred reliably.</p>
+  <p class="note">Net Sale counts only amounts actually received; pending balances are excluded. Net Cash Sale = payments received minus UPI payments for the selected date range. For bills paid partly by cash and partly by UPI, billing must save the separate UPI amount or payment history; otherwise the exact UPI portion cannot be inferred reliably.</p>
 </section>
 
 <!-- ========================================================
@@ -2516,6 +2529,13 @@ function renderKpis(
   ).textContent =
     money(gst);
 
+  const totalBorrowing = (allBills || []).reduce((sum, bill) => {
+    if(isCancelled(bill)) return sum;
+    return sum + getBillOutstandingAmount(bill);
+  }, 0);
+  const borrowingEl = document.getElementById("kpiBorrowing");
+  if(borrowingEl) borrowingEl.textContent = money(totalBorrowing);
+
 
 
 
@@ -2789,6 +2809,16 @@ function renderBills(){
                   class="action-buttons"
                   onclick="event.stopPropagation()"
                 >
+
+                  <!-- COLLECT PENDING PAYMENT -->
+                  ${getBillOutstandingAmount(b) > 0.009 ? `
+                  <button
+                    type="button"
+                    class="btn btn-collect"
+                    onclick="collectPendingPayment('${escapeHtml(billId)}','${escapeHtml(b.invoice_no || "")}')"
+                  >
+                    Collect
+                  </button>` : ""}
 
                   <!-- INVOICE -->
 
@@ -3499,6 +3529,77 @@ async function loadReports(){
 
 
 /* =========================================================
+   COLLECT PENDING PAYMENT
+   Records a new payment entry with today's date so it is counted
+   as today's collection without changing the original bill date.
+   ========================================================= */
+
+async function collectPendingPayment(billId, invoiceNo){
+  const bill = (allBills || []).find(item => String(item._id || "") === String(billId));
+  if(!bill){
+    alert("Bill was not found. Refresh reports and try again.");
+    return;
+  }
+
+  const pending = getBillOutstandingAmount(bill);
+  if(pending <= 0.009){
+    alert("This bill has no pending amount.");
+    return;
+  }
+
+  const amountText = prompt(
+    `Invoice #${invoiceNo || "—"}\nPending amount: ${money(pending)}\n\nEnter the amount received today:`,
+    pending.toFixed(2)
+  );
+  if(amountText === null) return;
+
+  const amount = Number(String(amountText).replace(/,/g, "").trim());
+  if(!Number.isFinite(amount) || amount <= 0){
+    alert("Enter a valid payment amount greater than ₹0.");
+    return;
+  }
+  if(amount > pending + 0.01){
+    alert(`Payment cannot exceed the pending amount of ${money(pending)}.`);
+    return;
+  }
+
+  const modeInput = prompt("Payment mode? Enter Cash, UPI, Card, or Bank Transfer:", "Cash");
+  if(modeInput === null) return;
+  const mode = String(modeInput).trim();
+  if(!mode){
+    alert("Payment mode is required.");
+    return;
+  }
+
+  try{
+    const response = await fetch(`${API_BASE_URL}/api/bills/${encodeURIComponent(billId)}/payments`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json", Accept:"application/json"},
+      body:JSON.stringify({
+        amount:Number(amount.toFixed(2)),
+        payment_mode:mode,
+        note:"Pending balance collection"
+      })
+    });
+
+    const raw = await response.text();
+    let data = {};
+    try{ data = raw ? JSON.parse(raw) : {}; }
+    catch{ throw new Error(`Server returned invalid JSON (HTTP ${response.status}).`); }
+    if(!response.ok){
+      throw new Error(data.error || data.message || `Payment failed (HTTP ${response.status}).`);
+    }
+
+    alert(`Payment recorded: ${money(amount)}\nRemaining pending: ${money(Math.max(0, pending - amount))}`);
+    await loadReports();
+  }catch(error){
+    console.error("Pending payment collection failed:", error);
+    alert(`Could not record payment: ${error.message}\nNo report totals were changed locally.`);
+  }
+}
+
+
+/* =========================================================
    ONLINE UPI PAYMENTS
    ========================================================= */
 
@@ -3590,6 +3691,67 @@ function getUpiReference(b){
     : "—";
 }
 
+function getBillTotalAmount(b){
+  return Math.max(0, num(
+    b.grand_total ?? b.grandTotal ?? b.total_amount ?? b.totalAmount ??
+    b.bill_amount ?? b.billAmount ?? b.total
+  ));
+}
+
+function getBillPaidAmount(b){
+  // Prefer an explicitly saved amount received/paid. This is essential for
+  // partial payments: a ₹1,900 bill with ₹1,000 received contributes ₹1,000.
+  const paidFields = [
+    b.amount_received, b.amountReceived,
+    b.amount_paid, b.amountPaid,
+    b.paid_amount, b.paidAmount,
+    b.payment_received, b.paymentReceived,
+    b.total_paid, b.totalPaid,
+    b.received_amount, b.receivedAmount,
+    b.advance_amount, b.advanceAmount,
+    b.paid
+  ];
+  let explicitPaid = null;
+  for(const value of paidFields){
+    if(value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value))){
+      const amount = Math.min(getBillTotalAmount(b), Math.max(0, num(value)));
+      if(amount > 0) return amount;
+      // Keep zero as a fallback, but check a pending/due field first because
+      // some older schemas have a default-zero paid field alongside a real due.
+      if(explicitPaid === null) explicitPaid = amount;
+    }
+  }
+
+  // If the schema stores only the remaining/pending balance, derive received
+  // amount from bill total minus pending balance.
+  const pendingFields = [
+    b.pending_amount, b.pendingAmount,
+    b.balance_due, b.balanceDue,
+    b.due_amount, b.dueAmount,
+    b.remaining_amount, b.remainingAmount,
+    b.outstanding_amount, b.outstandingAmount,
+    b.balance, b.due
+  ];
+  for(const value of pendingFields){
+    if(value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value))){
+      return Math.max(0, getBillTotalAmount(b) - Math.max(0, num(value)));
+    }
+  }
+
+  if(explicitPaid !== null) return explicitPaid;
+
+  // Do not count an unpaid/partial bill as fully received when payment data is
+  // absent. Fully paid legacy bills can safely fall back to the bill total.
+  const status = String(b.payment_status ?? b.paymentStatus ?? "").toLowerCase();
+  if(/unpaid|pending|partial|due|partially/.test(status)) return 0;
+  return getBillTotalAmount(b);
+}
+
+function getBillOutstandingAmount(b){
+  // Current unpaid balance across this bill. It falls as recorded payments rise.
+  return Math.max(0, getBillTotalAmount(b) - getBillPaidAmount(b));
+}
+
 function getUpiAmount(b){
   // Prefer an explicit UPI-only amount when the bill stores split tenders.
   const explicitValues = [
@@ -3629,16 +3791,9 @@ function getUpiAmount(b){
     method.includes("googlepay") || method.includes("gpay") ||
     method.includes("paytmupi") || method.includes("bhim");
   if(isWholeBillUpi){
-    const values = [
-      b.paid_amount, b.paidAmount, b.amount_received, b.amountReceived,
-      b.amount_paid, b.amountPaid, b.payment_amount, b.paymentAmount,
-      b.grand_total, b.grandTotal, b.total_amount, b.totalAmount
-    ];
-    for(const value of values){
-      if(value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value))){
-        return Math.max(0, num(value));
-      }
-    }
+    // A UPI-only bill contributes the amount actually received, not its full
+    // invoice total when the customer has an outstanding balance.
+    return getBillPaidAmount(b);
   }
   return 0;
 }
@@ -3675,74 +3830,132 @@ function applyUpiDateFilter(){
   renderUpiPayments();
 }
 
+function paymentEntryDate(entry, bill){
+  return entry?.date || entry?.payment_date || entry?.paymentDate ||
+    entry?.createdAt || entry?.created_at || billDateValue(bill);
+}
+
+function isUpiMethod(methodValue){
+  const method = String(methodValue || "").toLowerCase().replace(/[ _-]+/g,"");
+  return method.includes("upi") || method.includes("phonepe") ||
+    method.includes("googlepay") || method.includes("gpay") ||
+    method.includes("paytmupi") || method.includes("bhim");
+}
+
+function getPaymentEntriesForBill(bill){
+  const history = getPaymentHistory(bill);
+  const paidTotal = getBillPaidAmount(bill);
+  const defaultMethod = getPaymentMethod(bill) || "Cash";
+
+  if(history.length){
+    const entries = history.map(entry => ({
+      amount: paymentEntryAmount(entry),
+      date: paymentEntryDate(entry, bill),
+      method: entry?.payment_mode || entry?.paymentMode || entry?.mode ||
+        entry?.payment_method || entry?.paymentMethod || entry?.method || defaultMethod,
+      reference: entry?.upi_reference || entry?.upiReference || entry?.reference ||
+        entry?.transaction_id || entry?.transactionId || entry?.utr || getUpiReference(bill),
+      note: entry?.note || ""
+    })).filter(entry => entry.amount > 0);
+
+    // Legacy bills sometimes have a cumulative paid value with incomplete history.
+    // Keep the missing legacy amount on the original bill date instead of inventing
+    // a later collection date. New collections must be stored as separate entries.
+    const recorded = entries.reduce((sum, entry) => sum + entry.amount, 0);
+    const missing = Math.max(0, paidTotal - recorded);
+    if(missing > 0.01){
+      entries.push({amount:missing, date:billDateValue(bill), method:defaultMethod,
+        reference:getUpiReference(bill), note:"Legacy payment without a separate history entry"});
+    }
+    return entries;
+  }
+
+  if(paidTotal <= 0) return [];
+
+  // Compatibility for older bills without payment_history.
+  const explicitUpi = Math.max(0, num(
+    bill.upi_amount ?? bill.upiAmount ?? bill.upi_paid_amount ??
+    bill.upiPaidAmount ?? bill.online_upi_amount ?? bill.onlineUpiAmount
+  ));
+  const entries = [];
+  if(explicitUpi > 0){
+    const upiPart = Math.min(paidTotal, explicitUpi);
+    entries.push({amount:upiPart, date:billDateValue(bill), method:"UPI",
+      reference:getUpiReference(bill), note:"Legacy UPI payment"});
+    if(paidTotal > upiPart){
+      entries.push({amount:paidTotal-upiPart, date:billDateValue(bill), method:"Cash",
+        reference:"—", note:"Legacy cash payment"});
+    }
+  } else {
+    entries.push({amount:paidTotal, date:billDateValue(bill), method:defaultMethod,
+      reference:getUpiReference(bill), note:"Legacy payment"});
+  }
+  return entries;
+}
+
 function renderUpiPayments(){
   const body = document.getElementById("upiPaymentsTable");
   if(!body) return;
 
   const q = (document.getElementById("upiSearch")?.value || "").trim().toLowerCase();
   const {from, to} = getUpiDateBounds();
-  const upiBills = (allBills || []).filter(b => {
-    if(isCancelled(b) || !isUpiPayment(b)) return false;
-    const dateKey = localDateKey(billDateValue(b));
-    if(!dateKey) return false;
-    return (!from || dateKey >= from) && (!to || dateKey <= to);
+  const paymentRows = (allBills || []).filter(b => !isCancelled(b)).flatMap(bill =>
+    getPaymentEntriesForBill(bill).map(payment => ({...payment, bill}))
+  ).filter(row => {
+    const dateKey = localDateKey(row.date);
+    return dateKey && (!from || dateKey >= from) && (!to || dateKey <= to);
   });
-  const matches = upiBills.filter(b => {
+
+  const receivedTotal = paymentRows.reduce((sum, row) => sum + row.amount, 0);
+  const upiRows = paymentRows.filter(row => isUpiMethod(row.method));
+  const matches = upiRows.filter(row => {
     if(!q) return true;
-    const haystack = [
-      b.invoice_no, b.invoiceNo, b.customer_name, b.customer,
-      getPaymentMethod(b), getUpiReference(b), b.customer_phone, b.phone
-    ].map(v => String(v ?? "")).join(" ").toLowerCase();
+    const bill = row.bill;
+    const haystack = [bill.invoice_no, bill.invoiceNo, bill.customer_name, bill.customer,
+      row.method, row.reference, bill.customer_phone, bill.phone, row.note]
+      .map(v => String(v ?? "")).join(" ").toLowerCase();
     return haystack.includes(q);
   });
-  const total = upiBills.reduce((sum,b) => sum + getUpiAmount(b), 0);
+  const upiTotal = upiRows.reduce((sum, row) => sum + row.amount, 0);
+  const netCashSale = Math.max(0, receivedTotal - upiTotal);
 
-  // Net cash sale = total active sales in the selected date range minus UPI received.
-  // Use the same date range as the UPI section so the figures are comparable.
-  const periodSales = (allBills || []).reduce((sum,b) => {
-    if(isCancelled(b)) return sum;
-    const dateKey = localDateKey(billDateValue(b));
-    if(!dateKey || (from && dateKey < from) || (to && dateKey > to)) return sum;
-    return sum + num(b.grand_total ?? b.grandTotal ?? b.total_amount ?? b.totalAmount);
-  }, 0);
-  const netCashSale = periodSales - total;
-
-  document.getElementById("upiTotalAmount").textContent = money(total);
-  document.getElementById("upiTransactionCount").textContent = upiBills.length.toLocaleString("en-IN");
-  document.getElementById("upiAverageAmount").textContent = money(upiBills.length ? total / upiBills.length : 0);
+  document.getElementById("upiTotalAmount").textContent = money(upiTotal);
+  document.getElementById("upiTransactionCount").textContent = upiRows.length.toLocaleString("en-IN");
+  document.getElementById("upiAverageAmount").textContent = money(upiRows.length ? upiTotal / upiRows.length : 0);
   const netCashEl = document.getElementById("netCashSaleAmount");
   if(netCashEl) netCashEl.textContent = money(netCashSale);
   const topNetSaleEl = document.getElementById("kpiNetSale");
-  if(topNetSaleEl) topNetSaleEl.textContent = money(netCashSale);
+  if(topNetSaleEl) topNetSaleEl.textContent = money(receivedTotal);
   document.getElementById("upiPeriodLabel").textContent =
-    `${from || "Beginning"} → ${to || "Today onward"} • ${matches.length} matching transaction(s)`;
+    `${from || "Beginning"} → ${to || "Today onward"} • ${matches.length} matching UPI payment(s)`;
 
   if(!matches.length){
-    body.innerHTML = '<tr class="empty-row"><td colspan="7">No UPI payments found for the selected dates.</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="7">No UPI payments found for the selected payment dates.</td></tr>';
   } else {
     body.innerHTML = matches.slice().sort((a,b) =>
-      new Date(billDateValue(b) || 0) - new Date(billDateValue(a) || 0)
-    ).map(b => {
-      const status = String(b.payment_status || b.paymentStatus || b.status || "Recorded");
-      const method = getPaymentMethod(b) || "UPI";
+      new Date(b.date || 0) - new Date(a.date || 0)
+    ).map(row => {
+      const bill = row.bill;
+      const pending = getBillOutstandingAmount(bill);
+      const status = pending > 0 ? `Pending ${money(pending)}` : "Recorded";
       return `<tr>
-        <td>${escapeHtml(fmtDateTime(billDateValue(b)))}</td>
-        <td><strong>#${escapeHtml(b.invoice_no || b.invoiceNo || "—")}</strong></td>
-        <td>${escapeHtml(b.customer_name || b.customer || "Walk-in customer")}</td>
-        <td>${escapeHtml(method)}</td>
-        <td>${escapeHtml(getUpiReference(b))}</td>
-        <td><strong>${money(getUpiAmount(b))}</strong></td>
-        <td><span class="status-pill ${/due|unpaid|pending|failed/i.test(status) ? "due" : "paid"}">${escapeHtml(status)}</span></td>
+        <td>${escapeHtml(fmtDateTime(row.date))}</td>
+        <td><strong>#${escapeHtml(bill.invoice_no || bill.invoiceNo || "—")}</strong></td>
+        <td>${escapeHtml(bill.customer_name || bill.customer || "Walk-in customer")}</td>
+        <td>${escapeHtml(row.method || "UPI")}</td>
+        <td>${escapeHtml(row.reference || "—")}</td>
+        <td><strong>${money(row.amount)}</strong></td>
+        <td><span class="status-pill ${pending > 0 ? "due" : "paid"}">${escapeHtml(status)}</span></td>
       </tr>`;
     }).join("");
   }
 
   const message = document.getElementById("upiMessage");
-  const anyMethodStored = allBills.some(b => getPaymentMethod(b));
-  message.style.display = upiBills.length || anyMethodStored ? "none" : "block";
+  const anyMethodStored = allBills.some(b => getPaymentMethod(b) || getPaymentHistory(b).length);
+  message.style.display = upiRows.length || anyMethodStored ? "none" : "block";
   message.className = "table-message";
   message.textContent = allBills.length
-    ? "No UPI-tagged bills were found in this date range. Confirm billing.html saves a payment method such as UPI/PhonePe/Google Pay with each bill."
+    ? "No UPI-tagged payments were found in this date range. Ensure each UPI collection is saved with its own payment date and mode."
     : "Bills have not loaded yet.";
 }
 

@@ -1,4 +1,4 @@
-
+```javascript
 require('dotenv').config();
 
 const path = require('path');
@@ -8,9 +8,9 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
-const User = require('./models/User');
 
 const connectDB = require('./config/db');
+const User = require('./models/User');
 
 const productsRouter = require('./routes/products');
 const billsRouter = require('./routes/bills');
@@ -27,14 +27,11 @@ const PORT = process.env.PORT || 5000;
 // CONFIGURATION
 // ============================================================
 
-const FRONTEND_ORIGIN =
-  process.env.FRONTEND_URL || 'https://rajasthani-sarees.vercel.app';
-
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
   throw new Error(
-    'JWT_SECRET is missing. Add JWT_SECRET in your .env file and Render environment variables.'
+    'JWT_SECRET is missing. Add it in Render Environment Variables.'
   );
 }
 
@@ -56,11 +53,12 @@ const COOKIE_CLEAR_OPTIONS = {
 };
 
 // ============================================================
-// MIDDLEWARE
+// CORS
 // ============================================================
 
 const allowedOrigins = [
-  FRONTEND_ORIGIN,
+  process.env.FRONTEND_URL,
+  process.env.RENDER_EXTERNAL_URL,
   'http://localhost:5000',
   'http://127.0.0.1:5000',
   'http://localhost:5500',
@@ -70,7 +68,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow requests without Origin, such as server-to-server requests.
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -88,41 +85,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ============================================================
-// AUTHENTICATION DATABASE (SQLite)
-// ============================================================
-
-// AUTH_DB_PATH can point to a persistent disk on Render.
-// Locally, users.db will be created beside server.js.
-const authDbPath =
-  process.env.AUTH_DB_PATH || path.join(__dirname, 'users.db');
-
-const authDB = new Database(authDbPath);
-
-authDB.pragma('journal_mode = WAL');
-
-authDB.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE COLLATE NOCASE,
-    password_hash TEXT NOT NULL,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  )
-`);
-
-const findUserByUsername = authDB.prepare(
-  'SELECT id, username, password_hash FROM users WHERE username = ?'
-);
-
-const findUserById = authDB.prepare(
-  'SELECT id, username FROM users WHERE id = ?'
-);
-
-const insertUser = authDB.prepare(
-  'INSERT INTO users (username, password_hash) VALUES (?, ?)'
-);
-
-// ============================================================
-// RATE LIMITING
+// AUTHENTICATION RATE LIMITER
 // ============================================================
 
 const authLimiter = rateLimit({
@@ -132,18 +95,18 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     ok: false,
-    message: 'Too many authentication attempts. Try again after 15 minutes.'
+    message: 'Too many attempts. Please try again after 15 minutes.'
   }
 });
 
 // ============================================================
-// CREATE AND VERIFY LOGIN TOKEN
+// JWT TOKEN
 // ============================================================
 
 function createToken(user) {
   return jwt.sign(
     {
-      userId: user.id,
+      userId: user._id.toString(),
       username: user.username
     },
     JWT_SECRET,
@@ -151,7 +114,11 @@ function createToken(user) {
   );
 }
 
-function requireAuth(req, res, next) {
+// ============================================================
+// AUTHENTICATION MIDDLEWARE
+// ============================================================
+
+async function requireAuth(req, res, next) {
   const cookieToken = req.cookies?.token;
 
   const authorization = req.headers.authorization || '';
@@ -170,7 +137,9 @@ function requireAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = findUserById.get(decoded.userId);
+
+    const user = await User.findById(decoded.userId)
+      .select('_id username role');
 
     if (!user) {
       res.clearCookie('token', COOKIE_CLEAR_OPTIONS);
@@ -184,26 +153,32 @@ function requireAuth(req, res, next) {
     req.user = user;
     next();
   } catch (err) {
-    res.clearCookie('token', COOKIE_CLEAR_OPTIONS);
+    if (
+      err.name === 'JsonWebTokenError' ||
+      err.name === 'TokenExpiredError'
+    ) {
+      res.clearCookie('token', COOKIE_CLEAR_OPTIONS);
 
-    return res.status(401).json({
-      ok: false,
-      message: 'Your session has expired. Please log in again.'
-    });
+      return res.status(401).json({
+        ok: false,
+        message: 'Your session has expired. Please log in again.'
+      });
+    }
+
+    next(err);
   }
 }
 
 // ============================================================
 // REGISTER
 // POST /api/register
-// Body: { "username": "...", "password": "..." }
 // ============================================================
 
 app.post('/api/register', authLimiter, async (req, res, next) => {
   try {
     const username =
       typeof req.body.username === 'string'
-        ? req.body.username.trim()
+        ? req.body.username.trim().toLowerCase()
         : '';
 
     const password =
@@ -211,11 +186,11 @@ app.post('/api/register', authLimiter, async (req, res, next) => {
         ? req.body.password
         : '';
 
-    if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(username)) {
+    if (!/^[a-z0-9_.-]{3,30}$/.test(username)) {
       return res.status(400).json({
         ok: false,
         message:
-          'Username must be 3–30 characters and contain only letters, numbers, dots, underscores or hyphens.'
+          'Username must be 3-30 characters using letters, numbers, dots, underscores or hyphens.'
       });
     }
 
@@ -226,7 +201,8 @@ app.post('/api/register', authLimiter, async (req, res, next) => {
       });
     }
 
-    const existingUser = findUserByUsername.get(username);
+    const existingUser = await User.findOne({ username })
+      .select('_id');
 
     if (existingUser) {
       return res.status(409).json({
@@ -237,12 +213,16 @@ app.post('/api/register', authLimiter, async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    let result;
+    let user;
 
     try {
-      result = insertUser.run(username, passwordHash);
+      user = await User.create({
+        username,
+        passwordHash,
+        role: 'admin'
+      });
     } catch (err) {
-      if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      if (err.code === 11000) {
         return res.status(409).json({
           ok: false,
           message: 'This username is already registered.'
@@ -252,11 +232,6 @@ app.post('/api/register', authLimiter, async (req, res, next) => {
       throw err;
     }
 
-    const user = {
-      id: Number(result.lastInsertRowid),
-      username
-    };
-
     const token = createToken(user);
 
     res.cookie('token', token, COOKIE_OPTIONS);
@@ -264,7 +239,11 @@ app.post('/api/register', authLimiter, async (req, res, next) => {
     return res.status(201).json({
       ok: true,
       message: 'Account created successfully.',
-      user
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role
+      }
     });
   } catch (err) {
     next(err);
@@ -274,14 +253,13 @@ app.post('/api/register', authLimiter, async (req, res, next) => {
 // ============================================================
 // LOGIN
 // POST /api/login
-// Body: { "username": "...", "password": "..." }
 // ============================================================
 
 app.post('/api/login', authLimiter, async (req, res, next) => {
   try {
     const username =
       typeof req.body.username === 'string'
-        ? req.body.username.trim()
+        ? req.body.username.trim().toLowerCase()
         : '';
 
     const password =
@@ -296,21 +274,10 @@ app.post('/api/login', authLimiter, async (req, res, next) => {
       });
     }
 
-    const user = findUserByUsername.get(username);
+    const user = await User.findOne({ username })
+      .select('+passwordHash');
 
-    if (!user) {
-      return res.status(401).json({
-        ok: false,
-        message: 'Invalid username or password.'
-      });
-    }
-
-    const passwordMatches = await bcrypt.compare(
-      password,
-      user.password_hash
-    );
-
-    if (!passwordMatches) {
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       return res.status(401).json({
         ok: false,
         message: 'Invalid username or password.'
@@ -325,8 +292,9 @@ app.post('/api/login', authLimiter, async (req, res, next) => {
       ok: true,
       message: 'Login successful.',
       user: {
-        id: user.id,
-        username: user.username
+        id: user._id,
+        username: user.username,
+        role: user.role
       }
     });
   } catch (err) {
@@ -356,12 +324,16 @@ app.post('/api/logout', (req, res) => {
 app.get('/api/me', requireAuth, (req, res) => {
   res.json({
     ok: true,
-    user: req.user
+    user: {
+      id: req.user._id,
+      username: req.user.username,
+      role: req.user.role
+    }
   });
 });
 
 // ============================================================
-// HEALTH CHECK — PUBLIC
+// PUBLIC HEALTH CHECK
 // GET /api/health
 // ============================================================
 
@@ -383,8 +355,6 @@ app.get('/api/health', async (req, res) => {
 
 // ============================================================
 // PRIVATE API ROUTES
-// All routes below require a valid login.
-// Existing route files and URL paths are preserved.
 // ============================================================
 
 app.use('/api/products', requireAuth, productsRouter);
@@ -430,7 +400,8 @@ app.use((err, req, res, next) => {
     return next(err);
   }
 
-  const status = err.message === 'Origin not allowed by CORS' ? 403 : 500;
+  const status =
+    err.message === 'Origin not allowed by CORS' ? 403 : 500;
 
   res.status(status).json({
     ok: false,
@@ -449,10 +420,11 @@ connectDB()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Rajastani Saree server running on port ${PORT}`);
-      console.log(`Authentication database: ${authDbPath}`);
+      console.log('Authentication users are stored in MongoDB Atlas.');
     });
   })
   .catch((err) => {
     console.error('MongoDB connection failed:', err.message);
     process.exit(1);
   });
+```

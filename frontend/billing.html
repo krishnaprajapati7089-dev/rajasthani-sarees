@@ -888,11 +888,11 @@ td strong{ color:var(--maroon); }
         style="flex:1;min-width:180px"
       >
 
-      <button class="scan-btn" type="button" onclick="openScanner()">
+      <button class="scan-btn" id="scanButton" type="button" onclick="scanForDevice()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
           <path d="M4 8V5a1 1 0 011-1h3M4 16v3a1 1 0 001 1h3M20 8V5a1 1 0 00-1-1h-3M20 16v3a1 1 0 01-1 1h-3M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        Scan
+        <span id="scanButtonLabel">Scan</span>
       </button>
 
       <button class="btn-primary" type="button" onclick="addSelectedProduct()">Add</button>
@@ -2692,68 +2692,98 @@ if(menuToggleEl && mobilePanelEl){
 
 
 /* =========================================================
-   SCANNER
+   DEVICE-AWARE SCANNER
+   Mobile/tablet: use the device camera.
+   Desktop/laptop: use a USB/Bluetooth scanner gun as keyboard input.
    ========================================================= */
 
 let html5QrCode = null;
 let scannerBusy = false;
 
+function isMobileScannerDevice(){
+  const ua = navigator.userAgent || "";
+  const mobileUA = /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(ua);
+  // iPadOS may report a desktop Mac user-agent, so also detect touch tablets.
+  const touchTablet = navigator.maxTouchPoints > 1 &&
+    window.matchMedia("(max-width: 1024px)").matches;
+  return mobileUA || touchTablet;
+}
+
+function configureScannerButton(){
+  const label = document.getElementById("scanButtonLabel");
+  const button = document.getElementById("scanButton");
+  if(!label || !button) return;
+
+  if(isMobileScannerDevice()){
+    label.textContent = "Scan with Camera";
+    button.title = "Open your phone camera to scan a barcode or QR code";
+  } else {
+    label.textContent = "Scanner Gun";
+    button.title = "Click, then scan with your USB/Bluetooth barcode scanner";
+  }
+}
+
 function setScannerStatus(message, isError = false){
-
   const el = document.getElementById("scannerStatus");
-
+  if(!el) return;
   el.textContent = message;
-
   el.className = "scanner-status" + (isError ? " error" : "");
+}
 
+function scanForDevice(){
+  if(isMobileScannerDevice()){
+    openScanner();
+    return;
+  }
+
+  // A scanner gun types the barcode into this field and usually sends Enter.
+  productSearch.focus();
+  productSearch.select();
+  showMessage("Scanner gun ready — scan a barcode. The product will be found automatically.");
 }
 
 async function openScanner(){
+  // Do not open the camera on a laptop/desktop; use the scanner gun there.
+  if(!isMobileScannerDevice()){
+    scanForDevice();
+    return;
+  }
 
   const modal = document.getElementById("scannerModal");
-
   modal.classList.add("open");
-
   setScannerStatus("Starting camera...");
 
   if(typeof Html5Qrcode === "undefined"){
-    setScannerStatus("Scanner library failed to load.", true);
+    setScannerStatus("Camera scanner library failed to load. Refresh the page and try again.", true);
     return;
   }
 
   if(!window.isSecureContext){
-    setScannerStatus("Camera access needs HTTPS or localhost.", true);
+    setScannerStatus("Camera access requires HTTPS or localhost.", true);
     return;
   }
 
   try{
+    if(html5QrCode){
+      try { await html5QrCode.stop(); } catch (_) {}
+      try { await html5QrCode.clear(); } catch (_) {}
+      html5QrCode = null;
+    }
 
     html5QrCode = new Html5Qrcode("scannerRegion");
 
     await html5QrCode.start(
-      { facingMode:"environment" },
-      {
-        fps:10,
-        qrbox:{ width:260, height:160 }
-      },
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 260, height: 160 } },
       onScanSuccess,
       () => {}
     );
 
-    setScannerStatus("Camera ready — scan the barcode.");
-
+    setScannerStatus("Camera ready — point it at the barcode or QR code.");
+  } catch(error){
+    console.error("Camera scanner error:", error);
+    setScannerStatus("Could not access camera: " + (error.message || error), true);
   }
-  catch(error){
-
-    console.error(error);
-
-    setScannerStatus(
-      "Could not access camera: " + (error.message || error),
-      true
-    );
-
-  }
-
 }
 
 async function closeScanner(){
@@ -2817,6 +2847,8 @@ document
    ========================================================= */
 
 setupEditMode();
+configureScannerButton();
+window.addEventListener("resize", configureScannerButton);
 
 renderBill();
 

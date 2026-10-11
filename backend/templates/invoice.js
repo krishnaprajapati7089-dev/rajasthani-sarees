@@ -36,8 +36,57 @@ function fmtDateTime(value) {
 
 function renderInvoiceHTML({ bill, items, shop }) {
   const interState = Boolean(bill.is_interstate);
+  const itemList = items || [];
 
-  const rows = (items || []).map((it, index) => {
+  // MRP subtotal = MRP x quantity.
+  const mrpSubtotal = itemList.reduce((sum, it) => {
+    const mrp = num(it.mrp ?? it.mrp_rate ?? it.mrp_price);
+    return sum + mrp * num(it.qty);
+  }, 0);
+
+  // Selling subtotal = selling rate x quantity.
+  const sellingSubtotal = itemList.reduce((sum, it) => {
+    const rate = num(it.rate ?? it.selling_rate ?? it.selling_price);
+    return sum + rate * num(it.qty);
+  }, 0);
+
+  // Total difference between MRP and selling price.
+  const mrpDiscount = Math.max(0, mrpSubtotal - sellingSubtotal);
+
+  const grandTotal = num(bill.grand_total);
+
+  // Read the payment amount from available bill fields.
+  const paidValue =
+    bill.amount_paid ??
+    bill.paid_amount ??
+    bill.paid ??
+    bill.amount_received ??
+    bill.payment_received ??
+    bill.cash_received;
+
+  const amountPaid =
+    paidValue !== undefined && paidValue !== null
+      ? num(paidValue)
+      : (
+          String(bill.payment_status || '').toLowerCase() === 'paid'
+            ? grandTotal
+            : 0
+        );
+
+  // Prefer an explicitly stored pending amount, if available.
+  const explicitPending =
+    bill.pending_amount ??
+    bill.balance_due ??
+    bill.due_amount ??
+    bill.remaining_amount ??
+    bill.amount_due;
+
+  const pendingAmount =
+    explicitPending !== undefined && explicitPending !== null
+      ? Math.max(0, num(explicitPending))
+      : Math.max(0, grandTotal - amountPaid);
+
+  const rows = itemList.map((it, index) => {
     const category =
       it.category ||
       it.product_category ||
@@ -52,35 +101,69 @@ function renderInvoiceHTML({ bill, items, shop }) {
       it.product_code ||
       '-';
 
+    const mrp = num(it.mrp ?? it.mrp_rate ?? it.mrp_price);
+
+    const sellingRate = num(
+      it.rate ?? it.selling_rate ?? it.selling_price
+    );
+
+    const discountPerUnit = Math.max(0, mrp - sellingRate);
+    const totalItemDiscount = discountPerUnit * num(it.qty);
+
     const tax = interState
-      ? `<td class="right">${formatINR(num(it.igst_amount), false)}</td>`
+      ? `<td class="right">
+           ${formatINR(num(it.igst_amount), false)}
+         </td>`
       : `<td class="right">
            <div>${formatINR(num(it.cgst_amount), false)} CGST</div>
-           <div class="sub">${formatINR(num(it.sgst_amount), false)} SGST</div>
+           <div class="sub">
+             ${formatINR(num(it.sgst_amount), false)} SGST
+           </div>
          </td>`;
 
     return `
       <tr>
         <td class="center">${index + 1}</td>
+
         <td class="item-cell">
           <strong>${esc(it.product_name || '-')}</strong>
+
           <div class="details">
             Category: ${esc(category)} |
             Code: ${esc(barcode)} |
             HSN: ${esc(it.hsn_code || '-')}
           </div>
         </td>
-        <td class="center">${num(it.qty)} ${esc(it.unit || '')}</td>
-        <td class="right">${formatINR(num(it.rate), false)}</td>
+
         <td class="center">
-          ${num(it.discount_percent) > 0
-            ? num(it.discount_percent) + '%'
-            : '-'}
+          ${num(it.qty)} ${esc(it.unit || '')}
         </td>
-        <td class="right">${formatINR(num(it.taxable_value), false)}</td>
-        <td class="center">${num(it.gst_rate)}%</td>
+
+        <td class="right">
+          ${formatINR(mrp, false)}
+        </td>
+
+        <td class="right">
+          ${formatINR(sellingRate, false)}
+        </td>
+
+        <td class="right">
+          ${formatINR(totalItemDiscount, false)}
+        </td>
+
+        <td class="right">
+          ${formatINR(num(it.taxable_value), false)}
+        </td>
+
+        <td class="center">
+          ${num(it.gst_rate)}%
+        </td>
+
         ${tax}
-        <td class="right strong">${formatINR(num(it.line_total), false)}</td>
+
+        <td class="right strong">
+          ${formatINR(num(it.line_total), false)}
+        </td>
       </tr>
     `;
   }).join('');
@@ -100,7 +183,10 @@ function renderInvoiceHTML({ bill, items, shop }) {
     shop.city,
     shop.pincode,
     shop.state
-  ].filter(Boolean).map(esc).join(', ');
+  ]
+    .filter(Boolean)
+    .map(esc)
+    .join(', ');
 
   const bankDetails = shop.bank_name
     ? `
@@ -160,7 +246,7 @@ function renderInvoiceHTML({ bill, items, shop }) {
     cursor: pointer;
   }
 
-  /* Fixed half-A4 print area */
+  /* Preserve the existing half-A4 print area. */
   .page {
     position: relative;
     width: 202mm;
@@ -299,19 +385,28 @@ function renderInvoiceHTML({ bill, items, shop }) {
     overflow-wrap: anywhere;
   }
 
-  table.items th:nth-child(1) { width: 4%; }
-  table.items th:nth-child(2) { width: 27%; }
-  table.items th:nth-child(3) { width: 7%; }
-  table.items th:nth-child(4) { width: 10%; }
-  table.items th:nth-child(5) { width: 6%; }
-  table.items th:nth-child(6) { width: 12%; }
-  table.items th:nth-child(7) { width: 5%; }
-  table.items th:nth-child(8) { width: 13%; }
-  table.items th:nth-child(9) { width: 16%; }
+  table.items th:nth-child(1)  { width: 3%; }
+  table.items th:nth-child(2)  { width: 22%; }
+  table.items th:nth-child(3)  { width: 6%; }
+  table.items th:nth-child(4)  { width: 8%; }
+  table.items th:nth-child(5)  { width: 8%; }
+  table.items th:nth-child(6)  { width: 9%; }
+  table.items th:nth-child(7)  { width: 10%; }
+  table.items th:nth-child(8)  { width: 4%; }
+  table.items th:nth-child(9)  { width: 13%; }
+  table.items th:nth-child(10) { width: 17%; }
 
-  .center { text-align: center !important; }
-  .right { text-align: right !important; }
-  .strong { font-weight: bold; }
+  .center {
+    text-align: center !important;
+  }
+
+  .right {
+    text-align: right !important;
+  }
+
+  .strong {
+    font-weight: bold;
+  }
 
   .item-cell strong {
     font-size: 8px;
@@ -352,6 +447,7 @@ function renderInvoiceHTML({ bill, items, shop }) {
   }
 
   .footer {
+    min-height: 18mm;
     grid-column: 1;
     grid-row: 2;
     display: flex;
@@ -368,9 +464,13 @@ function renderInvoiceHTML({ bill, items, shop }) {
     overflow-wrap: anywhere;
   }
 
-  .sign-box {
+  /* Authorised signature stays at the bottom-right of the bill. */
+  .page .sign-box {
     text-align: center;
     flex-shrink: 0;
+    position: absolute;
+    right: 2mm;
+    bottom: 2mm;
   }
 
   .sign-line {
@@ -402,6 +502,11 @@ function renderInvoiceHTML({ bill, items, shop }) {
   .totals .row span:last-child {
     text-align: right;
     white-space: nowrap;
+  }
+
+  .totals .row.pending {
+    font-weight: bold;
+    color: #B23A2E;
   }
 
   .totals .row.grand {
@@ -461,7 +566,10 @@ function renderInvoiceHTML({ bill, items, shop }) {
 
     <div class="top">
       <div>
-        <p class="shop-name">${esc(shop.shop_name || 'RAJASTHANI SAREE')}</p>
+        <p class="shop-name">
+          ${esc(shop.shop_name || 'RAJASTHANI SAREE')}
+        </p>
+
         <div class="shop-meta">
           ${address}<br>
           Phone: ${esc(shop.phone || '-')}
@@ -473,18 +581,24 @@ function renderInvoiceHTML({ bill, items, shop }) {
 
       <div class="invoice-tag">
         <span class="label">TAX INVOICE</span>
+
         <table>
           <tr>
             <td>Invoice No.</td>
             <td>${esc(bill.invoice_no || '-')}</td>
           </tr>
+
           <tr>
             <td>Date &amp; Time</td>
             <td>${esc(fmtDateTime(invoiceDate))}</td>
           </tr>
+
           <tr>
             <td>Payment</td>
-            <td>${esc(bill.payment_mode || '-')} · ${esc(bill.payment_status || '-')}</td>
+            <td>
+              ${esc(bill.payment_mode || '-')} ·
+              ${esc(bill.payment_status || '-')}
+            </td>
           </tr>
         </table>
       </div>
@@ -493,13 +607,19 @@ function renderInvoiceHTML({ bill, items, shop }) {
     <div class="parties">
       <div class="party-box">
         <h4>Billed To</h4>
-        <div class="name">${esc(bill.customer_name || '-')}</div>
+
+        <div class="name">
+          ${esc(bill.customer_name || '-')}
+        </div>
+
         ${bill.customer_phone
           ? `<div class="line">Phone: ${esc(bill.customer_phone)}</div>`
           : ''}
+
         ${bill.customer_gstin
           ? `<div class="line">GSTIN: ${esc(bill.customer_gstin)}</div>`
           : ''}
+
         ${bill.customer_state
           ? `<div class="line">State: ${esc(bill.customer_state)}</div>`
           : ''}
@@ -507,9 +627,15 @@ function renderInvoiceHTML({ bill, items, shop }) {
 
       <div class="party-box">
         <h4>Place of Supply</h4>
-        <div class="name">${esc(bill.customer_state || shop.state || '-')}</div>
+
+        <div class="name">
+          ${esc(bill.customer_state || shop.state || '-')}
+        </div>
+
         <span class="supply-badge">
-          ${interState ? 'Inter-state (IGST)' : 'Intra-state (CGST + SGST)'}
+          ${interState
+            ? 'Inter-state (IGST)'
+            : 'Intra-state (CGST + SGST)'}
         </span>
       </div>
     </div>
@@ -520,14 +646,16 @@ function renderInvoiceHTML({ bill, items, shop }) {
           <th>#</th>
           <th>Item / Saree</th>
           <th>Qty</th>
-          <th>Rate (₹)</th>
-          <th>Disc.</th>
+          <th>MRP (₹)</th>
+          <th>Selling Rate (₹)</th>
+          <th>Discount (₹)</th>
           <th>Taxable (₹)</th>
           <th>GST</th>
           ${taxHeaders}
           <th>Amount (₹)</th>
         </tr>
       </thead>
+
       <tbody>
         ${rows}
       </tbody>
@@ -536,47 +664,70 @@ function renderInvoiceHTML({ bill, items, shop }) {
     <div class="bottom">
       <div class="totals-wrap">
         <div class="totals">
+
           <div class="row">
-            <span>Subtotal</span>
-            <span>${formatINR(num(bill.subtotal), false)}</span>
+            <span>Subtotal (MRP)</span>
+            <span>${formatINR(mrpSubtotal, false)}</span>
           </div>
+
           <div class="row">
-            <span>Discount</span>
-            <span>- ${formatINR(num(bill.discount_amount), false)}</span>
+            <span>Discount (MRP − Selling)</span>
+            <span>- ${formatINR(mrpDiscount, false)}</span>
           </div>
+
           <div class="row">
             <span>Taxable Value</span>
             <span>${formatINR(num(bill.taxable_value), false)}</span>
           </div>
 
           ${interState
-            ? `<div class="row">
-                 <span>IGST</span>
-                 <span>${formatINR(num(bill.igst_amount), false)}</span>
-               </div>`
-            : `<div class="row">
-                 <span>CGST</span>
-                 <span>${formatINR(num(bill.cgst_amount), false)}</span>
-               </div>
-               <div class="row">
-                 <span>SGST</span>
-                 <span>${formatINR(num(bill.sgst_amount), false)}</span>
-               </div>`}
+            ? `
+              <div class="row">
+                <span>IGST</span>
+                <span>${formatINR(num(bill.igst_amount), false)}</span>
+              </div>
+            `
+            : `
+              <div class="row">
+                <span>CGST</span>
+                <span>${formatINR(num(bill.cgst_amount), false)}</span>
+              </div>
+
+              <div class="row">
+                <span>SGST</span>
+                <span>${formatINR(num(bill.sgst_amount), false)}</span>
+              </div>
+            `}
 
           <div class="row">
             <span>Round Off</span>
-            <span>${num(bill.round_off) >= 0 ? '+' : ''}${formatINR(num(bill.round_off), false)}</span>
+            <span>
+              ${num(bill.round_off) >= 0 ? '+' : ''}
+              ${formatINR(num(bill.round_off), false)}
+            </span>
           </div>
+
           <div class="row grand">
             <span>Grand Total</span>
-            <span>${formatINR(num(bill.grand_total))}</span>
+            <span>${formatINR(grandTotal)}</span>
           </div>
+
+          <div class="row">
+            <span>Amount Paid</span>
+            <span>${formatINR(amountPaid, false)}</span>
+          </div>
+
+          <div class="row ${pendingAmount > 0 ? 'pending' : ''}">
+            <span>Amount Pending</span>
+            <span>${formatINR(pendingAmount, false)}</span>
+          </div>
+
         </div>
       </div>
 
       <div class="words">
         <strong>Amount in words:</strong>
-        ${esc(amountInWords(num(bill.grand_total)))}
+        ${esc(amountInWords(grandTotal))}
       </div>
 
       <div class="footer">
@@ -584,6 +735,7 @@ function renderInvoiceHTML({ bill, items, shop }) {
           ${bankDetails}
           ${upiDetails}
         </div>
+
         <div class="sign-box">
           <div class="sign-line">Authorised Signatory</div>
         </div>
@@ -591,11 +743,8 @@ function renderInvoiceHTML({ bill, items, shop }) {
     </div>
 
     <p class="note-line">
-      This is a computer-generated invoice.
-      Goods once sold
-      ${bill.is_interstate
-        ? 'are not returnable across state lines except as per applicable exchange policy'
-        : 'can be exchanged within 7 days with this invoice'}.
+      Exchange within 7 days of purchase with this bill.
+      No returns and no money back.
       Subject to ${esc(shop.city || shop.state || '')} jurisdiction only.
     </p>
 
@@ -618,6 +767,7 @@ function renderInvoiceHTML({ bill, items, shop }) {
 
     if (contentHeight > availableHeight && contentHeight > 0) {
       const scale = availableHeight / contentHeight;
+
       sheet.style.transformOrigin = 'top left';
       sheet.style.transform = 'scale(' + scale + ')';
     }

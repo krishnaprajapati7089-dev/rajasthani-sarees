@@ -868,16 +868,6 @@ td strong{ color:var(--maroon); }
         <input id="customerState" placeholder="e.g. Madhya Pradesh">
       </div>
 
-      <div class="form-group">
-        <label>Payment Mode</label>
-        <select id="paymentMode">
-          <option value="Cash">Cash</option>
-          <option value="UPI">UPI</option>
-          <option value="Card">Card</option>
-          <option value="Bank Transfer">Bank Transfer</option>
-        </select>
-      </div>
-
     </div>
 
   </section>
@@ -1029,7 +1019,7 @@ td strong{ color:var(--maroon); }
       </div>
 
       <p class="payment-note">
-        Enter cash and UPI/online amounts separately. Both are added to the total received today; any remaining amount stays pending. For example, on a ₹1,200 bill, enter ₹1,000 cash and ₹200 UPI.
+        Full payment is assumed by default. Enter a UPI amount and the remaining bill amount is automatically assigned to Cash. The UPI amount is saved separately for UPI sales. To record a partial payment, adjust the Cash amount after entering UPI; the remaining balance will stay pending.
       </p>
 
     </div>
@@ -1240,7 +1230,6 @@ async function loadExistingBill(){
     document.getElementById("customerName").value = bill.customer_name || "";
     document.getElementById("customerPhone").value = bill.customer_phone || "";
     document.getElementById("customerState").value = bill.customer_state || "";
-    document.getElementById("paymentMode").value = bill.payment_mode || "Cash";
 
     /*
       Load payment information.
@@ -1900,21 +1889,33 @@ function updatePaymentSummary(){
 
 }
 
-function handlePaymentInput(){
+function handlePaymentInput(event){
   paymentWasManuallyEdited = true;
+
   const total = calculateGrandTotal();
   const cashInput = document.getElementById("cashAmountReceived");
   const upiInput = document.getElementById("upiAmountReceived");
+
   let cash = Math.max(0, Number(cashInput?.value || 0) || 0);
   let upi = Math.max(0, Number(upiInput?.value || 0) || 0);
-  const combined = round2(cash + upi);
-  if(combined > total){
-    const excess = round2(combined - total);
-    if(upi > 0) upi = Math.max(0, round2(upi - excess));
-    else cash = Math.max(0, round2(cash - excess));
-    if(cashInput) cashInput.value = cash;
+
+  // Entering a UPI amount keeps the bill fully paid by default:
+  // the remaining balance is automatically assigned to Cash.
+  if(event && event.target && event.target.id === "upiAmountReceived"){
+    upi = Math.min(upi, total);
+    cash = round2(Math.max(0, total - upi));
     if(upiInput) upiInput.value = upi;
+    if(cashInput) cashInput.value = cash;
+  } else {
+    // If Cash is edited, don't allow the combined payment to exceed the bill.
+    cash = Math.min(cash, total);
+    if(round2(cash + upi) > total){
+      upi = round2(Math.max(0, total - cash));
+      if(upiInput) upiInput.value = upi;
+    }
+    if(cashInput) cashInput.value = cash;
   }
+
   amountReceived = round2(cash + upi);
   updatePaymentSummary();
 }
@@ -1958,6 +1959,11 @@ function updateFooterTotals(){
     enters a different received amount.
   */
   if(!isEditMode && !paymentWasManuallyEdited){
+    // A new bill is fully paid by default, with Cash as the default tender.
+    const cashInput = document.getElementById("cashAmountReceived");
+    const upiInput = document.getElementById("upiAmountReceived");
+    if(cashInput) cashInput.value = round2(total);
+    if(upiInput) upiInput.value = 0;
     amountReceived = round2(total);
   }
 
@@ -2223,9 +2229,8 @@ async function saveInvoice(){
       const cash = Number(document.getElementById("cashAmountReceived").value || 0);
       const upi = Number(document.getElementById("upiAmountReceived").value || 0);
       if(cash > 0 && upi > 0) return "Cash + UPI";
-      if(cash > 0) return "Cash";
       if(upi > 0) return "UPI";
-      return document.getElementById("paymentMode").value;
+      return "Cash";
     })(),
 
     cash_amount: round2(Number(document.getElementById("cashAmountReceived").value || 0)),

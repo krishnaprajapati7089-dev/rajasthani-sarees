@@ -7,8 +7,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Database = require('better-sqlite3');
 const rateLimit = require('express-rate-limit');
+const User = require('./models/User');
 
 const connectDB = require('./config/db');
 

@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Purchase Bill — Rajastani Saree</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700\&family=Inter:wght@400;500;600\&display=swap" rel="stylesheet">
 
 <style>
 :root{--emerald:#0B6B57;--emerald-dark:#064B3F;--emerald-deep:#073F35;--champagne:#D6B56B;--champagne-light:#F0DFAE;--ivory:#F7F5EF;--white:#FFFFFF;--graphite:#17211F;--graphite-soft:#66736F;--line:#DDE5E1;--mint:#EAF5F1;--header-h:72px}
@@ -294,10 +294,10 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
       </div>
     </div>
     <div class="summary-row discount-row">
-      <label for="dealerDiscount">Dealer Discount</label>
+      <label for="dealerDiscount">Dealer Discount (₹)</label>
       <div class="discount-control">
-        <input id="dealerDiscount" type="number" min="0" max="100" step="0.01" value="0" inputmode="decimal">
-        <span>%</span>
+        <span>₹</span>
+        <input id="dealerDiscount" type="number" min="0" step="0.01" value="0" inputmode="decimal" placeholder="Discount amount">
       </div>
     </div>
     <div class="summary-row"><span>Discount Amount</span><strong id="dealerDiscountAmount">₹0.00</strong></div>
@@ -312,7 +312,7 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
     <div class="pay-note">
       <strong>Dr</strong> = money you paid to the supplier (advance, cash, online).
       <strong>Cr</strong> = extra amount credited to the supplier's account (e.g. old balance you owe).
-      GST is charged only on the bill amount above — <strong>cash payments carry no GST</strong>.
+      GST is calculated on the balance after advance payment; if no advance is paid, GST is calculated on Net Total.
     </div>
     <div class="table-wrapper">
       <table class="pay-table">
@@ -354,10 +354,10 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
 </main>
 
 <!-- QR code generator for printable barcode/QR labels -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="[https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js](https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js)"></script>
 
 <script>
-const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
+const API_BASE_URL = "https\://rajasthani-sarees.onrender.com";
 const DEFAULT_GST_PERCENT = 5;
 const DEFAULT_MARGIN_PERCENT = 70;
 const fileInput = document.getElementById('billFile');
@@ -381,8 +381,8 @@ function escapeHtml(value){
   }[ch]));
 }
 
-function getDealerDiscountPercent() {
-  return Math.min(100, Math.max(0, num(document.getElementById("dealerDiscount")?.value)));
+function getDealerDiscountAmount() {
+  return Math.max(0, num(document.getElementById("dealerDiscount")?.value));
 }
 function getGstPercent() {
   return Math.min(100, Math.max(0, num(document.getElementById("gstPercent")?.value)));
@@ -539,23 +539,11 @@ function calculateTotal(){
     if(amount) amount.textContent = money(base);
   });
 
-  // GST only on the real bill amount, entered as a percentage.
   const gstPercent = getGstPercent();
-  const gstAmount = taxable * gstPercent / 100;
   const extraCharges = Math.max(0, num(document.getElementById('extraCharges')?.value));
+  const discountAmount = Math.min(taxable + extraCharges, getDealerDiscountAmount());
+  const netTotal = Math.max(0, taxable + extraCharges - discountAmount);
 
-  const totalBeforeDiscount = taxable + gstAmount + extraCharges;
-  const discountPercent = getDealerDiscountPercent();
-  const discountAmount = totalBeforeDiscount * discountPercent / 100;
-  const netTotal = Math.max(0, totalBeforeDiscount - discountAmount);
-
-  document.getElementById('taxable').textContent = money(taxable);
-  document.getElementById('gstLabel').textContent = `GST Amount (${gstPercent}%)`;
-  document.getElementById('gstTotal').textContent = money(gstAmount);
-  document.getElementById('dealerDiscountAmount').textContent = money(discountAmount);
-  document.getElementById('grandTotal').textContent = money(netTotal);
-
-  // Supplier account: bill is Cr (payable). Dr entries reduce it. No GST on cash.
   let advance = 0, cash = 0, otherDr = 0, extraCr = 0;
   collectPayments().forEach(p => {
     if (p.type === 'Cr') { extraCr += p.amount; return; }
@@ -564,9 +552,20 @@ function calculateTotal(){
     else otherDr += p.amount;
   });
 
-  const balance = netTotal + extraCr - advance - cash - otherDr;
+  // GST base is the remaining bill after advance, if an advance was paid.
+  // Otherwise GST is calculated on the complete Net Total.
+  const gstBase = advance > 0 ? Math.max(0, netTotal - advance) : netTotal;
+  const gstAmount = round2(gstBase * gstPercent / 100);
+  const billTotal = round2(netTotal + gstAmount);
+  const balance = billTotal + extraCr - advance - cash - otherDr;
 
-  document.getElementById('payNet').textContent = money(netTotal);
+  document.getElementById('taxable').textContent = money(taxable);
+  document.getElementById('gstLabel').textContent = `GST Amount (${gstPercent}%)`;
+  document.getElementById('gstTotal').textContent = money(gstAmount);
+  document.getElementById('dealerDiscountAmount').textContent = money(discountAmount);
+  document.getElementById('grandTotal').textContent = money(netTotal);
+
+  document.getElementById('payNet').textContent = money(billTotal);
   document.getElementById('payAdvance').textContent = money(advance);
   document.getElementById('payCash').textContent = money(cash);
   document.getElementById('payOther').textContent = money(otherDr);
@@ -582,15 +581,15 @@ function calculateTotal(){
   }
   document.getElementById('balanceAmount').textContent = money(Math.abs(balance));
 
-  // Mirror the balance in the Bill Summary so it is visible next to the Net Total.
   document.getElementById('sumPaid').textContent = money(advance + cash + otherDr);
   document.getElementById('sumBalanceRow').className = 'balance-row ' + (balance >= 0 ? 'cr' : 'dr');
   document.getElementById('sumBalanceLabel').textContent =
     balance >= 0 ? 'Balance Payable (Cr)' : 'Excess Paid / Advance (Dr)';
   document.getElementById('sumBalance').textContent = money(Math.abs(balance));
 
-  return { taxable, gstPercent, gstAmount, extraCharges, discountAmount, netTotal, advance, cash, otherDr, extraCr, balance };
+  return { taxable, gstPercent, gstAmount, gstBase, extraCharges, discountAmount, netTotal, billTotal, advance, cash, otherDr, extraCr, balance };
 }
+
 
 ['dealerDiscount','extraCharges','gstPercent'].forEach(id =>
   document.getElementById(id).addEventListener('input', calculateTotal)
@@ -661,7 +660,8 @@ async function confirmPurchase(){
     supplier_state: document.getElementById('supplierState').value.trim(),
     reference: document.getElementById('reference').value.trim(),
     unique_bill_number: document.getElementById('uniqueBillNumber').value,
-    dealer_discount_percent: getDealerDiscountPercent(),
+    dealer_discount_amount: t.discountAmount,
+    dealer_discount_percent: 0,
     extra_charges: t.extraCharges,
 
     gst_percent: t.gstPercent,
@@ -883,7 +883,7 @@ async function editPurchaseBill(id) {
     document.getElementById("supplierState").value = bill.supplier_state || "";
     document.getElementById("reference").value = bill.reference || "";
     document.getElementById("uniqueBillNumber").value = bill.unique_bill_number || generateUniqueBillNumber();
-    document.getElementById("dealerDiscount").value = bill.dealer_discount_percent || 0;
+    document.getElementById("dealerDiscount").value = bill.dealer_discount_amount ?? bill.dealer_discount_percent ?? 0;
     document.getElementById("extraCharges").value = bill.extra_charges || 0;
     document.getElementById("defaultMargin").value = bill.default_margin_percent ?? DEFAULT_MARGIN_PERCENT;
 

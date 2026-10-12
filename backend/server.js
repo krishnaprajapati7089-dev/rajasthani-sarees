@@ -19,6 +19,7 @@ const shopRouter = require('./routes/shop');
 const dashboardRouter = require('./routes/dashboard');
 const reportsRouter = require('./routes/reports');
 const caRouter = require('./routes/accounts');
+const supplierLedgerRouter = require('./routes/supplierLedger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;

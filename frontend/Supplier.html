@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Supplier Ledger — Rajastani Saree</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --g: #063f35;
+            --g2: #0b5a4b;
+            --gold: #c9a24a;
+            --ivory: #fbf8f2;
+            --ink: #17221f;
+            --muted: #68756f;
+            --line: #e5ddcc;
+            --red: #b23a2e
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #fbf8f2, #f5f0e5);
+            color: var(--ink);
+            font: 14px Inter, Arial, sans-serif
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background: #ffffffef;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .head {
+            max-width: 1320px;
+            margin: auto;
+            padding: 15px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap
+        }
+
+        .brand {
+            font: 700 21px "Playfair Display", serif;
+            color: var(--g);
+            text-decoration: none
+        }
+
+        .brand small {
+            display: block;
+            font: 700 10px Inter;
+            letter-spacing: 1.5px;
+            color: var(--gold);
+            margin-top: 4px
+        }
+
+        nav {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap
+        }
+
+        nav a {
+            padding: 9px 11px;
+            text-decoration: none;
+            color: var(--g);
+            border-radius: 9px;
+            font-weight: 600
+        }
+
+        nav a:hover,
+        nav a.active {
+            background: #eef6f2
+        }
+
+        main {
+            max-width: 1320px;
+            margin: auto;
+            padding: 28px 24px 48px
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px
+        }
+
+        .eyebrow {
+            font-size: 11px;
+            letter-spacing: 1.7px;
+            color: var(--gold);
+            font-weight: 800;
+            margin: 0 0 6px
+        }
+
+        .top h1 {
+            font: 700 36px "Playfair Display", serif;
+            color: var(--g);
+            margin: 0
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .btn {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            background: #fff;
+            color: var(--g);
+            font: 700 12px Inter;
+            cursor: pointer;
+            text-decoration: none
+        }
+
+        .btn.primary {
+            background: var(--g);
+            border-color: var(--g);
+            color: white
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: wait
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px
+        }
+
+        .card,
+        .panel {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 8px 26px #063f350b
+        }
+
+        .card {
+            padding: 17px
+        }
+
+        .label {
+            font-size: 10px;
+            letter-spacing: .5px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase
+        }
+
+        .value {
+            font: 700 25px "Playfair Display", serif;
+            color: var(--g);
+            margin-top: 7px
+        }
+
+        .panel {
+            padding: 20px;
+            margin-bottom: 18px
+        }
+
+        .panel h2 {
+            font: 700 21px "Playfair Display", serif;
+            color: var(--g);
+            margin: 0 0 15px
+        }
+
+        .searchrow {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: end;
+            margin-bottom: 14px
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+            flex: 1
+        }
+
+        .field label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--muted)
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            padding: 10px 11px;
+            font: 13px Inter;
+            color: var(--ink);
+            background: white;
+            outline: none
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--gold)
+        }
+
+        .tablewrap {
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 11px
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white
+        }
+
+        th,
+        td {
+            padding: 11px 10px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            font-size: 12px;
+            white-space: nowrap
+        }
+
+        th {
+            background: #faf8f2;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: .4px;
+            color: var(--muted)
+        }
+
+        tbody tr:hover {
+            background: #f7fbf8
+        }
+
+        .money {
+            font-weight: 700;
+            color: var(--g)
+        }
+
+        .tag {
+            border-radius: 20px;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            background: #e7f5ed;
+            color: #1e7a4c
+        }
+
+        .tag.due {
+            background: #fbeae7;
+            color: var(--red)
+        }
+
+        .tag.advance {
+            background: #fff4d6;
+            color: #85651b
+        }
+
+        .hidden {
+            display: none !important
+        }
+
+        .notice {
+            padding: 11px 13px;
+            background: #f7fbf8;
+            border: 1px solid #d8e9df;
+            border-radius: 9px;
+            color: var(--g);
+            font-size: 12px;
+            margin-bottom: 12px
+        }
+
+        .notice.error {
+            background: #fff3f1;
+            border-color: #f1cbc5;
+            color: var(--red)
+        }
+
+        .detailhead {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .detailstats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 12px
+        }
+
+        .detailstats strong {
+            color: var(--g)
+        }
+
+        .formgrid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px
+        }
+
+        .full {
+            grid-column: 1/-1
+        }
+
+        .formactions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 14px
+        }
+
+        @media(max-width:850px) {
+            .cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .formgrid {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+        }
+
+        @media(max-width:600px) {
+            main {
+                padding: 20px 12px
+            }
+
+            .head {
+                padding: 13px
+            }
+
+            .top h1 {
+                font-size: 30px
+            }
+
+            .cards {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .card {
+                padding: 13px
+            }
+
+            .value {
+                font-size: 21px
+            }
+
+            .panel {
+                padding: 14px
+            }
+
+            .formgrid {
+                grid-template-columns: 1fr
+            }
+
+            .full {
+                grid-column: auto
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script src="auth-guard.js"></script>
+    <header>
+        <div class="head"><a class="brand" href="dashboard.html">Rajastani Saree<small>BILLING & INVENTORY</small></a>
+            <nav><a href="dashboard.html">Dashboard</a><a href="purchase.html">Purchase Bill</a><a
+                    href="inventory.html">Inventory</a><a href="reports.html">Reports</a><a class="active"
+                    href="supplier-ledger.html">Supplier Ledger</a></nav>
+        </div>
+    </header>
+    <main>
+        <div class="top">
+            <div>
+                <p class="eyebrow">SUPPLIER ACCOUNTS</p>
+                <h1>Supplier Ledger</h1>
+                <p class="muted">Purchases, advances, payments and outstanding balances party-wise.</p>
+            </div><button class="btn primary" id="refreshBtn">↻ Refresh</button>
+        </div>
+        <div id="notice" class="notice hidden" role="status"></div>
+        <div class="cards">
+            <div class="card">
+                <div class="label">Total Purchases</div>
+                <div class="value" id="sumPurchased">₹0</div>
+            </div>
+            <div class="card">
+                <div class="label">Total Paid</div>
+                <div class="value" id="sumPaid">₹0</div>
+            </div>
+            <div class="card">
+                <div class="label">Payable Balance</div>
+                <div class="value" id="sumPayable">₹0</div>
+            </div>
+            <div class="card">
+                <div class="label">Supplier Advance</div>
+                <div class="value" id="sumAdvance">₹0</div>
+            </div>
+        </div>
+        <section class="panel" id="supplierPanel">
+            <h2>Party-wise Summary</h2>
+            <div class="searchrow">
+                <div class="field"><label for="supplierSearch">Search Supplier</label><input id="supplierSearch"
+                        placeholder="Enter supplier / party name"></div><button class="btn"
+                    id="clearSearch">Clear</button>
+            </div>
+            <div class="tablewrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Supplier / Party</th>
+                            <th>Purchase Bills</th>
+                            <th>Total Purchased</th>
+                            <th>Total Paid</th>
+                            <th>Balance</th>
+                            <th>Account Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplierRows">
+                        <tr>
+                            <td colspan="7">Loading suppliers…</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="panel hidden" id="ledgerPanel">
+            <div class="detailhead">
+                <div>
+                    <h2 id="ledgerTitle">Supplier Ledger</h2>
+                    <div class="detailstats" id="ledgerStats"></div>
+                </div><button class="btn" id="backBtn">← All Suppliers</button>
+            </div>
+            <div style="height:14px"></div>
+            <div class="tablewrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Entry</th>
+                            <th>Bill / Reference</th>
+                            <th>Payment Mode</th>
+                            <th>Debit / Purchase</th>
+                            <th>Credit / Paid</th>
+                            <th>Running Balance</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerRows"></tbody>
+                </table>
+            </div>
+        </section>
+        <section class="panel" id="paymentPanel">
+            <h2>Record Supplier Payment / Advance</h2>
+            <p class="muted">Every submission creates a separate dated transaction; previous payments are not
+                overwritten.</p>
+            <form id="paymentForm">
+                <div class="formgrid">
+                    <div class="field"><label for="paySupplier">Supplier / Party *</label><input id="paySupplier"
+                            list="supplierOptions" required placeholder="Choose or type supplier name"><datalist
+                            id="supplierOptions"></datalist></div>
+                    <div class="field"><label for="payKind">Transaction Type *</label><select id="payKind">
+                            <option value="payment">Payment against purchase</option>
+                            <option value="advance">Advance payment</option>
+                        </select></div>
+                    <div class="field"><label for="payAmount">Amount (₹) *</label><input id="payAmount" type="number"
+                            min="0.01" step="0.01" required placeholder="0.00"></div>
+                    <div class="field"><label for="payDate">Payment Date *</label><input id="payDate" type="date"
+                            required></div>
+                    <div class="field"><label for="payMode">Payment Mode *</label><select id="payMode">
+                            <option>UPI</option>
+                            <option>Cash</option>
+                            <option>Bank Transfer</option>
+                            <option>Cheque</option>
+                            <option>Card</option>
+                            <option>Other</option>
+                        </select></div>
+                    <div class="field"><label for="payBill">Against Purchase Bill (optional)</label><select
+                            id="payBill">
+                            <option value="">Unallocated / Supplier advance</option>
+                        </select></div>
+                    <div class="field chequeField hidden"><label for="chequeNumber">Cheque Number *</label><input
+                            id="chequeNumber" placeholder="Cheque number"></div>
+                    <div class="field chequeField hidden"><label for="chequeDate">Cheque Date</label><input
+                            id="chequeDate" type="date"></div>
+                    <div class="field chequeField hidden"><label for="chequeStatus">Cheque Status</label><select
+                            id="chequeStatus">
+                            <option>Issued</option>
+                            <option>Cleared</option>
+                            <option>Bounced</option>
+                            <option>Cancelled</option>
+                        </select></div>
+                    <div class="field"><label for="payReference">UPI / Bank Reference</label><input id="payReference"
+                            placeholder="UTR / transaction ID"></div>
+                    <div class="field full"><label for="payNotes">Notes</label><textarea id="payNotes" rows="2"
+                            placeholder="e.g. advance for next lot, cheque handed over"></textarea></div>
+                </div>
+                <div class="formactions"><button type="reset" class="btn">Reset</button><button type="submit"
+                        class="btn primary" id="savePayment">Save Payment</button></div>
+            </form>
+        </section>
+    </main>
+    <script>
+        const API_BASE_URL = 'https://rajasthani-sarees.onrender.com';
+        const $ = id => document.getElementById(id);
+        let supplierSummary = [], activeSupplier = '';
+        const money = n => '₹' + (Number(n) || 0).toLocaleString('en-IN', {maximumFractionDigits: 2});
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c]));
+        function dateOnly(v) {if (!v) return '—'; const d = new Date(v); return Number.isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat('en-IN', {timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric'}).format(d)}
+        function notice(msg, error = false) {const n = $('notice'); n.textContent = msg; n.classList.remove('hidden', 'error'); if (error) n.classList.add('error'); window.scrollTo({top: 0, behavior: 'smooth'})}
+        function hideNotice() {$('notice').classList.add('hidden')}
+        async function api(path, options = {}) {const r = await fetch(`${API_BASE_URL}/api/supplier-ledger${path}`, {credentials: 'include', headers: {'Content-Type': 'application/json', Accept: 'application/json', ...(options.headers || {})}, ...options}); const raw = await r.text(); let data = {}; try {data = raw ? JSON.parse(raw) : {}} catch {throw new Error(`Backend returned invalid data (HTTP ${r.status}).`)} if (!r.ok) throw new Error(data.error || data.message || `Request failed (${r.status}).`); return data}
+        function statusTag(s) {return s.balance_type === 'Payable' ? '<span class="tag due">Payable</span>' : s.balance_type === 'Advance' ? '<span class="tag advance">Advance</span>' : '<span class="tag">Settled</span>'}
+        function renderSummary() {
+            const q = $('supplierSearch').value.trim().toLowerCase(); const rows = supplierSummary.filter(s => s.supplier.toLowerCase().includes(q)); $('supplierRows').innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(s.supplier)}</strong></td><td>${Number(s.purchase_count || 0)}</td><td class="money">${money(s.total_purchased)}</td><td class="money">${money(s.total_paid)}</td><td class="money">${money(s.balance_amount)}</td><td>${statusTag(s)}</td><td><button class="btn" data-open="${esc(s.supplier)}">View Ledger</button></td></tr>`).join('') : '<tr><td colspan="7">No supplier found. You can record a payment for a new supplier below.</td></tr>';
+            $('supplierRows').querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openLedger(b.dataset.open)));
+            $('sumPurchased').textContent = money(supplierSummary.reduce((s, x) => s + (Number(x.total_purchased) || 0), 0)); $('sumPaid').textContent = money(supplierSummary.reduce((s, x) => s + (Number(x.total_paid) || 0), 0)); $('sumPayable').textContent = money(supplierSummary.filter(x => x.balance_type === 'Payable').reduce((s, x) => s + x.balance_amount, 0)); $('sumAdvance').textContent = money(supplierSummary.filter(x => x.balance_type === 'Advance').reduce((s, x) => s + x.balance_amount, 0)); $('supplierOptions').innerHTML = supplierSummary.map(s => `<option value="${esc(s.supplier)}"></option>`).join('')
+        }
+        async function loadSummary() {hideNotice(); $('refreshBtn').disabled = true; try {const d = await api('/summary'); supplierSummary = Array.isArray(d.suppliers) ? d.suppliers : []; renderSummary(); if (activeSupplier) await openLedger(activeSupplier, false)} catch (e) {notice(`${e.message} Check that the backend route is mounted and deployed.`, true); $('supplierRows').innerHTML = `<tr><td colspan="7">${esc(e.message)}</td></tr>`} finally {$('refreshBtn').disabled = false} }
+        async function openLedger(supplier, scroll = true) {activeSupplier = supplier; $('supplierPanel').classList.add('hidden'); $('ledgerPanel').classList.remove('hidden'); $('ledgerTitle').textContent = `${supplier} — Ledger`; $('ledgerRows').innerHTML = '<tr><td colspan="8">Loading ledger…</td></tr>'; try {const d = await api(`/${encodeURIComponent(supplier)}`); $('ledgerTitle').textContent = `${d.supplier} — Ledger`; $('ledgerStats').innerHTML = `<span>Purchased: <strong>${money(d.total_purchased)}</strong></span><span>Paid: <strong>${money(d.total_paid)}</strong></span><span>${esc(d.balance_type)}: <strong>${money(d.balance_amount)}</strong></span>`; $('ledgerRows').innerHTML = d.entries.length ? d.entries.map(e => `<tr><td>${dateOnly(e.date)}</td><td>${esc(e.description)}</td><td>${esc(e.invoice_number || e.reference_number || '—')}</td><td>${esc(e.payment_mode || '—')}${e.cheque_number ? `<br><small>Cheque ${esc(e.cheque_number)} · ${esc(e.cheque_status || '')}</small>` : ''}</td><td class="money">${e.debit ? money(e.debit) : '—'}</td><td class="money">${e.credit ? money(e.credit) : '—'}</td><td>${money(e.running_balance)} <small>${esc(e.running_balance_type)}</small></td><td>${esc(e.notes || '—')}</td></tr>`).join('') : '<tr><td colspan="8">No purchases or payments recorded for this supplier.</td></tr>'; $('paySupplier').value = d.supplier; await loadBillsForSupplier(d.supplier); if (scroll) $('ledgerPanel').scrollIntoView({behavior: 'smooth', block: 'start'})} catch (e) {notice(e.message, true); $('ledgerRows').innerHTML = `<tr><td colspan="8">${esc(e.message)}</td></tr>`} }
+        async function loadBillsForSupplier(supplier) {$('payBill').innerHTML = '<option value="">Unallocated / Supplier advance</option>'; try {const r = await fetch(`${API_BASE_URL}/api/purchases`, {credentials: 'include', headers: {Accept: 'application/json'}}); const raw = await r.text(); const d = raw ? JSON.parse(raw) : []; if (!r.ok) throw new Error('Could not load purchase bills'); const list = Array.isArray(d) ? d : (Array.isArray(d.purchases) ? d.purchases : []); list.filter(p => String(p.supplier || '').trim().toLowerCase() === supplier.trim().toLowerCase()).sort((a, b) => new Date(b.invoice_date || b.createdAt || 0) - new Date(a.invoice_date || a.createdAt || 0)).forEach(p => {const o = document.createElement('option'); o.value = p._id; o.textContent = `${p.unique_bill_number || p.invoice_number || 'Purchase'} — ${dateOnly(p.invoice_date || p.createdAt)} — ${money(p.grand_total)}`; $('payBill').appendChild(o)})} catch (e) {console.warn('Purchase bill list:', e.message)} }
+        function toggleCheque() {const yes = $('payMode').value === 'Cheque'; document.querySelectorAll('.chequeField').forEach(e => e.classList.toggle('hidden', !yes)); $('chequeNumber').required = yes}
+        function setDate() {const d = new Date(); $('payDate').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)}
+        $('supplierSearch').addEventListener('input', renderSummary); $('clearSearch').addEventListener('click', () => {$('supplierSearch').value = ''; renderSummary()}); $('refreshBtn').addEventListener('click', loadSummary); $('backBtn').addEventListener('click', () => {activeSupplier = ''; $('ledgerPanel').classList.add('hidden'); $('supplierPanel').classList.remove('hidden')}); $('payMode').addEventListener('change', toggleCheque); $('paySupplier').addEventListener('change', () => {const s = $('paySupplier').value.trim(); if (s) loadBillsForSupplier(s)}); $('paymentForm').addEventListener('reset', () => setTimeout(() => {setDate(); toggleCheque()}, 0));
+        $('paymentForm').addEventListener('submit', async e => {e.preventDefault(); hideNotice(); const supplier = $('paySupplier').value.trim(), amount = Number($('payAmount').value); const payload = {supplier, amount, kind: $('payKind').value, payment_date: $('payDate').value, payment_mode: $('payMode').value, purchase_id: $('payBill').value || null, reference_number: $('payReference').value.trim(), cheque_number: $('chequeNumber').value.trim(), cheque_date: $('chequeDate').value || null, cheque_status: $('chequeStatus').value, notes: $('payNotes').value.trim()}; if (!supplier || !Number.isFinite(amount) || amount <= 0) {notice('Supplier aur valid payment amount bharna zaroori hai.', true); return } $('savePayment').disabled = true; try {await api('/payments', {method: 'POST', body: JSON.stringify(payload)}); notice(`Payment saved for ${supplier}: ${money(amount)}. Ledger updated.`); $('paymentForm').reset(); $('paySupplier').value = supplier; setDate(); toggleCheque(); await loadSummary(); await openLedger(supplier, false)} catch (err) {notice(err.message, true)} finally {$('savePayment').disabled = false} });
+        setDate(); toggleCheque(); loadSummary();
+
+    </script>
+</body>
+
+</html>

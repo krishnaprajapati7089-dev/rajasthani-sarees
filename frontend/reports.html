@@ -3848,6 +3848,14 @@ function paymentEntryDate(entry, bill){
     entry?.createdAt || entry?.created_at || billDateValue(bill);
 }
 
+// Safe money rounding helper used by the payment report calculations.
+// Keep this in the same global script scope as getPaymentEntriesForBill().
+function round2(value){
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.round((number + Number.EPSILON) * 100) / 100;
+}
+
 function isUpiMethod(methodValue){
   const method = String(methodValue || "").toLowerCase().replace(/[\s_-]+/g,"");
   return method.includes("upi") || method.includes("phonepe") ||

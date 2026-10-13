@@ -152,6 +152,10 @@ const billSchema = new mongoose.Schema({
     type: String,
     default: 'Cash'
   },
+
+  // Persist split tender amounts for accurate Cash/UPI reporting.
+  cash_amount: { type: Number, default: 0, min: 0 },
+  upi_amount: { type: Number, default: 0, min: 0 },
   payment_status: {
     type: String,
     enum: ['Paid', 'Partial', 'Unpaid'],

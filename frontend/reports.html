@@ -3868,7 +3868,7 @@ function getPaymentEntriesForBill(bill){
   // Exact split tender values take priority over the general payment mode.
   const explicitCash = readAmount(bill.cash_amount, bill.cashAmount, bill.cash_received, bill.cashReceived, bill.payment_breakdown?.cash, bill.paymentBreakdown?.cash, bill.payment_details?.cash_amount, bill.payment_details?.cashAmount);
   const explicitUpi = readAmount(bill.upi_amount, bill.upiAmount, bill.upi_paid_amount, bill.upiPaidAmount, bill.online_upi_amount, bill.onlineUpiAmount, bill.payment_breakdown?.upi, bill.paymentBreakdown?.upi, bill.payment_details?.upi_amount, bill.payment_details?.upiAmount);
-  if (explicitCash !== null || explicitUpi !== null) {
+  if ((explicitCash ?? 0) > 0.009 || (explicitUpi ?? 0) > 0.009) {
     const upi = Math.min(paidTotal, explicitUpi ?? 0);
     const cash = Math.min(Math.max(0, paidTotal - upi), explicitCash ?? Math.max(0, paidTotal - upi));
     const entries = [];

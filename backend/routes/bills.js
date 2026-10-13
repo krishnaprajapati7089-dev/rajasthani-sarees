@@ -62,6 +62,43 @@ function validatePaymentAmount(amount, total, label = 'Received amount') {
   return round2(value);
 }
 
+function hasSplitPayment(body) {
+  return body.cash_amount !== undefined || body.cashAmount !== undefined ||
+    body.upi_amount !== undefined || body.upiAmount !== undefined ||
+    body.payment_breakdown?.cash !== undefined || body.payment_breakdown?.upi !== undefined;
+}
+
+function getSplitPayment(body, total) {
+  const cashRaw = body.cash_amount ?? body.cashAmount ?? body.payment_breakdown?.cash ?? 0;
+  const upiRaw = body.upi_amount ?? body.upiAmount ?? body.payment_breakdown?.upi ?? 0;
+  const cash = validatePaymentAmount(cashRaw, total, 'Cash received');
+  const upi = validatePaymentAmount(upiRaw, total, 'UPI received');
+  const received = round2(cash + upi);
+  if (received > round2(total) + 0.001) {
+    throw new Error('Cash plus UPI cannot be greater than the bill total');
+  }
+  return { cash, upi, received };
+}
+
+function makeSplitHistory(cash, upi, date = new Date(), note = 'Initial payment at bill creation') {
+  const history = [];
+  if (cash > 0) history.push({ amount: round2(cash), date, mode: 'Cash', note });
+  if (upi > 0) history.push({ amount: round2(upi), date, mode: 'UPI', note });
+  return history;
+}
+
+function sumHistoryByMode(history) {
+  let cash = 0;
+  let upi = 0;
+  for (const entry of Array.isArray(history) ? history : []) {
+    const mode = String(entry.mode || entry.method || entry.payment_mode || '').toLowerCase().replace(/[\s_-]+/g, '');
+    const amount = Math.max(0, Number(entry.amount ?? entry.paid_amount ?? 0) || 0);
+    if (mode === 'cash' || mode === 'cashpayment') cash = round2(cash + amount);
+    else if (mode.includes('upi') || mode.includes('phonepe') || mode.includes('googlepay') || mode.includes('gpay') || mode.includes('bhim') || mode === 'paytm') upi = round2(upi + amount);
+  }
+  return { cash, upi };
+}
+
 
 // ============================================================
 // PREPARE BILL ITEMS
@@ -1079,6 +1116,9 @@ router.post(
         payment_status,
         paid_amount,
         amount_received,
+        cash_amount,
+        upi_amount,
+        payment_breakdown,
         discount_amount,
         items
       } = req.body;
@@ -1124,6 +1164,33 @@ router.post(
       // CREATE BILL
       // --------------------------------------------------------
 
+      const splitProvided = hasSplitPayment(req.body);
+      const split = splitProvided
+        ? getSplitPayment(req.body, calculation.grand_total)
+        : null;
+      const receivedAmount = split
+        ? split.received
+        : validatePaymentAmount(
+            amount_received ?? paid_amount ?? calculation.grand_total,
+            calculation.grand_total
+          );
+      const cashAmount = split ? split.cash : (
+        /upi|phonepe|googlepay|gpay|paytm|bhim/i.test(String(payment_mode || ''))
+          ? 0 : receivedAmount
+      );
+      const upiAmount = split ? split.upi : (
+        /upi|phonepe|googlepay|gpay|paytm|bhim/i.test(String(payment_mode || ''))
+          ? receivedAmount : 0
+      );
+      const initialHistory = splitProvided
+        ? makeSplitHistory(cashAmount, upiAmount)
+        : (receivedAmount > 0 ? [{
+            amount: receivedAmount,
+            date: new Date(),
+            mode: payment_mode || 'Cash',
+            note: 'Initial payment at bill creation'
+          }] : []);
+
       const bill =
         await Bill.create({
 
@@ -1153,50 +1220,14 @@ router.post(
             'Cash',
 
           payment_status:
-            getPaymentStatus(
-              calculation.grand_total,
-              validatePaymentAmount(
-                amount_received ?? paid_amount ?? calculation.grand_total,
-                calculation.grand_total
-              )
-            ),
+            getPaymentStatus(calculation.grand_total, receivedAmount),
 
-          paid_amount:
-            validatePaymentAmount(
-              amount_received ?? paid_amount ?? calculation.grand_total,
-              calculation.grand_total
-            ),
-
-          amount_received:
-            validatePaymentAmount(
-              amount_received ?? paid_amount ?? calculation.grand_total,
-              calculation.grand_total
-            ),
-
-          outstanding_amount:
-            round2(
-              calculation.grand_total -
-              validatePaymentAmount(
-                amount_received ?? paid_amount ?? calculation.grand_total,
-                calculation.grand_total
-              )
-            ),
-
-          payment_history:
-            validatePaymentAmount(
-              amount_received ?? paid_amount ?? calculation.grand_total,
-              calculation.grand_total
-            ) > 0
-              ? [{
-                  amount: validatePaymentAmount(
-                    amount_received ?? paid_amount ?? calculation.grand_total,
-                    calculation.grand_total
-                  ),
-                  date: new Date(),
-                  mode: payment_mode || 'Cash',
-                  note: 'Initial payment at bill creation'
-                }]
-              : [],
+          paid_amount: receivedAmount,
+          amount_received: receivedAmount,
+          cash_amount: cashAmount,
+          upi_amount: upiAmount,
+          outstanding_amount: round2(calculation.grand_total - receivedAmount),
+          payment_history: initialHistory,
 
           subtotal:
             calculation.subtotal,
@@ -1316,6 +1347,9 @@ router.put(
         payment_status,
         paid_amount,
         amount_received,
+        cash_amount,
+        upi_amount,
+        payment_breakdown,
         discount_amount,
         items
       } = req.body;
@@ -1568,28 +1602,55 @@ router.put(
         bill.payment_mode ||
         'Cash';
 
-      // Preserve the saved collection when the edit form does not send
-      // a payment value. Do not turn a zero payment into a full payment.
-      const editedPaidAmount = validatePaymentAmount(
-        amount_received ?? paid_amount ?? bill.paid_amount ?? 0,
-        calculation.grand_total,
-        'Received amount'
-      );
+      // Payment split is persisted separately. If amounts are unchanged,
+      // preserve payment dates/history. If the user changes the split while
+      // editing, replace it with an explicitly split adjustment at edit time.
+      const splitProvided = hasSplitPayment(req.body);
+      let editedCash;
+      let editedUpi;
+      let editedPaidAmount;
+      if (splitProvided) {
+        const split = getSplitPayment(req.body, calculation.grand_total);
+        editedCash = split.cash;
+        editedUpi = split.upi;
+        editedPaidAmount = split.received;
+        const oldSplit = sumHistoryByMode(bill.payment_history);
+        const storedCash = Math.max(0, Number(bill.cash_amount) || 0);
+        const storedUpi = Math.max(0, Number(bill.upi_amount) || 0);
+        const oldCash = storedCash > 0 || oldSplit.cash === 0 ? storedCash : oldSplit.cash;
+        const oldUpi = storedUpi > 0 || oldSplit.upi === 0 ? storedUpi : oldSplit.upi;
+        if (Math.abs(oldCash - editedCash) > 0.01 || Math.abs(oldUpi - editedUpi) > 0.01) {
+          bill.payment_history = makeSplitHistory(
+            editedCash, editedUpi, new Date(), 'Payment split adjusted while editing bill'
+          );
+        } else if (!Array.isArray(bill.payment_history)) {
+          bill.payment_history = makeSplitHistory(editedCash, editedUpi);
+        }
+      } else {
+        editedPaidAmount = validatePaymentAmount(
+          amount_received ?? paid_amount ?? bill.paid_amount ?? 0,
+          calculation.grand_total,
+          'Received amount'
+        );
+        const oldSplit = sumHistoryByMode(bill.payment_history);
+        editedCash = oldSplit.cash;
+        editedUpi = oldSplit.upi;
+        if (round2(editedCash + editedUpi) < editedPaidAmount - 0.01) {
+          const fallbackMode = String(payment_mode || bill.payment_mode || 'Cash');
+          if (/upi|phonepe|googlepay|gpay|paytm|bhim/i.test(fallbackMode)) editedUpi = round2(editedUpi + editedPaidAmount - editedCash - editedUpi);
+          else editedCash = round2(editedCash + editedPaidAmount - editedCash - editedUpi);
+          bill.payment_history = makeSplitHistory(editedCash, editedUpi, new Date(), 'Payment adjustment while editing bill');
+        }
+      }
 
+      bill.cash_amount = editedCash;
+      bill.upi_amount = editedUpi;
       bill.paid_amount = editedPaidAmount;
       bill.amount_received = editedPaidAmount;
-      bill.outstanding_amount = round2(
-        calculation.grand_total - editedPaidAmount
-      );
-      bill.payment_status = getPaymentStatus(
-        calculation.grand_total,
-        editedPaidAmount
-      );
+      bill.outstanding_amount = round2(calculation.grand_total - editedPaidAmount);
+      bill.payment_status = getPaymentStatus(calculation.grand_total, editedPaidAmount);
 
-      // Existing payment history is retained when editing bill details.
-      if (!Array.isArray(bill.payment_history)) {
-        bill.payment_history = [];
-      }
+      if (!Array.isArray(bill.payment_history)) bill.payment_history = [];
 
       bill.subtotal =
         calculation.subtotal;
@@ -1714,7 +1775,20 @@ router.post(
       if (!Array.isArray(bill.payment_history)) {
         bill.payment_history = [];
       }
+      const priorSplit = sumHistoryByMode(bill.payment_history);
+      const storedCash = Math.max(0, Number(bill.cash_amount) || 0);
+      const storedUpi = Math.max(0, Number(bill.upi_amount) || 0);
+      const baseCash = storedCash > 0 || priorSplit.cash === 0 ? storedCash : priorSplit.cash;
+      const baseUpi = storedUpi > 0 || priorSplit.upi === 0 ? storedUpi : priorSplit.upi;
+      bill.cash_amount = baseCash;
+      bill.upi_amount = baseUpi;
       bill.payment_history.push(entry);
+      const modeKey = String(entry.mode || '').toLowerCase().replace(/[\s_-]+/g, '');
+      if (modeKey.includes('upi') || modeKey.includes('phonepe') || modeKey.includes('googlepay') || modeKey.includes('gpay') || modeKey.includes('paytm') || modeKey.includes('bhim')) {
+        bill.upi_amount = round2(baseUpi + amount);
+      } else {
+        bill.cash_amount = round2(baseCash + amount);
+      }
       bill.paid_amount = newPaid;
       bill.amount_received = newPaid;
       bill.outstanding_amount = round2(Math.max(0, total - newPaid));

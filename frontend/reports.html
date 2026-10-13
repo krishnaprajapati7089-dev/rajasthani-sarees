@@ -3859,38 +3859,164 @@ function isUpiMethod(methodValue){
 function getPaymentEntriesForBill(bill){
   const history = getPaymentHistory(bill);
   const paidTotal = getBillPaidAmount(bill);
-  const readAmount = (...values) => {
-    for (const value of values) {
-      if (value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value))) return Math.max(0, num(value));
+
+  const explicitUpi = Math.max(0, num(
+    bill.upi_amount ?? bill.upiAmount ??
+    bill.upi_paid_amount ?? bill.upiPaidAmount ??
+    bill.online_upi_amount ?? bill.onlineUpiAmount ??
+    bill.payment_breakdown?.upi ?? bill.paymentBreakdown?.upi ??
+    bill.payment_details?.upi_amount ?? bill.payment_details?.upiAmount
+  ));
+  const explicitCash = Math.max(0, num(
+    bill.cash_amount ?? bill.cashAmount ?? bill.cash_paid_amount ?? bill.cashPaidAmount ??
+    bill.payment_breakdown?.cash ?? bill.paymentBreakdown?.cash ??
+    bill.payment_details?.cash_amount ?? bill.payment_details?.cashAmount
+  ));
+
+  const billMethod = getPaymentMethod(bill);
+  const defaultMethod = billMethod || (explicitUpi > 0 ? "UPI" : "Cash");
+
+  if(!history.length && round2(explicitCash + explicitUpi) > 0.001){
+    const splitEntries = [];
+    if(explicitCash > 0) splitEntries.push({
+      amount: Math.min(explicitCash, paidTotal),
+      date: billDateValue(bill),
+      method: 'Cash',
+      reference: '—',
+      note: 'Cash amount saved separately'
+    });
+    if(explicitUpi > 0) splitEntries.push({
+      amount: Math.min(explicitUpi, Math.max(0, paidTotal - explicitCash)),
+      date: billDateValue(bill),
+      method: 'UPI',
+      reference: getUpiReference(bill),
+      note: 'UPI amount saved separately'
+    });
+    return splitEntries.filter(entry => entry.amount > 0);
+  }
+
+  if(history.length){
+    // If the database has separate Cash/UPI totals but an older history entry
+    // says only "Cash + UPI", never classify the entire combined amount as UPI.
+    const hasDistinctTenderHistory = history.some(entry => {
+      const m = paymentEntryMethod(entry);
+      return m === 'cash' || m === 'cashpayment' ||
+        (isUpiMethod(m) && !m.includes('cash'));
+    });
+    const hasExplicitSplit = round2(explicitCash + explicitUpi) > 0.001;
+    const hasCombinedOnlyHistory = history.some(entry => {
+      const m = paymentEntryMethod(entry);
+      return m.includes('cash') && isUpiMethod(m);
+    }) && !hasDistinctTenderHistory;
+
+    if(hasExplicitSplit && hasCombinedOnlyHistory){
+      const entries = [];
+      if(explicitCash > 0) entries.push({
+        amount: Math.min(explicitCash, paidTotal),
+        date: billDateValue(bill),
+        method: 'Cash',
+        reference: '—',
+        note: 'Cash amount saved separately'
+      });
+      if(explicitUpi > 0) entries.push({
+        amount: Math.min(explicitUpi, Math.max(0, paidTotal - explicitCash)),
+        date: billDateValue(bill),
+        method: 'UPI',
+        reference: getUpiReference(bill),
+        note: 'UPI amount saved separately'
+      });
+      return entries.filter(entry => entry.amount > 0);
     }
-    return null;
-  };
-  // Exact split tender values take priority over the general payment mode.
-  const explicitCash = readAmount(bill.cash_amount, bill.cashAmount, bill.cash_received, bill.cashReceived, bill.payment_breakdown?.cash, bill.paymentBreakdown?.cash, bill.payment_details?.cash_amount, bill.payment_details?.cashAmount);
-  const explicitUpi = readAmount(bill.upi_amount, bill.upiAmount, bill.upi_paid_amount, bill.upiPaidAmount, bill.online_upi_amount, bill.onlineUpiAmount, bill.payment_breakdown?.upi, bill.paymentBreakdown?.upi, bill.payment_details?.upi_amount, bill.payment_details?.upiAmount);
-  if ((explicitCash ?? 0) > 0.009 || (explicitUpi ?? 0) > 0.009) {
-    const upi = Math.min(paidTotal, explicitUpi ?? 0);
-    const cash = Math.min(Math.max(0, paidTotal - upi), explicitCash ?? Math.max(0, paidTotal - upi));
-    const entries = [];
-    if (cash > 0.009) entries.push({amount:cash,date:billDateValue(bill),method:"Cash",reference:"—",note:"Cash portion of split payment"});
-    if (upi > 0.009) entries.push({amount:upi,date:billDateValue(bill),method:"UPI",reference:getUpiReference(bill),note:"UPI portion of split payment"});
+
+    const entries = history.map(entry => {
+      let method =
+        entry?.payment_mode || entry?.paymentMode ||
+        entry?.mode || entry?.payment_method ||
+        entry?.paymentMethod || entry?.payment_type ||
+        entry?.paymentType || entry?.method || entry?.type ||
+        entry?.paymentMethodName || entry?.paymentModeName ||
+        defaultMethod;
+      const normalizedMethod = String(method).toLowerCase().replace(/[\\s_-]+/g, '');
+      if (normalizedMethod.includes('cash') && isUpiMethod(normalizedMethod)) {
+        method = 'Cash (historical split unavailable)';
+      }
+
+      return {
+        amount: paymentEntryAmount(entry),
+        date: paymentEntryDate(entry, bill),
+        method,
+        reference: entry?.upi_reference || entry?.upiReference ||
+          entry?.reference || entry?.transaction_id ||
+          entry?.transactionId || entry?.utr || getUpiReference(bill),
+        note: entry?.note || ""
+      };
+    }).filter(entry => entry.amount > 0);
+
+    const recorded = entries.reduce((sum, entry) => sum + entry.amount, 0);
+    const missing = Math.max(0, paidTotal - recorded);
+
+    if(missing > 0.01){
+      const recordedUpi = entries
+        .filter(entry => isUpiMethod(entry.method))
+        .reduce((sum, entry) => sum + entry.amount, 0);
+      const missingUpi = Math.min(missing, Math.max(0, explicitUpi - recordedUpi));
+
+      if(missingUpi > 0.01){
+        entries.push({
+          amount: missingUpi,
+          date: billDateValue(bill),
+          method: "UPI",
+          reference: getUpiReference(bill),
+          note: "UPI amount saved on bill"
+        });
+      }
+
+      const remainingMissing = missing - missingUpi;
+      if(remainingMissing > 0.01){
+        entries.push({
+          amount: remainingMissing,
+          date: billDateValue(bill),
+          method: defaultMethod,
+          reference: getUpiReference(bill),
+          note: "Legacy payment without a separate history entry"
+        });
+      }
+    }
+
     return entries;
   }
-  if (history.length) {
-    const entries = history.map(entry => ({amount:paymentEntryAmount(entry),date:paymentEntryDate(entry,bill),method:paymentEntryMethod(entry)||getPaymentMethod(bill)||"Cash",reference:entry?.upi_reference||entry?.upiReference||entry?.reference||entry?.transaction_id||entry?.transactionId||entry?.utr||getUpiReference(bill),note:entry?.note||""})).filter(entry=>entry.amount>0);
-    const mixed = entries.some(e => {const m=String(e.method||"").toLowerCase().replace(/[\s_-]+/g,"");return m.includes("cash")&&m.includes("upi");});
-    if (mixed) {
-      const separateUpi=entries.filter(e=>isUpiMethod(e.method)&&!String(e.method).toLowerCase().includes("cash")).reduce((sum,e)=>sum+e.amount,0);
-      if(separateUpi>0){const upi=Math.min(paidTotal,separateUpi),cash=Math.max(0,paidTotal-upi);return [...(cash>0.009?[{amount:cash,date:billDateValue(bill),method:"Cash",reference:"—",note:"Cash portion"}]:[]),{amount:upi,date:billDateValue(bill),method:"UPI",reference:getUpiReference(bill),note:"UPI portion"}];}
-      // Legacy mixed label without a saved split must not count the full bill as UPI.
-      return [{amount:paidTotal,date:billDateValue(bill),method:"Cash",reference:"—",note:"Legacy mixed payment; split amount was not saved"}];
+
+  if(paidTotal <= 0) return [];
+
+  if(explicitUpi > 0){
+    const upiPart = Math.min(paidTotal, explicitUpi);
+    const entries = [{
+      amount: upiPart,
+      date: billDateValue(bill),
+      method: "UPI",
+      reference: getUpiReference(bill),
+      note: "UPI amount saved on bill"
+    }];
+
+    if(paidTotal > upiPart){
+      entries.push({
+        amount: paidTotal - upiPart,
+        date: billDateValue(bill),
+        method: billMethod || "Cash",
+        reference: "—",
+        note: "Remaining received amount"
+      });
     }
     return entries;
   }
-  if(paidTotal<=0)return [];
-  const method=String(getPaymentMethod(bill)||"").toLowerCase().replace(/[\s_-]+/g,"");
-  const wholeUpi=method.includes("upi")||method.includes("phonepe")||method.includes("googlepay")||method.includes("gpay")||method.includes("paytmupi")||method.includes("bhim")||method==="paytm"||method.includes("qrpayment");
-  return [{amount:paidTotal,date:billDateValue(bill),method:wholeUpi?"UPI":"Cash",reference:getUpiReference(bill),note:"Payment recorded on bill"}];
+
+  return [{
+    amount: paidTotal,
+    date: billDateValue(bill),
+    method: defaultMethod,
+    reference: getUpiReference(bill),
+    note: "Payment recorded on bill"
+  }];
 }
 
 function renderUpiPayments(){

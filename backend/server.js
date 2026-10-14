@@ -12,7 +12,7 @@ const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const User = require('./models/User');
 
-const productsRouter = require('./routes/products');
+const productsRouter = require('./routes/products')
 const billsRouter = require('./routes/bills');
 const purchasesRouter = require('./routes/purchases');
 const shopRouter = require('./routes/shop');
@@ -367,6 +367,7 @@ app.use('/api/dashboard', requireAuth, dashboardRouter);
 app.use('/api/reports', requireAuth, reportsRouter);
 app.use('/api/ca', requireAuth, caRouter);
 app.use('/api/supplier-ledger', requireAuth, supplierLedgerRouter);
+app.use('/api/suppliers', requireAuth, suppliersRouter);
 
 // ============================================================
 // FRONTEND

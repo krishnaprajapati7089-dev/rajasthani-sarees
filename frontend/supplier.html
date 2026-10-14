@@ -1,559 +1,553 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Supplier Ledger — Rajastani Saree</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-    <style>
-        :root {
-            --g: #063f35;
-            --g2: #0b5a4b;
-            --gold: #c9a24a;
-            --ivory: #fbf8f2;
-            --ink: #17221f;
-            --muted: #68756f;
-            --line: #e5ddcc;
-            --red: #b23a2e
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supplier Ledger</title>
+  <link rel="stylesheet" href="css/style.css" />
 
-        * {
-            box-sizing: border-box
-        }
-
-        body {
-            margin: 0;
-            background: linear-gradient(135deg, #fbf8f2, #f5f0e5);
-            color: var(--ink);
-            font: 14px Inter, Arial, sans-serif
-        }
-
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 3;
-            background: #ffffffef;
-            border-bottom: 1px solid var(--line)
-        }
-
-        .head {
-            max-width: 1320px;
-            margin: auto;
-            padding: 15px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap
-        }
-
-        .brand {
-            font: 700 21px "Playfair Display", serif;
-            color: var(--g);
-            text-decoration: none
-        }
-
-        .brand small {
-            display: block;
-            font: 700 10px Inter;
-            letter-spacing: 1.5px;
-            color: var(--gold);
-            margin-top: 4px
-        }
-
-        nav {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap
-        }
-
-        nav a {
-            padding: 9px 11px;
-            text-decoration: none;
-            color: var(--g);
-            border-radius: 9px;
-            font-weight: 600
-        }
-
-        nav a:hover,
-        nav a.active {
-            background: #eef6f2
-        }
-
-        main {
-            max-width: 1320px;
-            margin: auto;
-            padding: 28px 24px 48px
-        }
-
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-bottom: 20px
-        }
-
-        .eyebrow {
-            font-size: 11px;
-            letter-spacing: 1.7px;
-            color: var(--gold);
-            font-weight: 800;
-            margin: 0 0 6px
-        }
-
-        .top h1 {
-            font: 700 36px "Playfair Display", serif;
-            color: var(--g);
-            margin: 0
-        }
-
-        .muted {
-            color: var(--muted);
-            font-size: 12px
-        }
-
-        .btn {
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 10px 14px;
-            background: #fff;
-            color: var(--g);
-            font: 700 12px Inter;
-            cursor: pointer;
-            text-decoration: none
-        }
-
-        .btn.primary {
-            background: var(--g);
-            border-color: var(--g);
-            color: white
-        }
-
-        .btn:disabled {
-            opacity: .5;
-            cursor: wait
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 18px
-        }
-
-        .card,
-        .panel {
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            box-shadow: 0 8px 26px #063f350b
-        }
-
-        .card {
-            padding: 17px
-        }
-
-        .label {
-            font-size: 10px;
-            letter-spacing: .5px;
-            font-weight: 800;
-            color: var(--muted);
-            text-transform: uppercase
-        }
-
-        .value {
-            font: 700 25px "Playfair Display", serif;
-            color: var(--g);
-            margin-top: 7px
-        }
-
-        .panel {
-            padding: 20px;
-            margin-bottom: 18px
-        }
-
-        .panel h2 {
-            font: 700 21px "Playfair Display", serif;
-            color: var(--g);
-            margin: 0 0 15px
-        }
-
-        .searchrow {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: end;
-            margin-bottom: 14px
-        }
-
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 0;
-            flex: 1
-        }
-
-        .field label {
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--muted)
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            border: 1px solid var(--line);
-            border-radius: 9px;
-            padding: 10px 11px;
-            font: 13px Inter;
-            color: var(--ink);
-            background: white;
-            outline: none
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: var(--gold)
-        }
-
-        .tablewrap {
-            overflow: auto;
-            border: 1px solid var(--line);
-            border-radius: 11px
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            background: white
-        }
-
-        th,
-        td {
-            padding: 11px 10px;
-            border-bottom: 1px solid var(--line);
-            text-align: left;
-            font-size: 12px;
-            white-space: nowrap
-        }
-
-        th {
-            background: #faf8f2;
-            text-transform: uppercase;
-            font-size: 10px;
-            letter-spacing: .4px;
-            color: var(--muted)
-        }
-
-        tbody tr:hover {
-            background: #f7fbf8
-        }
-
-        .money {
-            font-weight: 700;
-            color: var(--g)
-        }
-
-        .tag {
-            border-radius: 20px;
-            padding: 4px 8px;
-            font-size: 10px;
-            font-weight: 800;
-            background: #e7f5ed;
-            color: #1e7a4c
-        }
-
-        .tag.due {
-            background: #fbeae7;
-            color: var(--red)
-        }
-
-        .tag.advance {
-            background: #fff4d6;
-            color: #85651b
-        }
-
-        .hidden {
-            display: none !important
-        }
-
-        .notice {
-            padding: 11px 13px;
-            background: #f7fbf8;
-            border: 1px solid #d8e9df;
-            border-radius: 9px;
-            color: var(--g);
-            font-size: 12px;
-            margin-bottom: 12px
-        }
-
-        .notice.error {
-            background: #fff3f1;
-            border-color: #f1cbc5;
-            color: var(--red)
-        }
-
-        .detailhead {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap
-        }
-
-        .detailstats {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            font-size: 12px
-        }
-
-        .detailstats strong {
-            color: var(--g)
-        }
-
-        .formgrid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px
-        }
-
-        .full {
-            grid-column: 1/-1
-        }
-
-        .formactions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 14px
-        }
-
-        @media(max-width:850px) {
-            .cards {
-                grid-template-columns: repeat(2, minmax(0, 1fr))
-            }
-
-            .formgrid {
-                grid-template-columns: repeat(2, minmax(0, 1fr))
-            }
-        }
-
-        @media(max-width:600px) {
-            main {
-                padding: 20px 12px
-            }
-
-            .head {
-                padding: 13px
-            }
-
-            .top h1 {
-                font-size: 30px
-            }
-
-            .cards {
-                grid-template-columns: 1fr 1fr
-            }
-
-            .card {
-                padding: 13px
-            }
-
-            .value {
-                font-size: 21px
-            }
-
-            .panel {
-                padding: 14px
-            }
-
-            .formgrid {
-                grid-template-columns: 1fr
-            }
-
-            .full {
-                grid-column: auto
-            }
-        }
-    </style>
+  <style>
+    /* Rajastani Saree — premium ivory, emerald & champagne supplier ledger */
+    :root {
+      --sp-emerald: #145b46;
+      --sp-emerald-dark: #0d4032;
+      --sp-emerald-soft: #eaf4ef;
+      --sp-maroon: #7f243d;
+      --sp-champagne: #d7b779;
+      --sp-ivory: #fbf8f1;
+      --sp-paper: #ffffff;
+      --sp-ink: #292d2a;
+      --sp-muted: #737a74;
+      --sp-line: #e7e1d6;
+      --sp-danger: #b42332;
+      --sp-danger-soft: #fff0ef;
+      --sp-shadow: 0 8px 28px rgba(38, 52, 43, .07);
+    }
+    [hidden] { display: none !important; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--sp-ink);
+      background: linear-gradient(180deg, #f7f3e9 0, #fbfaf6 280px, #fbfaf6 100%);
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .sp-wrap { max-width: 1440px; margin: 0 auto; padding: 28px clamp(14px, 3vw, 36px) 44px; }
+    .sp-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin: 10px 0 22px; }
+    .sp-head h1 { margin: 0; color: var(--sp-emerald-dark); font-size: clamp(1.5rem, 2.3vw, 2rem); font-weight: 800; letter-spacing: -.045em; }
+    .sp-head h1::after { content: ""; display: block; width: 54px; height: 3px; margin-top: 9px; border-radius: 9px; background: var(--sp-champagne); }
+    .sp-sub { margin: 8px 0 0; color: var(--sp-muted); font-size: .92rem; line-height: 1.6; }
+    .sp-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+    .sp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 15px; border: 1px solid #d9d5cb; background: #fffefa; color: #35433b; border-radius: 9px; cursor: pointer; font: inherit; font-size: .9rem; font-weight: 650; box-shadow: 0 2px 5px rgba(0,0,0,.025); transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+    .sp-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(30, 57, 43, .10); background: #fff; }
+    .sp-btn:focus-visible, .sp-link:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(215,183,121,.5); outline-offset: 2px; }
+    .sp-primary { background: var(--sp-emerald); border-color: var(--sp-emerald); color: white; }
+    .sp-primary:hover { background: var(--sp-emerald-dark); border-color: var(--sp-emerald-dark); }
+    .sp-green-btn { background: var(--sp-maroon); border-color: var(--sp-maroon); color: white; }
+    .sp-green-btn:hover { background: #641a30; border-color: #641a30; }
+    .sp-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 15px; margin: 20px 0 24px; }
+    .sp-card { position: relative; min-width: 0; overflow: hidden; background: var(--sp-paper); border: 1px solid var(--sp-line); border-radius: 14px; padding: 18px 18px 17px; box-shadow: var(--sp-shadow); }
+    .sp-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--sp-champagne); }
+    .sp-card span { display: block; margin-bottom: 9px; color: var(--sp-muted); font-size: .78rem; font-weight: 700; letter-spacing: .035em; text-transform: uppercase; line-height: 1.4; }
+    .sp-card b { display: block; color: var(--sp-emerald-dark); font-size: clamp(1.25rem, 2vw, 1.65rem); font-weight: 800; letter-spacing: -.035em; overflow-wrap: anywhere; }
+    .sp-red { border-color: #f0d0cd; background: linear-gradient(135deg, #fff 0%, var(--sp-danger-soft) 100%); }
+    .sp-red::before { background: var(--sp-danger); }
+    .sp-red b { color: var(--sp-danger); }
+    .sp-green { border-color: #cfe3d7; background: linear-gradient(135deg, #fff 0%, var(--sp-emerald-soft) 100%); }
+    .sp-green::before { background: var(--sp-emerald); }
+    .sp-green b { color: var(--sp-emerald); }
+    .sp-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 15px 0; }
+    .sp-toolbar input, .sp-toolbar select { min-height: 42px; padding: 9px 12px; border: 1px solid #ddd8cd; border-radius: 9px; background: #fff; color: var(--sp-ink); font: inherit; font-size: .9rem; }
+    .sp-toolbar input[type="search"] { flex: 1; min-width: min(260px, 100%); }
+    .sp-toolbar label { display: flex; align-items: center; gap: 8px; color: var(--sp-muted); font-size: .88rem; font-weight: 650; }
+    .sp-table-wrap { overflow: auto; background: var(--sp-paper); border: 1px solid var(--sp-line); border-radius: 14px; box-shadow: var(--sp-shadow); }
+    .sp-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .9rem; }
+    .sp-table th, .sp-table td { padding: 14px 15px; border-bottom: 1px solid #f0ece4; text-align: left; vertical-align: middle; }
+    .sp-table th { position: sticky; top: 0; z-index: 1; background: #f3efe5; color: #435448; font-size: .75rem; font-weight: 800; letter-spacing: .045em; text-transform: uppercase; white-space: nowrap; }
+    .sp-table tbody tr:last-child td { border-bottom: 0; }
+    .sp-table tbody tr:nth-child(even):not(.sp-open) { background: #fdfcf9; }
+    .sp-table .r { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .sp-table small { color: var(--sp-muted); font-size: .8rem; line-height: 1.6; }
+    .sp-click { cursor: pointer; transition: background .15s ease; }
+    .sp-click:hover { background: #f1f7f2 !important; }
+    .sp-open { background: #f7f2e7; font-style: italic; }
+    .sp-note { font-style: italic; }
+    .sp-tag { display: inline-block; font-size: .68rem; font-weight: 700; padding: 3px 7px; border-radius: 5px; background: #edf3ee; color: var(--sp-emerald); margin-left: 5px; white-space: nowrap; }
+    .sp-due { color: var(--sp-danger); font-weight: 750; }
+    .sp-adv { color: var(--sp-emerald); font-weight: 750; }
+    .sp-ok { color: #68736b; font-weight: 650; }
+    .sp-empty { text-align: center; color: var(--sp-muted); padding: 32px 18px; }
+    .sp-link { background: none; border: 0; color: var(--sp-emerald); cursor: pointer; font: inherit; font-size: .82rem; font-weight: 750; padding: 4px 5px; }
+    .sp-link:hover { text-decoration: underline; }
+    .sp-del { color: var(--sp-danger); }
+    dialog { border: 1px solid rgba(215,183,121,.55); border-radius: 16px; padding: 0; width: min(500px, 94vw); max-height: 90vh; box-shadow: 0 24px 80px rgba(13, 36, 26, .28); background: var(--sp-ivory); color: var(--sp-ink); }
+    dialog::backdrop { background: rgba(12, 29, 21, .55); backdrop-filter: blur(3px); }
+    .sp-form { padding: clamp(18px, 4vw, 26px); display: flex; flex-direction: column; gap: 13px; max-height: 90vh; overflow-y: auto; }
+    .sp-form h3 { margin: 0 0 6px; color: var(--sp-emerald-dark); font-size: 1.35rem; letter-spacing: -.025em; }
+    .sp-form label { display: flex; flex-direction: column; gap: 6px; color: #4f5a52; font-size: .85rem; font-weight: 700; }
+    .sp-form input, .sp-form select, .sp-form textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd7ca; border-radius: 9px; background: #fff; color: var(--sp-ink); font-size: .95rem; font-family: inherit; }
+    .sp-form input:focus, .sp-form select:focus, .sp-form textarea:focus { border-color: var(--sp-emerald); outline: 2px solid rgba(20,91,70,.12); }
+    .sp-form input[readonly] { background: #f0eee8; color: #777; }
+    .sp-form small { color: var(--sp-muted); font-size: .78rem; font-weight: 400; line-height: 1.5; }
+    .sp-form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 8px; }
+    @media (max-width: 700px) {
+      .sp-wrap { padding: 18px 12px 30px; }
+      .sp-head { align-items: flex-start; margin-bottom: 16px; }
+      .sp-head h1 { font-size: 1.55rem; }
+      .sp-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 15px 0 20px; }
+      .sp-card { padding: 14px 12px; border-radius: 11px; }
+      .sp-card span { font-size: .68rem; }
+      .sp-card b { font-size: 1.2rem; }
+      .sp-toolbar { align-items: stretch; }
+      .sp-toolbar input[type="search"] { min-width: 100%; }
+      .sp-toolbar label { flex: 1; flex-wrap: wrap; }
+      .sp-toolbar label input { width: 100%; }
+      .sp-table { min-width: 850px; }
+      .sp-actions { width: 100%; }
+      .sp-actions .sp-btn { flex: 1; }
+    }
+    @media (max-width: 380px) { .sp-cards { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
+    @media print {
+      @page { margin: 12mm; }
+      body { background: #fff !important; }
+      body * { visibility: hidden; }
+      #ledgerView, #ledgerView * { visibility: visible; }
+      #ledgerView { position: absolute; left: 0; top: 0; width: 100%; }
+      .sp-actions, .sp-toolbar, #btnBack, .sp-noprint { display: none !important; }
+      .sp-card, .sp-table-wrap { box-shadow: none; break-inside: avoid; }
+      .sp-table th { position: static; }
+    }
+  </style>
 </head>
-
 <body>
-    <script src="auth-guard.js"></script>
-    <header>
-        <div class="head"><a class="brand" href="dashboard.html">Rajastani Saree<small>BILLING & INVENTORY</small></a>
-            <nav><a href="dashboard.html">Dashboard</a><a href="purchase.html">Purchase Bill</a><a
-                    href="inventory.html">Inventory</a><a href="reports.html">Reports</a><a class="active"
-                    href="supplier-ledger.html">Supplier Ledger</a></nav>
+
+  <!-- Copy the navbar from your other pages here and add this link:
+       <a href="suppliers.html" class="active">Suppliers</a> -->
+
+  <main class="sp-wrap">
+
+    <!-- ===== LIST VIEW ===== -->
+    <section id="listView">
+      <div class="sp-head">
+        <h1>Supplier Ledger</h1>
+        <button class="sp-btn sp-primary" id="btnAddSupplier">+ Add Supplier</button>
+      </div>
+
+      <div class="sp-cards">
+        <div class="sp-card"><span>Total Purchase Bills</span><b id="ovBills">₹0</b></div>
+        <div class="sp-card"><span>Advance Paid</span><b id="ovAdvancePaid">₹0</b></div>
+        <div class="sp-card"><span>Total Paid</span><b id="ovPaid">₹0</b></div>
+        <div class="sp-card sp-red"><span>Pending Payment</span><b id="ovPending">₹0</b></div>
+        <div class="sp-card sp-green"><span>Advance Left With Suppliers</span><b id="ovAdvanceLeft">₹0</b></div>
+      </div>
+
+      <div class="sp-toolbar">
+        <input type="search" id="searchBox" placeholder="Search by name, city or phone..." />
+        <select id="statusFilter">
+          <option value="">All</option>
+          <option value="due">Pending payment</option>
+          <option value="advance">Advance left</option>
+          <option value="clear">Settled</option>
+        </select>
+      </div>
+
+      <div class="sp-table-wrap">
+        <table class="sp-table">
+          <thead>
+            <tr>
+              <th>Supplier</th>
+              <th>City</th>
+              <th class="r">Bills Total</th>
+              <th class="r">Advance Paid</th>
+              <th class="r">Other Payments</th>
+              <th class="r">Balance</th>
+              <th>Last Bill</th>
+              <th>Last Payment</th>
+            </tr>
+          </thead>
+          <tbody id="supplierRows"></tbody>
+        </table>
+        <p id="emptyList" class="sp-empty" hidden>No suppliers yet. Suppliers appear here automatically once you add a purchase bill.</p>
+      </div>
+    </section>
+
+    <!-- ===== LEDGER VIEW ===== -->
+    <section id="ledgerView" hidden>
+      <button class="sp-btn" id="btnBack">← Back</button>
+
+      <div class="sp-head">
+        <div>
+          <h1 id="lgName"></h1>
+          <p class="sp-sub" id="lgMeta"></p>
         </div>
-    </header>
-    <main>
-        <div class="top">
-            <div>
-                <p class="eyebrow">SUPPLIER ACCOUNTS</p>
-                <h1>Supplier Ledger</h1>
-                <p class="muted">Purchases, advances, payments and outstanding balances party-wise.</p>
-            </div><button class="btn primary" id="refreshBtn">↻ Refresh</button>
+        <div class="sp-actions">
+          <button class="sp-btn" id="btnEditSupplier">Edit Supplier</button>
+          <button class="sp-btn" id="btnPrint">Print / PDF</button>
+          <button class="sp-btn sp-green-btn" id="btnAddPayment">+ Add Payment</button>
         </div>
-        <div id="notice" class="notice hidden" role="status"></div>
-        <div class="cards">
-            <div class="card">
-                <div class="label">Total Purchases</div>
-                <div class="value" id="sumPurchased">₹0</div>
-            </div>
-            <div class="card">
-                <div class="label">Total Paid</div>
-                <div class="value" id="sumPaid">₹0</div>
-            </div>
-            <div class="card">
-                <div class="label">Payable Balance</div>
-                <div class="value" id="sumPayable">₹0</div>
-            </div>
-            <div class="card">
-                <div class="label">Supplier Advance</div>
-                <div class="value" id="sumAdvance">₹0</div>
-            </div>
-        </div>
-        <section class="panel" id="supplierPanel">
-            <h2>Party-wise Summary</h2>
-            <div class="searchrow">
-                <div class="field"><label for="supplierSearch">Search Supplier</label><input id="supplierSearch"
-                        placeholder="Enter supplier / party name"></div><button class="btn"
-                    id="clearSearch">Clear</button>
-            </div>
-            <div class="tablewrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Supplier / Party</th>
-                            <th>Purchase Bills</th>
-                            <th>Total Purchased</th>
-                            <th>Total Paid</th>
-                            <th>Balance</th>
-                            <th>Account Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="supplierRows">
-                        <tr>
-                            <td colspan="7">Loading suppliers…</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-        <section class="panel hidden" id="ledgerPanel">
-            <div class="detailhead">
-                <div>
-                    <h2 id="ledgerTitle">Supplier Ledger</h2>
-                    <div class="detailstats" id="ledgerStats"></div>
-                </div><button class="btn" id="backBtn">← All Suppliers</button>
-            </div>
-            <div style="height:14px"></div>
-            <div class="tablewrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Entry</th>
-                            <th>Bill / Reference</th>
-                            <th>Payment Mode</th>
-                            <th>Debit / Purchase</th>
-                            <th>Credit / Paid</th>
-                            <th>Running Balance</th>
-                            <th>Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ledgerRows"></tbody>
-                </table>
-            </div>
-        </section>
-        <section class="panel" id="paymentPanel">
-            <h2>Record Supplier Payment / Advance</h2>
-            <p class="muted">Every submission creates a separate dated transaction; previous payments are not
-                overwritten.</p>
-            <form id="paymentForm">
-                <div class="formgrid">
-                    <div class="field"><label for="paySupplier">Supplier / Party *</label><input id="paySupplier"
-                            list="supplierOptions" required placeholder="Choose or type supplier name"><datalist
-                            id="supplierOptions"></datalist></div>
-                    <div class="field"><label for="payKind">Transaction Type *</label><select id="payKind">
-                            <option value="payment">Payment against purchase</option>
-                            <option value="advance">Advance payment</option>
-                        </select></div>
-                    <div class="field"><label for="payAmount">Amount (₹) *</label><input id="payAmount" type="number"
-                            min="0.01" step="0.01" required placeholder="0.00"></div>
-                    <div class="field"><label for="payDate">Payment Date *</label><input id="payDate" type="date"
-                            required></div>
-                    <div class="field"><label for="payMode">Payment Mode *</label><select id="payMode">
-                            <option>UPI</option>
-                            <option>Cash</option>
-                            <option>Bank Transfer</option>
-                            <option>Cheque</option>
-                            <option>Card</option>
-                            <option>Other</option>
-                        </select></div>
-                    <div class="field"><label for="payBill">Against Purchase Bill (optional)</label><select
-                            id="payBill">
-                            <option value="">Unallocated / Supplier advance</option>
-                        </select></div>
-                    <div class="field chequeField hidden"><label for="chequeNumber">Cheque Number *</label><input
-                            id="chequeNumber" placeholder="Cheque number"></div>
-                    <div class="field chequeField hidden"><label for="chequeDate">Cheque Date</label><input
-                            id="chequeDate" type="date"></div>
-                    <div class="field chequeField hidden"><label for="chequeStatus">Cheque Status</label><select
-                            id="chequeStatus">
-                            <option>Issued</option>
-                            <option>Cleared</option>
-                            <option>Bounced</option>
-                            <option>Cancelled</option>
-                        </select></div>
-                    <div class="field"><label for="payReference">UPI / Bank Reference</label><input id="payReference"
-                            placeholder="UTR / transaction ID"></div>
-                    <div class="field full"><label for="payNotes">Notes</label><textarea id="payNotes" rows="2"
-                            placeholder="e.g. advance for next lot, cheque handed over"></textarea></div>
-                </div>
-                <div class="formactions"><button type="reset" class="btn">Reset</button><button type="submit"
-                        class="btn primary" id="savePayment">Save Payment</button></div>
-            </form>
-        </section>
-    </main>
-    <script>
-        const API_BASE_URL = 'https://rajasthani-sarees.onrender.com';
-        const $ = id => document.getElementById(id);
-        let supplierSummary = [], activeSupplier = '';
-        const money = n => '₹' + (Number(n) || 0).toLocaleString('en-IN', {maximumFractionDigits: 2});
-        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c]));
-        function dateOnly(v) {if (!v) return '—'; const d = new Date(v); return Number.isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat('en-IN', {timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric'}).format(d)}
-        function notice(msg, error = false) {const n = $('notice'); n.textContent = msg; n.classList.remove('hidden', 'error'); if (error) n.classList.add('error'); window.scrollTo({top: 0, behavior: 'smooth'})}
-        function hideNotice() {$('notice').classList.add('hidden')}
-        async function api(path, options = {}) {const r = await fetch(`${API_BASE_URL}/api/supplier-ledger${path}`, {credentials: 'include', headers: {'Content-Type': 'application/json', Accept: 'application/json', ...(options.headers || {})}, ...options}); const raw = await r.text(); let data = {}; try {data = raw ? JSON.parse(raw) : {}} catch {throw new Error(`Backend returned invalid data (HTTP ${r.status}).`)} if (!r.ok) throw new Error(data.error || data.message || `Request failed (${r.status}).`); return data}
-        function statusTag(s) {return s.balance_type === 'Payable' ? '<span class="tag due">Payable</span>' : s.balance_type === 'Advance' ? '<span class="tag advance">Advance</span>' : '<span class="tag">Settled</span>'}
-        function renderSummary() {
-            const q = $('supplierSearch').value.trim().toLowerCase(); const rows = supplierSummary.filter(s => s.supplier.toLowerCase().includes(q)); $('supplierRows').innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(s.supplier)}</strong></td><td>${Number(s.purchase_count || 0)}</td><td class="money">${money(s.total_purchased)}</td><td class="money">${money(s.total_paid)}</td><td class="money">${money(s.balance_amount)}</td><td>${statusTag(s)}</td><td><button class="btn" data-open="${esc(s.supplier)}">View Ledger</button></td></tr>`).join('') : '<tr><td colspan="7">No supplier found. You can record a payment for a new supplier below.</td></tr>';
-            $('supplierRows').querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openLedger(b.dataset.open)));
-            $('sumPurchased').textContent = money(supplierSummary.reduce((s, x) => s + (Number(x.total_purchased) || 0), 0)); $('sumPaid').textContent = money(supplierSummary.reduce((s, x) => s + (Number(x.total_paid) || 0), 0)); $('sumPayable').textContent = money(supplierSummary.filter(x => x.balance_type === 'Payable').reduce((s, x) => s + x.balance_amount, 0)); $('sumAdvance').textContent = money(supplierSummary.filter(x => x.balance_type === 'Advance').reduce((s, x) => s + x.balance_amount, 0)); $('supplierOptions').innerHTML = supplierSummary.map(s => `<option value="${esc(s.supplier)}"></option>`).join('')
+      </div>
+
+      <div class="sp-cards">
+        <div class="sp-card"><span>Opening Balance</span><b id="lgOpening">₹0</b></div>
+        <div class="sp-card"><span>Purchase Bills Total</span><b id="lgBills">₹0</b></div>
+        <div class="sp-card"><span>Advance Paid</span><b id="lgAdvance">₹0</b></div>
+        <div class="sp-card"><span>Total Paid</span><b id="lgPaid">₹0</b></div>
+        <div class="sp-card" id="lgBalanceCard"><span id="lgBalanceLabel">Balance</span><b id="lgBalance">₹0</b></div>
+      </div>
+
+      <div class="sp-toolbar">
+        <label>From <input type="date" id="fromDate" /></label>
+        <label>To <input type="date" id="toDate" /></label>
+        <button class="sp-btn" id="btnFilter">Filter</button>
+        <button class="sp-btn" id="btnClearFilter">Reset</button>
+      </div>
+
+      <div class="sp-table-wrap">
+        <table class="sp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Details</th>
+              <th class="r">Purchase Bill (Debit)</th>
+              <th class="r">Payment (Credit)</th>
+              <th class="r">Balance</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="ledgerRows"></tbody>
+        </table>
+        <p id="emptyLedger" class="sp-empty" hidden>No entries for this supplier yet.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Supplier Modal ===== -->
+  <dialog id="supplierDialog">
+    <form method="dialog" id="supplierForm" class="sp-form">
+      <h3 id="supplierDialogTitle">Add Supplier</h3>
+      <label>Supplier Name *<input name="name" required /></label>
+      <label>Phone<input name="phone" inputmode="tel" /></label>
+      <label>City<input name="city" /></label>
+      <label>GST No.<input name="gst" /></label>
+      <label>Opening Balance (₹)
+        <input name="openingBalance" type="number" step="0.01" value="0" />
+        <small>Amount you already owed before using this software. Enter a negative (-) value if the supplier is holding an advance from you.</small>
+      </label>
+      <label>Notes<textarea name="notes" rows="2"></textarea></label>
+      <div class="sp-form-actions">
+        <button type="button" class="sp-btn" data-close>Cancel</button>
+        <button type="submit" class="sp-btn sp-primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===== Payment Modal ===== -->
+  <dialog id="txnDialog">
+    <form method="dialog" id="txnForm" class="sp-form">
+      <h3 id="txnDialogTitle">Add Payment</h3>
+
+      <label>Date *<input name="date" type="date" required /></label>
+      <label>Amount (₹) *<input name="amount" type="number" step="0.01" min="0.01" required /></label>
+
+      <label>Payment Type
+        <select name="paymentKind">
+          <option value="advance">Advance (before goods arrive)</option>
+          <option value="against_bill" selected>After goods received</option>
+          <option value="settlement">Old account settlement</option>
+        </select>
+      </label>
+      <label>Payment Mode
+        <select name="mode">
+          <option value="online">Online / Bank Transfer</option>
+          <option value="upi">UPI</option>
+          <option value="cash">Cash</option>
+          <option value="cheque">Cheque</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <label>UTR / Cheque No.<input name="reference" /></label>
+      <label id="chequeDateWrap">Cheque Date (post-dated)<input name="chequeDate" type="date" /></label>
+      <label>Notes<textarea name="note" rows="2"></textarea></label>
+
+      <small>Purchase bills (and any advance written on them) are added automatically from the Purchase page. Use this form only for extra payments.</small>
+
+      <div class="sp-form-actions">
+        <button type="button" class="sp-btn" data-close>Cancel</button>
+        <button type="submit" class="sp-btn sp-primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    // ====== SETTINGS ======
+    // Use the same backend URL as your other JS files.
+    // Local: http://localhost:5000   |   Render: https://your-app.onrender.com
+    const API_BASE = (window.API_BASE || 'http://localhost:5000') + '/api/suppliers';
+
+    // ====== HELPERS ======
+    const $ = (id) => document.getElementById(id);
+    const rupee = (n) => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
+    const toInputDate = (d) => new Date(d || Date.now()).toISOString().slice(0, 10);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    async function api(path = '', options = {}) {
+      const res = await fetch(API_BASE + path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+        body: options.body ? JSON.stringify(options.body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Something went wrong');
+      return data;
+    }
+
+    const MODE_LABEL = { cash: 'Cash', online: 'Online', upi: 'UPI', cheque: 'Cheque', other: 'Other' };
+    const KIND_LABEL = { advance: 'Advance', against_bill: 'After goods received', settlement: 'Old account settlement' };
+
+    let allSuppliers = [];
+    let currentId = null;
+    let currentLedger = null;
+
+    function balText(b) {
+      if (b > 0) return `<span class="sp-due">${rupee(b)} Due</span>`;
+      if (b < 0) return `<span class="sp-adv">${rupee(-b)} Adv</span>`;
+      return '<span class="sp-ok">0</span>';
+    }
+
+    // ====== LIST VIEW ======
+    async function loadList() {
+      const search = $('searchBox').value.trim();
+      const { suppliers, overall } = await api(search ? `?search=${encodeURIComponent(search)}` : '');
+      allSuppliers = suppliers;
+
+      $('ovBills').textContent = rupee(overall.totalBills);
+      $('ovAdvancePaid').textContent = rupee(overall.totalAdvancePaid);
+      $('ovPaid').textContent = rupee(overall.totalPaid);
+      $('ovPending').textContent = rupee(overall.totalPending);
+      $('ovAdvanceLeft').textContent = rupee(overall.totalAdvanceLeft);
+      renderList();
+    }
+
+    function renderList() {
+      const status = $('statusFilter').value;
+      const rows = allSuppliers.filter((s) => !status || s.status === status);
+      $('emptyList').hidden = rows.length > 0;
+
+      $('supplierRows').innerHTML = rows
+        .map((s) => {
+          const bal =
+            s.status === 'due'
+              ? `<span class="sp-due">${rupee(s.pending)} pending</span>`
+              : s.status === 'advance'
+              ? `<span class="sp-adv">${rupee(s.advanceLeft)} advance left</span>`
+              : `<span class="sp-ok">Settled</span>`;
+          return `<tr class="sp-click" data-id="${s._id}">
+            <td><b>${esc(s.name)}</b><br><small>${esc(s.phone)}</small></td>
+            <td>${esc(s.city)}</td>
+            <td class="r">${rupee(s.totalBills)}<br><small>${s.billCount} bill(s)</small></td>
+            <td class="r">${rupee(s.advancePaid)}</td>
+            <td class="r">${rupee(s.otherPaid)}</td>
+            <td class="r">${bal}</td>
+            <td>${fmtDate(s.lastBill)}</td>
+            <td>${fmtDate(s.lastPayment)}</td>
+          </tr>`;
+        })
+        .join('');
+    }
+
+    // ====== LEDGER VIEW ======
+    async function openLedger(id) {
+      currentId = id;
+      $('listView').hidden = true;
+      $('ledgerView').hidden = false;
+      await loadLedger();
+      window.scrollTo(0, 0);
+    }
+
+    async function loadLedger() {
+      const q = new URLSearchParams();
+      if ($('fromDate').value) q.set('from', $('fromDate').value);
+      if ($('toDate').value) q.set('to', $('toDate').value);
+      const qs = q.toString() ? '?' + q : '';
+
+      currentLedger = await api(`/${currentId}/ledger${qs}`);
+      const { supplier, summary, entries } = currentLedger;
+
+      $('lgName').textContent = supplier.name;
+      $('lgMeta').textContent = [supplier.city, supplier.phone, supplier.gst && 'GST: ' + supplier.gst].filter(Boolean).join(' • ');
+
+      $('lgOpening').textContent = rupee(summary.openingBalance);
+      $('lgBills').textContent = rupee(summary.totalBills);
+      $('lgAdvance').textContent = rupee(summary.advancePaid);
+      $('lgPaid').textContent = rupee(summary.totalPaid);
+
+      const card = $('lgBalanceCard');
+      card.className = 'sp-card ' + (summary.status === 'due' ? 'sp-red' : summary.status === 'advance' ? 'sp-green' : '');
+      $('lgBalanceLabel').textContent =
+        summary.status === 'due' ? 'Pending Payment' : summary.status === 'advance' ? 'Advance Left (With Supplier)' : 'Settled';
+      $('lgBalance').textContent = rupee(Math.abs(summary.balance));
+
+      $('emptyLedger').hidden = entries.length > 0 || !!supplier.openingBalance;
+
+      const ob = supplier.openingBalance;
+      const openingRow =
+        ob && !$('fromDate').value
+          ? `<tr class="sp-open"><td>—</td><td>Opening Balance</td>
+              <td class="r">${ob > 0 ? rupee(ob) : ''}</td><td class="r">${ob < 0 ? rupee(-ob) : ''}</td>
+              <td class="r">${balText(ob)}</td><td></td></tr>`
+          : '';
+
+      $('ledgerRows').innerHTML =
+        openingRow +
+        entries
+          .map((t) => {
+            const isP = t.type === 'purchase';
+            const fromBill = t.source === 'bill';
+            const detail = isP
+              ? `<b>Purchase Bill</b>${t.billNo ? ' • Bill ' + esc(t.billNo) : ''}<span class="sp-tag">From Purchase page</span>${
+                  t.quantity ? '<br><small>' + t.quantity + ' pcs</small>' : ''
+                }`
+              : `<b>${t.paymentKind === 'advance' ? 'Advance Paid' : 'Payment' + (t.paymentKind ? ' – ' + KIND_LABEL[t.paymentKind] : '')}</b>${
+                  fromBill
+                    ? (t.billNo ? ' • Bill ' + esc(t.billNo) : '') + '<span class="sp-tag">From Purchase page</span>'
+                    : ' • ' + (MODE_LABEL[t.mode] || '') + (t.reference ? ' • ' + esc(t.reference) : '')
+                }${t.chequeDate ? '<br><small>Cheque date: ' + fmtDate(t.chequeDate) + '</small>' : ''}`;
+            return `<tr>
+              <td>${fmtDate(t.date)}</td>
+              <td>${detail}${t.note && !fromBill ? '<br><small class="sp-note">' + esc(t.note) + '</small>' : ''}</td>
+              <td class="r">${isP ? rupee(t.amount) : ''}</td>
+              <td class="r">${!isP ? rupee(t.amount) : ''}</td>
+              <td class="r">${balText(t.balanceAfter)}</td>
+              <td class="r sp-noprint">${
+                fromBill
+                  ? ''
+                  : `<button class="sp-link" data-edit="${t._id}">Edit</button>
+                     <button class="sp-link sp-del" data-del="${t._id}">Delete</button>`
+              }</td>
+            </tr>`;
+          })
+          .join('');
+    }
+
+    // ====== SUPPLIER FORM ======
+    let editingSupplier = false;
+
+    function openSupplierForm(supplier) {
+      editingSupplier = !!supplier;
+      const f = $('supplierForm');
+      f.reset();
+      $('supplierDialogTitle').textContent = supplier ? 'Edit Supplier' : 'Add Supplier';
+      // Name cannot be changed once created, because purchase bills are linked by name.
+      f.elements.name.readOnly = !!supplier;
+      if (supplier) {
+        ['name', 'phone', 'city', 'gst', 'openingBalance', 'notes'].forEach((k) => (f.elements[k].value = supplier[k] ?? ''));
+      }
+      $('supplierDialog').showModal();
+    }
+
+    $('supplierForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(e.target));
+      try {
+        if (editingSupplier) await api(`/${currentId}`, { method: 'PUT', body });
+        else await api('', { method: 'POST', body });
+        $('supplierDialog').close();
+        if (editingSupplier) await loadLedger();
+        else await loadList();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // ====== PAYMENT FORM ======
+    let editingTxnId = null;
+
+    function openTxnForm(txn) {
+      editingTxnId = txn ? txn._id : null;
+      const f = $('txnForm');
+      f.reset();
+      f.elements.date.value = toInputDate(txn && txn.date);
+      $('txnDialogTitle').textContent = txn ? 'Edit Payment' : 'Add Payment';
+      if (txn) {
+        ['amount', 'paymentKind', 'mode', 'reference', 'note'].forEach((k) => {
+          if (txn[k] !== undefined) f.elements[k].value = txn[k];
+        });
+        if (txn.chequeDate) f.elements.chequeDate.value = toInputDate(txn.chequeDate);
+      }
+      toggleChequeDate();
+      $('txnDialog').showModal();
+    }
+
+    function toggleChequeDate() {
+      $('chequeDateWrap').hidden = $('txnForm').elements.mode.value !== 'cheque';
+    }
+    $('txnForm').elements.mode.addEventListener('change', toggleChequeDate);
+
+    $('txnForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(e.target));
+      try {
+        if (editingTxnId) await api(`/transactions/${editingTxnId}`, { method: 'PUT', body });
+        else await api(`/${currentId}/transactions`, { method: 'POST', body });
+        $('txnDialog').close();
+        await loadLedger();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // ====== EVENTS ======
+    $('btnAddSupplier').onclick = () => openSupplierForm(null);
+    $('btnEditSupplier').onclick = () => openSupplierForm(currentLedger.supplier);
+    $('btnAddPayment').onclick = () => openTxnForm(null);
+    $('btnPrint').onclick = () => window.print();
+
+    $('btnBack').onclick = async () => {
+      $('ledgerView').hidden = true;
+      $('listView').hidden = false;
+      currentId = null;
+      await loadList();
+    };
+
+    $('btnFilter').onclick = loadLedger;
+    $('btnClearFilter').onclick = () => {
+      $('fromDate').value = '';
+      $('toDate').value = '';
+      loadLedger();
+    };
+
+    $('statusFilter').onchange = renderList;
+    let searchTimer;
+    $('searchBox').oninput = () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadList, 300);
+    };
+
+    document.querySelectorAll('[data-close]').forEach((b) => (b.onclick = () => b.closest('dialog').close()));
+
+    $('supplierRows').addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-id]');
+      if (tr) openLedger(tr.dataset.id);
+    });
+
+    $('ledgerRows').addEventListener('click', async (e) => {
+      const editId = e.target.dataset.edit;
+      const delId = e.target.dataset.del;
+      if (editId) openTxnForm(currentLedger.entries.find((x) => x._id === editId));
+      if (delId && confirm('Delete this entry?')) {
+        try {
+          await api(`/transactions/${delId}`, { method: 'DELETE' });
+          await loadLedger();
+        } catch (err) {
+          alert(err.message);
         }
-        async function loadSummary() {hideNotice(); $('refreshBtn').disabled = true; try {const d = await api('/summary'); supplierSummary = Array.isArray(d.suppliers) ? d.suppliers : []; renderSummary(); if (activeSupplier) await openLedger(activeSupplier, false)} catch (e) {notice(`${e.message} Check that the backend route is mounted and deployed.`, true); $('supplierRows').innerHTML = `<tr><td colspan="7">${esc(e.message)}</td></tr>`} finally {$('refreshBtn').disabled = false} }
-        async function openLedger(supplier, scroll = true) {activeSupplier = supplier; $('supplierPanel').classList.add('hidden'); $('ledgerPanel').classList.remove('hidden'); $('ledgerTitle').textContent = `${supplier} — Ledger`; $('ledgerRows').innerHTML = '<tr><td colspan="8">Loading ledger…</td></tr>'; try {const d = await api(`/${encodeURIComponent(supplier)}`); $('ledgerTitle').textContent = `${d.supplier} — Ledger`; $('ledgerStats').innerHTML = `<span>Purchased: <strong>${money(d.total_purchased)}</strong></span><span>Paid: <strong>${money(d.total_paid)}</strong></span><span>${esc(d.balance_type)}: <strong>${money(d.balance_amount)}</strong></span>`; $('ledgerRows').innerHTML = d.entries.length ? d.entries.map(e => `<tr><td>${dateOnly(e.date)}</td><td>${esc(e.description)}</td><td>${esc(e.invoice_number || e.reference_number || '—')}</td><td>${esc(e.payment_mode || '—')}${e.cheque_number ? `<br><small>Cheque ${esc(e.cheque_number)} · ${esc(e.cheque_status || '')}</small>` : ''}</td><td class="money">${e.debit ? money(e.debit) : '—'}</td><td class="money">${e.credit ? money(e.credit) : '—'}</td><td>${money(e.running_balance)} <small>${esc(e.running_balance_type)}</small></td><td>${esc(e.notes || '—')}</td></tr>`).join('') : '<tr><td colspan="8">No purchases or payments recorded for this supplier.</td></tr>'; $('paySupplier').value = d.supplier; await loadBillsForSupplier(d.supplier); if (scroll) $('ledgerPanel').scrollIntoView({behavior: 'smooth', block: 'start'})} catch (e) {notice(e.message, true); $('ledgerRows').innerHTML = `<tr><td colspan="8">${esc(e.message)}</td></tr>`} }
-        async function loadBillsForSupplier(supplier) {$('payBill').innerHTML = '<option value="">Unallocated / Supplier advance</option>'; try {const r = await fetch(`${API_BASE_URL}/api/purchases`, {credentials: 'include', headers: {Accept: 'application/json'}}); const raw = await r.text(); const d = raw ? JSON.parse(raw) : []; if (!r.ok) throw new Error('Could not load purchase bills'); const list = Array.isArray(d) ? d : (Array.isArray(d.purchases) ? d.purchases : []); list.filter(p => String(p.supplier || '').trim().toLowerCase() === supplier.trim().toLowerCase()).sort((a, b) => new Date(b.invoice_date || b.createdAt || 0) - new Date(a.invoice_date || a.createdAt || 0)).forEach(p => {const o = document.createElement('option'); o.value = p._id; o.textContent = `${p.unique_bill_number || p.invoice_number || 'Purchase'} — ${dateOnly(p.invoice_date || p.createdAt)} — ${money(p.grand_total)}`; $('payBill').appendChild(o)})} catch (e) {console.warn('Purchase bill list:', e.message)} }
-        function toggleCheque() {const yes = $('payMode').value === 'Cheque'; document.querySelectorAll('.chequeField').forEach(e => e.classList.toggle('hidden', !yes)); $('chequeNumber').required = yes}
-        function setDate() {const d = new Date(); $('payDate').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)}
-        $('supplierSearch').addEventListener('input', renderSummary); $('clearSearch').addEventListener('click', () => {$('supplierSearch').value = ''; renderSummary()}); $('refreshBtn').addEventListener('click', loadSummary); $('backBtn').addEventListener('click', () => {activeSupplier = ''; $('ledgerPanel').classList.add('hidden'); $('supplierPanel').classList.remove('hidden')}); $('payMode').addEventListener('change', toggleCheque); $('paySupplier').addEventListener('change', () => {const s = $('paySupplier').value.trim(); if (s) loadBillsForSupplier(s)}); $('paymentForm').addEventListener('reset', () => setTimeout(() => {setDate(); toggleCheque()}, 0));
-        $('paymentForm').addEventListener('submit', async e => {e.preventDefault(); hideNotice(); const supplier = $('paySupplier').value.trim(), amount = Number($('payAmount').value); const payload = {supplier, amount, kind: $('payKind').value, payment_date: $('payDate').value, payment_mode: $('payMode').value, purchase_id: $('payBill').value || null, reference_number: $('payReference').value.trim(), cheque_number: $('chequeNumber').value.trim(), cheque_date: $('chequeDate').value || null, cheque_status: $('chequeStatus').value, notes: $('payNotes').value.trim()}; if (!supplier || !Number.isFinite(amount) || amount <= 0) {notice('Supplier aur valid payment amount bharna zaroori hai.', true); return } $('savePayment').disabled = true; try {await api('/payments', {method: 'POST', body: JSON.stringify(payload)}); notice(`Payment saved for ${supplier}: ${money(amount)}. Ledger updated.`); $('paymentForm').reset(); $('paySupplier').value = supplier; setDate(); toggleCheque(); await loadSummary(); await openLedger(supplier, false)} catch (err) {notice(err.message, true)} finally {$('savePayment').disabled = false} });
-        setDate(); toggleCheque(); loadSummary();
+      }
+    });
 
-    </script>
+    // ====== START ======
+    loadList().catch((err) => alert('Could not load data: ' + err.message));
+  </script>
 </body>
-
 </html>

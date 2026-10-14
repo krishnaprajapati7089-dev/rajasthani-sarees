@@ -13,12 +13,13 @@ const Purchase = require('../models/Purchase');
    Agar aapke Purchase.js me naam alag hain, to yahan apna naam sabse upar likh dein.
    ===================================================================== */
 const F = {
-  party: ['supplierName', 'supplier', 'partyName', 'party', 'vendorName', 'vendor'], // party ka naam (ya Supplier ID)
-  total: ['totalAmount', 'grandTotal', 'total', 'billAmount', 'netAmount', 'amount'], // bill ki total amount
-  paid: ['advance', 'advancePaid', 'paidAmount', 'amountPaid', 'paid'], // bill par diya gaya advance / paid amount
-  date: ['date', 'billDate', 'purchaseDate', 'createdAt'],
-  billNo: ['billNo', 'invoiceNo', 'billNumber', 'invoiceNumber'],
-  items: ['items', 'products'], // sarees ki list (quantity nikalne ke liye)
+  party: ['supplier'], // party ka naam
+  total: ['grand_total'], // bill ki final amount (discount aur extra charges ke baad)
+  paid: ['advance_paid'], // Purchase model me abhi ye field nahi hai, isliye 0 aata hai (neeche note dekhein)
+  date: ['invoice_date', 'createdAt'],
+  billNo: ['unique_bill_number'], // humara bill number (P582431)
+  invoiceNo: ['invoice_number'], // dealer ka original invoice number
+  items: ['items'], // sarees ki list (quantity nikalne ke liye)
 };
 
 const num = (v) => Number(v) || 0;
@@ -55,6 +56,7 @@ async function loadBills() {
       partyRef,
       date: pick(d, F.date) || d.createdAt || new Date(),
       billNo: String(pick(d, F.billNo) || ''),
+      invoiceNo: String(pick(d, F.invoiceNo) || ''),
       total: num(pick(d, F.total)),
       paid: num(pick(d, F.paid)),
       quantity,
@@ -240,7 +242,7 @@ router.get('/:id/ledger', async (req, res) => {
       .forEach((b) => {
         all.push({
           _id: 'bill-' + b.id, source: 'bill', type: 'purchase', date: b.date, amount: b.total,
-          billNo: b.billNo, quantity: b.quantity,
+          billNo: b.billNo, invoiceNo: b.invoiceNo, quantity: b.quantity,
         });
         if (b.paid > 0) {
           all.push({

@@ -1,225 +1,56 @@
 const mongoose = require('mongoose');
 
+const purchaseItemSchema = new mongoose.Schema({
+  item_code: { type: String, default: '' },
+  description: { type: String, required: true },
+  hsn_code: { type: String, default: '' },
+  category: { type: String, default: 'General' },
+  mrp: { type: Number, default: 0 },
+  selling_price: { type: Number, default: 0 },
+  margin_percent: { type: Number, default: 0 },
+  purchase_rate: { type: Number, default: 0 },
+  qty: { type: Number, required: true, default: 1 },
+  rate: { type: Number, required: true, default: 0 },
+  gst_rate: { type: Number, required: true, default: 5 },
+  amount: { type: Number, required: true, default: 0 },
+  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
+}, { _id: false });
 
-// ============================================================
-// PURCHASE ITEM SCHEMA
-// ============================================================
+const purchasePaymentSchema = new mongoose.Schema({
+  type: { type: String, enum: ['Cr', 'Dr'], default: 'Dr' },
+  mode: { type: String, default: 'Other' },
+  amount: { type: Number, min: 0, default: 0 },
+  date: { type: Date, default: Date.now },
+  note: { type: String, default: '' }
+}, { _id: false });
 
-const purchaseItemSchema = new mongoose.Schema(
-  {
-    item_code: {
-      type: String,
-      default: ''
-    },
+const purchaseSchema = new mongoose.Schema({
+  supplier: { type: String, required: true, trim: true, index: true },
+  supplier_gstin: { type: String, default: '' },
+  invoice_number: { type: String, required: true },
+  invoice_date: { type: Date, default: Date.now },
+  supplier_state: { type: String, default: '' },
+  reference: { type: String, default: '' },
+  unique_bill_number: { type: String, required: true, unique: true, index: true },
+  dealer_discount_percent: { type: Number, default: 0 },
+  dealer_discount_amount: { type: Number, default: 0 },
+  bill_image_url: { type: String, default: '' },
+  items: { type: [purchaseItemSchema], default: [] },
+  taxable_amount: { type: Number, default: 0 },
+  gst_total: { type: Number, default: 0 },
+  extra_charges: { type: Number, default: 0 },
+  grand_total: { type: Number, default: 0 },
 
-    description: {
-      type: String,
-      required: true
-    },
+  // Supplier ledger data sent by purchase.html and used by routes/suppliers.js
+  gst_percent: { type: Number, default: 0 },
+  default_margin_percent: { type: Number, default: 70 },
+  payments: { type: [purchasePaymentSchema], default: [] },
+  advance_paid: { type: Number, default: 0 },
+  cash_paid: { type: Number, default: 0 },
+  other_paid: { type: Number, default: 0 },
+  extra_credit: { type: Number, default: 0 },
+  balance_amount: { type: Number, default: 0 },
+  balance_type: { type: String, enum: ['Cr', 'Dr'], default: 'Cr' }
+}, { timestamps: true, minimize: false });
 
-    category: {
-      type: String,
-      default: ''
-    },
-
-    hsn_code: {
-      type: String,
-      default: ''
-    },
-
-    qty: {
-      type: Number,
-      required: true,
-      default: 1
-    },
-
-    // MRP
-    mrp: {
-      type: Number,
-      default: 0
-    },
-
-    // Purchase rate before GST
-    purchase_rate: {
-      type: Number,
-      default: 0
-    },
-
-    // Selling price including GST
-    selling_price: {
-      type: Number,
-      default: 0
-    },
-
-    // Kept for compatibility with old records
-    rate: {
-      type: Number,
-      default: 0
-    },
-
-    gst_rate: {
-      type: Number,
-      required: true,
-      default: 5
-    },
-
-    amount: {
-      type: Number,
-      required: true,
-      default: 0
-    },
-
-    product_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product'
-    }
-  },
-  {
-    _id: false
-  }
-);
-
-
-// ============================================================
-// PURCHASE SCHEMA
-// ============================================================
-
-const purchaseSchema = new mongoose.Schema(
-  {
-    // Supplier / Party name
-    supplier: {
-      type: String,
-      required: true,
-      trim: true
-    },
-
-    supplier_gstin: {
-      type: String,
-      default: '',
-      trim: true
-    },
-
-    // Dealer's original invoice number
-    invoice_number: {
-      type: String,
-      required: true,
-      trim: true
-    },
-
-    invoice_date: {
-      type: Date,
-      default: Date.now
-    },
-
-    supplier_state: {
-      type: String,
-      default: '',
-      trim: true
-    },
-
-    reference: {
-      type: String,
-      default: '',
-      trim: true
-    },
-
-    // ========================================================
-    // OUR UNIQUE PURCHASE BILL NUMBER
-    // Example: P582431
-    // ========================================================
-
-    unique_bill_number: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      uppercase: true
-    },
-
-    // Uploaded bill image
-    bill_image_url: {
-      type: String,
-      default: ''
-    },
-
-    // ========================================================
-    // ITEMS
-    // ========================================================
-
-    items: {
-      type: [purchaseItemSchema],
-      default: []
-    },
-
-    // ========================================================
-    // AMOUNTS
-    // ========================================================
-
-    taxable_amount: {
-      type: Number,
-      default: 0
-    },
-
-    gst_total: {
-      type: Number,
-      default: 0
-    },
-
-    // Extra / shipping / transport charges
-    extra_charges: {
-      type: Number,
-      default: 0,
-      min: 0
-    },
-
-    // Dealer discount percentage
-    dealer_discount_percent: {
-      type: Number,
-      default: 0,
-      min: 0
-    },
-
-    // Actual discount amount
-    dealer_discount_amount: {
-      type: Number,
-      default: 0,
-      min: 0
-    },
-
-    // Final amount after extra charges and discount
-    grand_total: {
-      type: Number,
-      default: 0
-    }
-  },
-  {
-    timestamps: true
-  }
-);
-
-
-// ============================================================
-// INDEXES
-// ============================================================
-
-purchaseSchema.index({
-  supplier: 1
-});
-
-purchaseSchema.index({
-  invoice_number: 1
-});
-
-purchaseSchema.index({
-  unique_bill_number: 1
-});
-
-
-// ============================================================
-// MODEL
-// ============================================================
-
-module.exports = mongoose.model(
-  'Purchase',
-  purchaseSchema
-);
+module.exports = mongoose.model('Purchase', purchaseSchema);

@@ -37,18 +37,47 @@ function pick(doc, keys) {
 /* ---------- Purchase bills padhna ---------- */
 async function loadBills() {
   const docs = await Purchase.find().lean();
+
   return docs.map((d) => {
     const rawParty = pick(d, F.party);
     let partyName = '';
     let partyRef = null;
+
     if (rawParty instanceof mongoose.Types.ObjectId) partyRef = String(rawParty);
     else if (rawParty && typeof rawParty === 'object') partyName = rawParty.name || '';
     else partyName = String(rawParty || '');
 
     const items = pick(d, F.items);
     const quantity = Array.isArray(items)
-      ? items.reduce((s, i) => s + num(i.qty ?? i.quantity ?? i.pcs), 0)
+      ? items.reduce((sum, item) => sum + num(item.qty ?? item.quantity ?? item.pcs), 0)
       : 0;
+
+    // Prefer the detailed payment rows. Use summary fields only for older bills
+    // where detailed rows were never stored; this avoids double-counting.
+    let payments = Array.isArray(d.payments)
+      ? d.payments
+          .filter((p) => num(p.amount) > 0)
+          .map((p) => ({
+            type: p.type === 'Cr' ? 'Cr' : 'Dr',
+            mode: String(p.mode || 'Other'),
+            amount: round(num(p.amount)),
+            date: p.date || d.invoice_date || d.createdAt || new Date(),
+            note: String(p.note || ''),
+          }))
+      : [];
+
+    if (payments.length === 0) {
+      const billDate = d.invoice_date || d.createdAt || new Date();
+      if (num(d.advance_paid) > 0) payments.push({ type: 'Dr', mode: 'Advance', amount: round(num(d.advance_paid)), date: billDate, note: 'Legacy saved advance' });
+      if (num(d.cash_paid) > 0) payments.push({ type: 'Dr', mode: 'Cash', amount: round(num(d.cash_paid)), date: billDate, note: 'Legacy saved payment' });
+      if (num(d.other_paid) > 0) payments.push({ type: 'Dr', mode: 'Other', amount: round(num(d.other_paid)), date: billDate, note: 'Legacy saved payment' });
+      if (num(d.extra_credit) > 0) payments.push({ type: 'Cr', mode: 'Other', amount: round(num(d.extra_credit)), date: billDate, note: 'Legacy credit entry' });
+    }
+
+    const paid = round(payments.filter((p) => p.type === 'Dr').reduce((sum, p) => sum + p.amount, 0));
+    const credit = round(payments.filter((p) => p.type === 'Cr').reduce((sum, p) => sum + p.amount, 0));
+    const advance = round(payments.filter((p) => p.type === 'Dr' && p.mode.toLowerCase() === 'advance').reduce((sum, p) => sum + p.amount, 0));
+    const otherPaid = round(paid - advance);
 
     return {
       id: String(d._id),
@@ -58,7 +87,11 @@ async function loadBills() {
       billNo: String(pick(d, F.billNo) || ''),
       invoiceNo: String(pick(d, F.invoiceNo) || ''),
       total: num(pick(d, F.total)),
-      paid: num(pick(d, F.paid)),
+      paid,
+      advance,
+      otherPaid,
+      credit,
+      payments,
       quantity,
     };
   });
@@ -92,14 +125,15 @@ async function loadSuppliersAndBills() {
   return { suppliers, bills };
 }
 
-/* ---------- Hisaab nikalna ---------- */
+/* ---------- Supplier account summary ---------- */
 function summarize(supplier, a = {}) {
   const billTotal = a.billTotal || 0;
+  const extraCredit = a.billCredit || 0;
   const advancePaid = (a.billAdvance || 0) + (a.manualAdvance || 0);
-  const otherPaid = a.manualOther || 0;
+  const otherPaid = (a.billOther || 0) + (a.manualOther || 0);
   const totalPaid = advancePaid + otherPaid;
-  const opening = supplier.openingBalance || 0;
-  const balance = round(opening + billTotal - totalPaid); // + = dena hai, - = advance bacha hai
+  const opening = num(supplier.openingBalance);
+  const balance = round(opening + billTotal + extraCredit - totalPaid);
 
   return {
     openingBalance: round(opening),
@@ -108,10 +142,11 @@ function summarize(supplier, a = {}) {
     advancePaid: round(advancePaid),
     otherPaid: round(otherPaid),
     totalPaid: round(totalPaid),
+    extraCredit: round(extraCredit),
     balance,
     pending: balance > 0 ? balance : 0,
     advanceLeft: balance < 0 ? -balance : 0,
-    status: balance > 0 ? 'due' : balance < 0 ? 'advance' : 'clear',
+    status: balance > 0.009 ? 'due' : balance < -0.009 ? 'advance' : 'clear',
     lastBill: a.lastBill || null,
     lastPayment: a.lastPayment || null,
   };
@@ -122,30 +157,48 @@ async function buildData() {
   const txns = await Txn.find({ type: 'payment' }).sort({ date: 1, createdAt: 1 }).lean();
 
   const agg = {};
-  const A = (id) =>
-    (agg[id] = agg[id] || {
-      billTotal: 0, billCount: 0, billAdvance: 0, manualAdvance: 0, manualOther: 0, lastBill: null, lastPayment: null,
-    });
-  const later = (cur, d) => (!cur || new Date(d) > new Date(cur) ? d : cur);
+  const A = (id) => (agg[id] = agg[id] || {
+    billTotal: 0,
+    billCount: 0,
+    billAdvance: 0,
+    billOther: 0,
+    billCredit: 0,
+    manualAdvance: 0,
+    manualOther: 0,
+    lastBill: null,
+    lastPayment: null,
+  });
+  const later = (cur, d) => (!cur || (d && new Date(d) > new Date(cur)) ? d : cur);
 
   bills.forEach((b) => {
     const a = A(b.supplierId);
     a.billTotal += b.total;
     a.billCount += 1;
-    a.billAdvance += b.paid;
+    a.billAdvance += b.advance;
+    a.billOther += b.otherPaid;
+    a.billCredit += b.credit;
     a.lastBill = later(a.lastBill, b.date);
-    if (b.paid > 0) a.lastPayment = later(a.lastPayment, b.date);
+    if (b.paid > 0) {
+      const billPaymentDates = b.payments.filter((p) => p.type === 'Dr').map((p) => p.date);
+      a.lastPayment = later(a.lastPayment, billPaymentDates.sort((x, y) => new Date(y) - new Date(x))[0] || b.date);
+    }
   });
+
   txns.forEach((t) => {
     const a = A(String(t.supplier));
-    if (t.paymentKind === 'advance') a.manualAdvance += t.amount;
-    else a.manualOther += t.amount;
-    a.lastPayment = later(a.lastPayment, t.date);
+    if (t.paymentKind === 'advance') a.manualAdvance += num(t.amount);
+    else a.manualOther += num(t.amount);
+    a.lastPayment = later(a.lastPayment, t.date || t.createdAt);
+  });
+
+  Object.values(agg).forEach((a) => {
+    for (const key of ['billTotal', 'billAdvance', 'billOther', 'billCredit', 'manualAdvance', 'manualOther']) {
+      a[key] = round(a[key]);
+    }
   });
 
   return { suppliers, bills, txns, agg };
 }
-
 /* ---------- Supplier list + overall ---------- */
 // GET /api/suppliers?search=ram
 router.get('/', async (req, res) => {
@@ -240,36 +293,65 @@ router.get('/:id/ledger', async (req, res) => {
     bills
       .filter((b) => b.supplierId === id)
       .forEach((b) => {
+        // Purchase bill creates a Cr balance (amount owed to supplier).
         all.push({
-          _id: 'bill-' + b.id, source: 'bill', type: 'purchase', date: b.date, amount: b.total,
-          billNo: b.billNo, invoiceNo: b.invoiceNo, quantity: b.quantity,
+          _id: 'bill-' + b.id,
+          source: 'bill',
+          type: 'purchase',
+          date: b.date,
+          amount: b.total,
+          billNo: b.billNo,
+          invoiceNo: b.invoiceNo,
+          quantity: b.quantity,
+          note: 'Purchase bill',
         });
-        if (b.paid > 0) {
+
+        // Cr rows add to payable; Dr rows reduce payable. Each saved row is shown once.
+        b.payments.forEach((p, index) => {
           all.push({
-            _id: 'billadv-' + b.id, source: 'bill', type: 'payment', paymentKind: 'advance', date: b.date,
-            amount: b.paid, billNo: b.billNo, note: 'Paid on purchase bill',
+            _id: `billpay-${b.id}-${index}`,
+            source: 'bill',
+            type: p.type === 'Cr' ? 'credit' : 'payment',
+            paymentKind: p.type === 'Cr' ? 'credit' : (p.mode.toLowerCase() === 'advance' ? 'advance' : 'against_bill'),
+            mode: p.mode,
+            date: p.date || b.date,
+            amount: p.amount,
+            billNo: b.billNo,
+            note: p.note || (p.mode.toLowerCase() === 'advance' ? 'Advance recorded on purchase bill' : ''),
           });
-        }
+        });
       });
+
     txns
       .filter((t) => String(t.supplier) === id)
-      .forEach((t) => all.push({ ...t, source: 'manual' }));
+      .forEach((t) => all.push({
+        ...t,
+        _id: String(t._id),
+        source: 'manual',
+        type: 'payment',
+        date: t.date || t.createdAt || new Date(),
+        amount: num(t.amount),
+      }));
 
-    all.sort((a, b) => new Date(a.date) - new Date(b.date) || (a.type === 'purchase' ? -1 : 1));
+    const order = { purchase: 0, credit: 1, payment: 2 };
+    all.sort((a, b) => new Date(a.date) - new Date(b.date) || (order[a.type] ?? 2) - (order[b.type] ?? 2));
 
-    // Running balance poori history se nikalte hain, phir date filter lagate hain
-    let running = supplier.openingBalance || 0;
+    let running = num(supplier.openingBalance);
     const withBalance = all.map((t) => {
-      running += t.type === 'purchase' ? t.amount : -t.amount;
+      running += t.type === 'purchase' || t.type === 'credit' ? num(t.amount) : -num(t.amount);
       return { ...t, balanceAfter: round(running) };
     });
 
     const fromD = req.query.from ? new Date(req.query.from) : null;
     const toD = req.query.to ? new Date(req.query.to + 'T23:59:59.999Z') : null;
-    const entries = withBalance.filter((t) => (!fromD || new Date(t.date) >= fromD) && (!toD || new Date(t.date) <= toD));
+    const entries = withBalance.filter((t) =>
+      (!fromD || new Date(t.date) >= fromD) &&
+      (!toD || new Date(t.date) <= toD)
+    );
 
     res.json({ supplier, summary: summarize(supplier, agg[id]), entries });
   } catch (err) {
+    console.error('Supplier ledger load error:', err);
     res.status(500).json({ message: err.message });
   }
 });

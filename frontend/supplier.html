@@ -209,8 +209,8 @@
             <tr>
               <th>Date</th>
               <th>Details</th>
-              <th class="r">Purchase Bill (Debit)</th>
-              <th class="r">Payment (Credit)</th>
+              <th class="r">Purchase Bill (Cr)</th>
+              <th class="r">Dr Payment / Extra Cr</th>
               <th class="r">Balance</th>
               <th></th>
             </tr>
@@ -405,14 +405,17 @@
           .map((t) => {
             const isP = t.type === 'purchase';
             const fromBill = t.source === 'bill';
+            const isCredit = t.type === 'credit';
             const detail = isP
-              ? `<b>Purchase Bill</b>${t.billNo ? ' • Bill ' + esc(t.billNo) : ''}<span class="sp-tag">From Purchase page</span>${
+              ? `<b>Purchase Bill (Cr)</b>${t.billNo ? ' • Bill ' + esc(t.billNo) : ''}<span class="sp-tag">From Purchase page</span>${
                   t.quantity ? '<br><small>' + t.quantity + ' pcs</small>' : ''
                 }`
-              : `<b>${t.paymentKind === 'advance' ? 'Advance Paid' : 'Payment' + (t.paymentKind ? ' – ' + KIND_LABEL[t.paymentKind] : '')}</b>${
+              : isCredit
+              ? `<b>Extra Cr — increases payable</b>${t.billNo ? ' • Bill ' + esc(t.billNo) : ''}<span class="sp-tag">From Purchase page</span>${t.note ? '<br><small class="sp-note">' + esc(t.note) + '</small>' : ''}`
+              : `<b>${t.paymentKind === 'advance' ? 'Advance Paid (Dr)' : 'Payment (Dr)' + (t.paymentKind ? ' – ' + (KIND_LABEL[t.paymentKind] || t.paymentKind) : '')}</b>${
                   fromBill
                     ? (t.billNo ? ' • Bill ' + esc(t.billNo) : '') + '<span class="sp-tag">From Purchase page</span>'
-                    : ' • ' + (MODE_LABEL[t.mode] || '') + (t.reference ? ' • ' + esc(t.reference) : '')
+                    : ' • ' + (MODE_LABEL[t.mode] || t.mode || '') + (t.reference ? ' • ' + esc(t.reference) : '')
                 }${t.chequeDate ? '<br><small>Cheque date: ' + fmtDate(t.chequeDate) + '</small>' : ''}`;
             return `<tr>
               <td>${fmtDate(t.date)}</td>

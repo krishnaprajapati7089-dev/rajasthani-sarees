@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 
 const path = require('path');
@@ -12,7 +11,7 @@ const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const User = require('./models/User');
 
-const productsRouter = require('./routes/products')
+const productsRouter = require('./routes/products');
 const billsRouter = require('./routes/bills');
 const purchasesRouter = require('./routes/purchases');
 const shopRouter = require('./routes/shop');
@@ -20,7 +19,7 @@ const dashboardRouter = require('./routes/dashboard');
 const reportsRouter = require('./routes/reports');
 const caRouter = require('./routes/accounts');
 const supplierLedgerRouter = require('./routes/supplierLedger');
-
+const suppliersRouter = require('./routes/suppliers');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -366,11 +365,12 @@ app.use('/api/shop', requireAuth, shopRouter);
 app.use('/api/dashboard', requireAuth, dashboardRouter);
 app.use('/api/reports', requireAuth, reportsRouter);
 app.use('/api/ca', requireAuth, caRouter);
+
+// Existing supplier ledger route — unchanged
 app.use('/api/supplier-ledger', requireAuth, supplierLedgerRouter);
-app.use('/api/suppliers', requireAuth, supplierLedgerRouter);
 
-
-
+// Suppliers route — newly added
+app.use('/api/suppliers', requireAuth, suppliersRouter);
 
 // ============================================================
 // FRONTEND
@@ -434,4 +434,3 @@ connectDB()
     console.error('MongoDB connection failed:', err.message);
     process.exit(1);
   });
-

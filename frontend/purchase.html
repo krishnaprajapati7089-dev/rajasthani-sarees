@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Purchase Bill — Rajastani Saree</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700\&family=Inter:wght@400;500;600\&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 :root{--emerald:#0B6B57;--emerald-dark:#064B3F;--emerald-deep:#073F35;--champagne:#D6B56B;--champagne-light:#F0DFAE;--ivory:#F7F5EF;--white:#FFFFFF;--graphite:#17211F;--graphite-soft:#66736F;--line:#DDE5E1;--mint:#EAF5F1;--header-h:72px}
@@ -354,10 +354,10 @@ th{background:#F4F8F6;color:var(--graphite-soft)}tbody tr{transition:background 
 </main>
 
 <!-- QR code generator for printable barcode/QR labels -->
-<script src="[https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js](https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js)"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
 <script>
-const API_BASE_URL = "https\://rajasthani-sarees.onrender.com";
+const API_BASE_URL = "https://rajasthani-sarees.onrender.com";
 const DEFAULT_GST_PERCENT = 5;
 const DEFAULT_MARGIN_PERCENT = 70;
 const fileInput = document.getElementById('billFile');
@@ -923,6 +923,23 @@ async function editPurchaseBill(id) {
       row.innerHTML = paymentRowHtml(p);
       payBody.appendChild(row);
     });
+
+    // Older bills saved before payment rows existed: rebuild the rows from the saved totals.
+    if (!(bill.payments || []).length) {
+      const legacyDate = bill.invoice_date ? String(bill.invoice_date).slice(0,10) : todayStr();
+      [
+        { type: 'Dr', mode: 'Advance', amount: bill.advance_paid },
+        { type: 'Dr', mode: 'Cash', amount: bill.cash_paid },
+        { type: 'Dr', mode: 'Other', amount: bill.other_paid },
+        { type: 'Cr', mode: 'Other', amount: bill.extra_credit }
+      ].forEach(p => {
+        if (num(p.amount) > 0) {
+          const row = document.createElement("tr");
+          row.innerHTML = paymentRowHtml({ ...p, date: legacyDate });
+          payBody.appendChild(row);
+        }
+      });
+    }
 
     const confirmBtn = document.getElementById("confirmBtn");
     confirmBtn.textContent = "✓ Update Purchase Bill";

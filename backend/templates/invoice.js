@@ -1,4 +1,3 @@
-
 const { amountInWords, formatINR } = require('../utils/numberToWords');
 
 function esc(value) {
@@ -209,9 +208,10 @@ function renderInvoiceHTML({ bill, items, shop }) {
 <title>Invoice ${esc(bill.invoice_no)}</title>
 
 <style>
+  /* A4 portrait, no margin. The bill prints in the upper half only. */
   @page {
-    size: A5 landscape;
-    margin: 4mm;
+    size: A4 portrait;
+    margin: 0;
   }
 
   * {
@@ -227,7 +227,7 @@ function renderInvoiceHTML({ bill, items, shop }) {
   }
 
   body {
-    width: 202mm;
+    width: 210mm;
     font-size: 8px;
   }
 
@@ -246,11 +246,13 @@ function renderInvoiceHTML({ bill, items, shop }) {
     cursor: pointer;
   }
 
-  /* Preserve the existing half-A4 print area. */
+  /* Upper half of A4 portrait: 210mm x 146mm with a 4mm safe margin. */
   .page {
     position: relative;
-    width: 202mm;
-    height: 140mm;
+    width: 210mm;
+    height: 146mm;
+    padding: 4mm 4mm 0 4mm;
+    box-sizing: border-box;
     overflow: hidden;
     page-break-inside: avoid;
     break-inside: avoid;
@@ -469,8 +471,8 @@ function renderInvoiceHTML({ bill, items, shop }) {
     text-align: center;
     flex-shrink: 0;
     position: absolute;
-    right: 2mm;
-    bottom: 2mm;
+    right: 6mm;
+    bottom: 3mm;
   }
 
   .sign-line {
@@ -532,7 +534,7 @@ function renderInvoiceHTML({ bill, items, shop }) {
     }
 
     html, body {
-      width: 202mm !important;
+      width: 210mm !important;
       margin: 0 !important;
       padding: 0 !important;
       -webkit-print-color-adjust: exact;
@@ -540,11 +542,12 @@ function renderInvoiceHTML({ bill, items, shop }) {
     }
 
     .page {
-      width: 202mm !important;
-      height: 140mm !important;
+      width: 210mm !important;
+      height: 146mm !important;
       overflow: hidden !important;
       margin: 0 !important;
-      padding: 0 !important;
+      padding: 4mm 4mm 0 4mm !important;
+      box-sizing: border-box !important;
     }
 
     .sheet {
@@ -762,8 +765,13 @@ function renderInvoiceHTML({ bill, items, shop }) {
     sheet.style.transform = 'none';
     sheet.style.width = '202mm';
 
+    // Usable height = page height minus its top/bottom padding.
+    const cs = getComputedStyle(page);
     const contentHeight = sheet.scrollHeight;
-    const availableHeight = page.clientHeight;
+    const availableHeight =
+      page.clientHeight -
+      parseFloat(cs.paddingTop) -
+      parseFloat(cs.paddingBottom);
 
     if (contentHeight > availableHeight && contentHeight > 0) {
       const scale = availableHeight / contentHeight;

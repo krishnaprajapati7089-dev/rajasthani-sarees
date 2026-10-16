@@ -209,8 +209,8 @@
             <tr>
               <th>Date</th>
               <th>Details</th>
-              <th class="r">Purchase Bill (Cr)</th>
-              <th class="r">Dr Payment / Extra Cr</th>
+              <th class="r">Cr (Bill / Extra Cr)</th>
+              <th class="r">Dr (Payment / Advance)</th>
               <th class="r">Balance</th>
               <th></th>
             </tr>
@@ -420,8 +420,8 @@
             return `<tr>
               <td>${fmtDate(t.date)}</td>
               <td>${detail}${t.note && !fromBill ? '<br><small class="sp-note">' + esc(t.note) + '</small>' : ''}</td>
-              <td class="r">${isP ? rupee(t.amount) : ''}</td>
-              <td class="r">${!isP ? rupee(t.amount) : ''}</td>
+              <td class="r">${isP || isCredit ? rupee(t.amount) : ''}</td>
+              <td class="r">${!isP && !isCredit ? rupee(t.amount) : ''}</td>
               <td class="r">${balText(t.balanceAfter)}</td>
               <td class="r sp-noprint">${
                 fromBill

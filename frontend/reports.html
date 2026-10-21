@@ -1547,7 +1547,7 @@ td strong{
   </div>
 
   <div class="kpi-sub">
-    Payments actually received in selected period
+    Money collected in selected period (not total bill value)
   </div>
 
  </div>
@@ -1697,6 +1697,60 @@ td strong{
 
  </div>
 
+</section>
+
+
+
+<!-- SALES RETURNS / EXCHANGES -->
+<section class="panel" id="salesReturnsPanel">
+  <div class="panel-title">
+    <h2>Sales Returns & Exchanges</h2>
+    <span class="page-info">Original bill date stays unchanged</span>
+  </div>
+  <p class="return-hint">
+    When a customer returns a saree, record it here. For an exchange, record the returned saree here and create a normal new bill for the replacement saree. The new bill remains a full sale; the return appears separately below. For cash returns, enter the actual cash refunded.
+  </p>
+  <form id="returnForm">
+    <div class="return-form-grid">
+      <div class="filter-group">
+        <label for="returnInvoice">Original Invoice Number *</label>
+        <input id="returnInvoice" required placeholder="e.g. RS-1025" autocomplete="off">
+      </div>
+      <div class="filter-group">
+        <label for="returnType">Return Type *</label>
+        <select id="returnType" required>
+          <option value="EXCHANGE">Exchange for another saree</option>
+          <option value="CASH REFUND">Return and refund cash</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="returnAmount">Returned Saree Value (₹) *</label>
+        <input id="returnAmount" required type="number" min="0.01" step="0.01" placeholder="1500">
+      </div>
+      <div class="filter-group">
+        <label for="refundAmount">Cash Refunded Today (₹)</label>
+        <input id="refundAmount" type="number" min="0" step="0.01" value="0" placeholder="0">
+      </div>
+      <div class="filter-group">
+        <label for="returnNotes">Notes (optional)</label>
+        <input id="returnNotes" maxlength="300" placeholder="Returned saree / reason">
+      </div>
+      <div><button class="btn btn-primary" type="submit" id="saveReturnBtn">＋ Record Return</button></div>
+    </div>
+    <div id="returnFormMessage" class="return-message" role="status"></div>
+  </form>
+  <div class="return-summary">
+    <div class="return-stat"><div class="label">Returned Saree Value</div><div class="value" id="returnsTotalValue">₹0</div></div>
+    <div class="return-stat"><div class="label">Cash Refunded</div><div class="value" id="returnsRefundValue">₹0</div></div>
+    <div class="return-stat"><div class="label">Returns / Exchanges</div><div class="value" id="returnsCount">0</div></div>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Return Date</th><th>Original Bill Date</th><th>Original Invoice</th><th>Customer</th><th>Type</th><th>Return Value</th><th>Cash Refund</th><th>Notes</th></tr></thead>
+      <tbody id="returnsTable"><tr class="empty-row"><td colspan="8">Loading returns…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="table-message" id="returnsLoadMessage" style="display:none"></div>
 </section>
 
 
@@ -2080,6 +2134,7 @@ const API_BASE_URL =
    ========================================================= */
 
 let allBills = [];
+let allSalesReturns = [];
 
 let filteredBills = [];
 
@@ -2463,6 +2518,7 @@ function renderAll(){
 
   renderBills();
   renderUpiPayments();
+  renderSalesReturns();
 
 }
 
@@ -3305,6 +3361,85 @@ function clearFilters(){
 }
 
 
+
+/* SALES RETURNS / EXCHANGES */
+function selectedReturnDateBounds(){
+  return {from:document.getElementById("fromDate")?.value || "",to:document.getElementById("toDate")?.value || ""};
+}
+async function loadSalesReturns(){
+  const body=document.getElementById("returnsTable");
+  if(body) body.innerHTML='<tr class="empty-row"><td colspan="8">Loading returns…</td></tr>';
+  try{
+    const response=await fetch(`${API_BASE_URL}/api/reports/returns`,{headers:{Accept:"application/json"},cache:"no-store"});
+    const raw=await response.text(); let data;
+    try{data=raw?JSON.parse(raw):{};}catch{throw new Error(`Invalid JSON from returns API (HTTP ${response.status})`);}
+    if(!response.ok) throw new Error(data.error||data.message||`Server error ${response.status}`);
+    allSalesReturns=Array.isArray(data.returns)?data.returns:[];
+    renderSalesReturns();
+    const msg=document.getElementById("returnsLoadMessage"); if(msg){msg.style.display="none";msg.textContent="";}
+  }catch(error){
+    console.error("Load sales returns error:",error); allSalesReturns=[]; renderSalesReturns();
+    const msg=document.getElementById("returnsLoadMessage");
+    if(msg){msg.style.display="block";msg.className="table-message error";msg.textContent="Could not load returns. Deploy the updated routes/reports.js first. "+error.message;}
+  }
+}
+function renderSalesReturns(){
+  const body=document.getElementById("returnsTable"); if(!body)return;
+  const {from,to}=selectedReturnDateBounds();
+  const returns=(allSalesReturns||[]).filter(r=>{
+    const key=localDateKey(r.return_date||r.createdAt); return key&&(!from||key>=from)&&(!to||key<=to);
+  }).sort((a,b)=>new Date(b.return_date||b.createdAt||0)-new Date(a.return_date||a.createdAt||0));
+  document.getElementById("returnsTotalValue").textContent=money(returns.reduce((s,r)=>s+num(r.return_amount),0));
+  document.getElementById("returnsRefundValue").textContent=money(returns.reduce((s,r)=>s+num(r.refund_amount),0));
+  document.getElementById("returnsCount").textContent=returns.length.toLocaleString("en-IN");
+  if(!returns.length){body.innerHTML='<tr class="empty-row"><td colspan="8">No returns or exchanges for the selected dates.</td></tr>';return;}
+  body.innerHTML=returns.map(r=>`<tr>
+    <td>${escapeHtml(fmtDateTime(r.return_date||r.createdAt))}</td>
+    <td>${escapeHtml(fmtDateTime(r.original_bill_date))}</td>
+    <td><strong>#${escapeHtml(r.original_invoice_no||"—")}</strong></td>
+    <td>${escapeHtml(r.customer_name||"Walk-in Customer")}${r.customer_phone?`<br><small>${escapeHtml(r.customer_phone)}</small>`:""}</td>
+    <td><span class="status-pill ${r.return_type==="CASH REFUND"?"due":"paid"}">${escapeHtml(r.return_type==="CASH REFUND"?"Cash Refund":"Exchange")}</span></td>
+    <td><strong>${money(r.return_amount)}</strong></td><td>${money(r.refund_amount)}</td><td>${escapeHtml(r.notes||"—")}</td>
+  </tr>`).join("");
+}
+function updateRefundInput(){
+  const type=document.getElementById("returnType")?.value, refund=document.getElementById("refundAmount");
+  if(!refund)return;
+  if(type==="EXCHANGE"){refund.value="0";refund.disabled=true;}else{refund.disabled=false;}
+}
+document.getElementById("returnType")?.addEventListener("change",updateRefundInput);
+updateRefundInput();
+document.getElementById("returnInvoice")?.addEventListener("change",()=>{
+  const invoice=document.getElementById("returnInvoice").value.trim().toLowerCase();
+  const bill=allBills.find(b=>String(b.invoice_no||b.invoiceNo||"").trim().toLowerCase()===invoice);
+  const msg=document.getElementById("returnFormMessage"); if(!msg)return;
+  if(bill){msg.className="return-message";msg.textContent=`Found invoice #${bill.invoice_no||bill.invoiceNo} • Original date: ${fmtDateTime(billDateValue(bill))} • Bill total: ${money(bill.grand_total||bill.total)}.`;}
+  else if(invoice){msg.className="return-message";msg.textContent="Invoice will be validated by the server when saved.";}
+});
+document.getElementById("returnForm")?.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const button=document.getElementById("saveReturnBtn"),msg=document.getElementById("returnFormMessage");
+  const payload={
+    invoice_no:document.getElementById("returnInvoice").value.trim(),
+    return_type:document.getElementById("returnType").value,
+    return_amount:Number(document.getElementById("returnAmount").value),
+    refund_amount:Number(document.getElementById("refundAmount").value||0),
+    notes:document.getElementById("returnNotes").value.trim()
+  };
+  if(!payload.invoice_no||!(payload.return_amount>0)){msg.className="return-message error";msg.textContent="Enter the original invoice number and a return value greater than zero.";return;}
+  if(payload.return_type==="CASH REFUND"&&!(payload.refund_amount>0)){msg.className="return-message error";msg.textContent="Enter the actual cash refunded.";return;}
+  button.disabled=true;button.textContent="Saving…";msg.className="return-message";msg.textContent="Recording return…";
+  try{
+    const response=await fetch(`${API_BASE_URL}/api/reports/returns`,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)});
+    const raw=await response.text();let data;try{data=raw?JSON.parse(raw):{};}catch{throw new Error(`Invalid JSON from server (HTTP ${response.status}).`);}
+    if(!response.ok)throw new Error(data.error||data.message||`Server error ${response.status}`);
+    msg.className="return-message success";msg.textContent=`${data.message||"Return recorded."} Original bill date preserved; return date recorded as today.`;
+    document.getElementById("returnForm").reset();updateRefundInput();await loadSalesReturns();
+  }catch(error){console.error("Record return error:",error);msg.className="return-message error";msg.textContent="Could not record return: "+error.message;}
+  finally{button.disabled=false;button.textContent="＋ Record Return";}
+});
+
+
 /* =========================================================
    LOAD REPORTS
    ========================================================= */
@@ -3470,6 +3605,7 @@ async function loadReports(){
 
 
     loadGstReport();
+    loadSalesReturns();
 
 
     console.log(

@@ -1699,61 +1699,6 @@ td strong{
 
 </section>
 
-
-
-<!-- SALES RETURNS / EXCHANGES -->
-<section class="panel" id="salesReturnsPanel">
-  <div class="panel-title">
-    <h2>Sales Returns & Exchanges</h2>
-    <span class="page-info">Original bill date stays unchanged</span>
-  </div>
-  <p class="return-hint">
-    When a customer returns a saree, record it here. For an exchange, record the returned saree here and create a normal new bill for the replacement saree. The new bill remains a full sale; the return appears separately below. For cash returns, enter the actual cash refunded.
-  </p>
-  <form id="returnForm">
-    <div class="return-form-grid">
-      <div class="filter-group">
-        <label for="returnInvoice">Original Invoice Number *</label>
-        <input id="returnInvoice" required placeholder="e.g. RS-1025" autocomplete="off">
-      </div>
-      <div class="filter-group">
-        <label for="returnType">Return Type *</label>
-        <select id="returnType" required>
-          <option value="EXCHANGE">Exchange for another saree</option>
-          <option value="CASH REFUND">Return and refund cash</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label for="returnAmount">Returned Saree Value (₹) *</label>
-        <input id="returnAmount" required type="number" min="0.01" step="0.01" placeholder="1500">
-      </div>
-      <div class="filter-group">
-        <label for="refundAmount">Cash Refunded Today (₹)</label>
-        <input id="refundAmount" type="number" min="0" step="0.01" value="0" placeholder="0">
-      </div>
-      <div class="filter-group">
-        <label for="returnNotes">Notes (optional)</label>
-        <input id="returnNotes" maxlength="300" placeholder="Returned saree / reason">
-      </div>
-      <div><button class="btn btn-primary" type="submit" id="saveReturnBtn">＋ Record Return</button></div>
-    </div>
-    <div id="returnFormMessage" class="return-message" role="status"></div>
-  </form>
-  <div class="return-summary">
-    <div class="return-stat"><div class="label">Returned Saree Value</div><div class="value" id="returnsTotalValue">₹0</div></div>
-    <div class="return-stat"><div class="label">Cash Refunded</div><div class="value" id="returnsRefundValue">₹0</div></div>
-    <div class="return-stat"><div class="label">Returns / Exchanges</div><div class="value" id="returnsCount">0</div></div>
-  </div>
-  <div class="table-wrapper">
-    <table>
-      <thead><tr><th>Return Date</th><th>Original Bill Date</th><th>Original Invoice</th><th>Customer</th><th>Type</th><th>Return Value</th><th>Cash Refund</th><th>Notes</th></tr></thead>
-      <tbody id="returnsTable"><tr class="empty-row"><td colspan="8">Loading returns…</td></tr></tbody>
-    </table>
-  </div>
-  <div class="table-message" id="returnsLoadMessage" style="display:none"></div>
-</section>
-
-
 <!-- ========================================================
      BILL TABLE
      ======================================================== -->

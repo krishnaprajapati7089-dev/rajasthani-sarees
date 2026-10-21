@@ -1264,7 +1264,16 @@ td strong{
 
 <body>
 
-<script src="auth-guard.js"></script>
+<script>
+// Load the optional frontend auth guard only from this page's own origin.
+// A missing guard should not prevent the reports page JavaScript from starting.
+(function(){
+  const guard = document.createElement('script');
+  guard.src = new URL('auth-guard.js', window.location.href).href;
+  guard.onerror = () => console.warn('auth-guard.js not found; check that it is deployed with the frontend.');
+  document.head.appendChild(guard);
+})();
+</script>
 
 
 <!-- ========================================================
@@ -4692,11 +4701,8 @@ function buildNavigationDrawer(){
       <a href="purchase.html" class="nav-link">Purchase Bill</a>
       <a href="reports.html" class="nav-link is-active" aria-current="page">Reports & UPI Sales</a>
       <a href="accounts.html" class="nav-link">Accounts</a>
-      <a href="sale-return.html" class="nav-link">
-  Sale Return / Exchange
-</a>
     </nav>
-  
+  `;
 }
 
 if(menuToggleEl && mobilePanelEl){

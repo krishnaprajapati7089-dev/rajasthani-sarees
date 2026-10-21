@@ -1878,7 +1878,7 @@ td strong{
       </tbody>
     </table>
   </div>
-  <p class="note">Net Sale counts only amounts actually received; pending balances are excluded. Net Cash Sale = payments received minus UPI payments for the selected date range. For bills paid partly by cash and partly by UPI, billing must save the separate UPI amount or payment history; otherwise the exact UPI portion cannot be inferred reliably.</p>
+  <p class="note">Net Sale counts only amounts actually received; pending balances are excluded. When collecting pending borrowing, choose the collection date so the backend can attribute the payment to that day's sale. Net Cash Sale = payments received minus UPI payments for the selected date range. For bills paid partly by cash and partly by UPI, billing must save the separate UPI amount or payment history; otherwise the exact UPI portion cannot be inferred reliably.</p>
 </section>
 
 <!-- ========================================================
@@ -3629,7 +3629,7 @@ async function collectPendingPayment(billId, invoiceNo){
   }
 
   const amountText = prompt(
-    `Invoice #${invoiceNo || "—"}\nPending amount: ${money(pending)}\n\nEnter the amount received today:`,
+    `Invoice #${invoiceNo || "—"}\nPending amount: ${money(pending)}\n\nEnter the amount being collected:`,
     pending.toFixed(2)
   );
   if(amountText === null) return;
@@ -3641,6 +3641,21 @@ async function collectPendingPayment(billId, invoiceNo){
   }
   if(amount > pending + 0.01){
     alert(`Payment cannot exceed the pending amount of ${money(pending)}.`);
+    return;
+  }
+
+  // Choose the date this pending amount should be counted as a collection/sale.
+  const defaultCollectionDate = indiaToday();
+  const dateInput = prompt(
+    `Invoice #${invoiceNo || "—"}\nCollection amount: ${money(amount)}\n\nEnter collection date (YYYY-MM-DD).\nThe amount will be included in that day's received-sale totals:`,
+    defaultCollectionDate
+  );
+  if(dateInput === null) return;
+  const collectionDate = String(dateInput).trim();
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(collectionDate) ||
+     Number.isNaN(new Date(`${collectionDate}T12:00:00+05:30`).getTime()) ||
+     new Date(`${collectionDate}T12:00:00+05:30`).toISOString().slice(0,10) !== collectionDate){
+    alert("Enter a valid date in YYYY-MM-DD format, for example 2026-10-21.");
     return;
   }
 
@@ -3659,7 +3674,10 @@ async function collectPendingPayment(billId, invoiceNo){
       body:JSON.stringify({
         amount:Number(amount.toFixed(2)),
         payment_mode:mode,
-        note:"Pending balance collection"
+        // Backend must persist this date in the payment-history entry.
+        payment_date:`${collectionDate}T12:00:00+05:30`,
+        date:`${collectionDate}T12:00:00+05:30`,
+        note:`Pending balance collection; collection date ${collectionDate}`
       })
     });
 
@@ -3671,7 +3689,7 @@ async function collectPendingPayment(billId, invoiceNo){
       throw new Error(data.error || data.message || `Payment failed (HTTP ${response.status}).`);
     }
 
-    alert(`Payment recorded: ${money(amount)}\nRemaining pending: ${money(Math.max(0, pending - amount))}`);
+    alert(`Payment recorded: ${money(amount)}\nCollection date: ${collectionDate}\nRemaining pending: ${money(Math.max(0, pending - amount))}`);
     await loadReports();
   }catch(error){
     console.error("Pending payment collection failed:", error);
@@ -4674,8 +4692,11 @@ function buildNavigationDrawer(){
       <a href="purchase.html" class="nav-link">Purchase Bill</a>
       <a href="reports.html" class="nav-link is-active" aria-current="page">Reports & UPI Sales</a>
       <a href="accounts.html" class="nav-link">Accounts</a>
+      <a href="sale-return.html" class="nav-link">
+  Sale Return / Exchange
+</a>
     </nav>
-  `;
+  
 }
 
 if(menuToggleEl && mobilePanelEl){

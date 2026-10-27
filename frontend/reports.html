@@ -609,6 +609,28 @@ input{
  margin-top:5px;
 }
 
+/* Clickable Total Borrowing / Pending card */
+.pending-clickable{
+ cursor:pointer;
+ user-select:none;
+ transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.pending-clickable:hover{
+ transform:translateY(-5px);
+ box-shadow:0 16px 35px rgba(6,63,53,.16);
+}
+
+.pending-clickable:focus-visible{
+ outline:3px solid var(--champagne);
+ outline-offset:3px;
+}
+
+.pending-clickable.pending-selected{
+ border:2px solid var(--champagne);
+ background:#fffaf0;
+}
+
 
 /* =========================================================
    FILTERS
@@ -1561,10 +1583,16 @@ td strong{
 
  </div>
 
- <div class="kpi-card">
+ <div class="kpi-card pending-clickable"
+      id="pendingBillsCard"
+      role="button"
+      tabindex="0"
+      title="Click to show all bills with pending amounts"
+      onclick="togglePendingBills()"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();togglePendingBills();}">
   <div class="kpi-label">Total Borrowing / Pending</div>
   <div class="kpi-value" id="kpiBorrowing">₹0</div>
-  <div class="kpi-sub">Outstanding balance across all active bills</div>
+  <div class="kpi-sub" id="pendingCardHint">Click to view all bills with pending amounts</div>
  </div>
 
 </div>
@@ -2092,6 +2120,45 @@ let allSalesReturns = [];
 
 let filteredBills = [];
 
+// When enabled, the bill table shows only bills with an outstanding balance.
+let pendingBillsOnly = false;
+
+function togglePendingBills(){
+  pendingBillsOnly = !pendingBillsOnly;
+
+  const card = document.getElementById("pendingBillsCard");
+  const hint = document.getElementById("pendingCardHint");
+
+  if(card){
+    card.classList.toggle("pending-selected", pendingBillsOnly);
+    card.setAttribute("aria-pressed", String(pendingBillsOnly));
+  }
+
+  if(hint){
+    hint.textContent = pendingBillsOnly
+      ? "Showing pending bills • Click to show all"
+      : "Click to view all bills with pending amounts";
+  }
+
+  // Show all outstanding bills, regardless of the current date/search filters.
+  if(pendingBillsOnly){
+    const search = document.getElementById("searchQuery");
+    const from = document.getElementById("fromDate");
+    const to = document.getElementById("toDate");
+    if(search) search.value = "";
+    if(from) from.value = "";
+    if(to) to.value = "";
+  }
+
+  currentPage = 1;
+  applyAllFilters();
+
+  if(pendingBillsOnly){
+    const table = document.getElementById("billsTable");
+    if(table) table.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+}
+
 let currentPage = 1;
 
 const PAGE_SIZE = 10;
@@ -2394,6 +2461,10 @@ function getSelectedBills(){
 
     .filter(
       b => !isCancelled(b)
+    )
+
+    .filter(
+      b => !pendingBillsOnly || getBillOutstandingAmount(b) > 0.009
     )
 
     .filter(
@@ -3294,6 +3365,17 @@ function setPeriod(
    ========================================================= */
 
 function clearFilters(){
+
+  pendingBillsOnly = false;
+  const pendingCard = document.getElementById("pendingBillsCard");
+  const pendingHint = document.getElementById("pendingCardHint");
+  if(pendingCard){
+    pendingCard.classList.remove("pending-selected");
+    pendingCard.setAttribute("aria-pressed", "false");
+  }
+  if(pendingHint){
+    pendingHint.textContent = "Click to view all bills with pending amounts";
+  }
 
   document.getElementById(
     "searchQuery"

@@ -34,5 +34,98 @@
 </div>
 <div id="printArea"></div>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="debit-note.js"></script>
+<script>
+  (() => {
+  'use strict';
+  // Set this if your frontend is hosted separately from the API.
+  const API_BASE = window.DEBIT_NOTE_API_BASE || 'https://rajasthani-sarees.onrender.com';
+  const API = `${API_BASE}/api/debit-notes`;
+  const SUPPLIER_API = `${API_BASE}/api/suppliers`;
+  const $ = id => document.getElementById(id);
+  const state = { suppliers: [], items: [], lastSaved: null };
+  const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(Number(value) || 0);
+  const round2 = value => Math.round(((Number(value) || 0) + Number.EPSILON) * 100) / 100;
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const dateISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  function showMessage(message, type='success') { const el=$('message'); el.textContent=message; el.className=`message ${type}`; window.scrollTo({top:0,behavior:'smooth'}); }
+  async function request(url, options={}) {
+    const response = await fetch(url, { credentials:'include', ...options, headers:{'Content-Type':'application/json', ...(options.headers||{})} });
+    let data={}; try { data=await response.json(); } catch (_) {}
+    if (!response.ok) throw new Error(data.message || data.error || `Request failed (${response.status})`);
+    return data;
+  }
+  async function loadSuppliers() {
+    const data = await request(SUPPLIER_API);
+    state.suppliers = Array.isArray(data.suppliers) ? data.suppliers : (Array.isArray(data) ? data : []);
+    $('supplier').innerHTML = '<option value="">Select supplier / party</option>' + state.suppliers.map(s => `<option value="${escapeHtml(s._id)}">${escapeHtml(s.name)}</option>`).join('');
+  }
+  function selectedSupplier() { return state.suppliers.find(s => String(s._id) === $('supplier').value) || null; }
+  async function addByBarcode(raw) {
+    const barcode=String(raw||'').trim(); if(!barcode) return;
+    try {
+      const data=await request(`${API}/search-product/${encodeURIComponent(barcode)}`);
+      const p=data.product;
+      const existing=state.items.find(x=>String(x.product_id)===String(p._id));
+      if(existing) {
+        if(existing.qty + 1 > existing.stock_qty) throw new Error(`Only ${existing.stock_qty} pieces are available for ${existing.description}.`);
+        existing.qty += 1;
+      } else {
+        if(Number(p.stock_qty)<=0) throw new Error(`${p.name} has zero available stock.`);
+        state.items.push({ product_id:p._id, barcode:p.barcode||barcode, description:p.name, category:p.category||'', hsn_code:p.hsn_code||'5407', stock_qty:Number(p.stock_qty)||0, qty:1, rate:Number(p.purchase_price)||0, gst_rate:Number(p.gst_rate)||0 });
+      }
+      renderItems(); $('barcodeInput').value=''; $('barcodeInput').focus();
+      showMessage(`${p.name} added to return list.`, 'success');
+    } catch(error) { showMessage(error.message,'error'); $('barcodeInput').select(); }
+  }
+  function totals() {
+    return state.items.reduce((t,item)=>{ const base=round2(item.qty*item.rate); const gst=round2(base*item.gst_rate/100); t.qty+=item.qty; t.taxable+=base; t.gst+=gst; return t; },{qty:0,taxable:0,gst:0});
+  }
+  function renderItems() {
+    const body=$('itemsBody');
+    if(!state.items.length) body.innerHTML='<tr><td colspan="9" class="muted" style="text-align:center;padding:30px">Scan a product to start adding return items.</td></tr>';
+    else body.innerHTML=state.items.map((item,index)=>{
+      const amount=round2(item.qty*item.rate*(1+item.gst_rate/100));
+      return `<tr><td>${escapeHtml(item.barcode)}</td><td><strong>${escapeHtml(item.description)}</strong><div class="muted">${escapeHtml(item.category)}</div></td><td>${escapeHtml(item.hsn_code)}</td><td>${item.stock_qty}</td><td><input type="number" min="0.001" max="${item.stock_qty}" step="1" value="${item.qty}" data-qty="${index}"></td><td>${money(item.rate)}</td><td>${item.gst_rate}%</td><td><strong>${money(amount)}</strong></td><td><button class="remove" data-remove="${index}" title="Remove">×</button></td></tr>`;
+    }).join('');
+    const t=totals(); $('productCount').textContent=state.items.length; $('qtyTotal').textContent=t.qty; $('taxableTotal').textContent=money(t.taxable); $('gstTotal').textContent=money(t.gst); $('grandTotal').textContent=money(t.taxable+t.gst);
+  }
+  function clearForm() { state.items=[]; $('supplier').value=''; $('purchaseRef').value=''; $('reason').value='Return to supplier'; $('remarks').value=''; $('returnDate').value=dateISO(); $('barcodeInput').value=''; renderItems(); }
+  async function saveDebitNote() {
+    const supplier=selectedSupplier();
+    if(!supplier) return showMessage('Please select a supplier.','error');
+    if(!state.items.length) return showMessage('Scan at least one saree before saving.','error');
+    const invalid=state.items.find(i=>!(Number(i.qty)>0)||Number(i.qty)>Number(i.stock_qty));
+    if(invalid) return showMessage(`Check return quantity for ${invalid.description}.`,'error');
+    const payload={ supplier_id:supplier._id, supplier:supplier.name, supplier_gst:supplier.gst||'', supplier_phone:supplier.phone||'', supplier_city:supplier.city||'', date:$('returnDate').value, reference_purchase_bill:$('purchaseRef').value.trim(), reason:$('reason').value, remarks:$('remarks').value.trim(), items:state.items.map(i=>({product_id:i.product_id,qty:Number(i.qty)})) };
+    $('saveBtn').disabled=true; $('saveBtn').textContent='Saving...';
+    try {
+      const result=await request(API,{method:'POST',body:JSON.stringify(payload)});
+      state.lastSaved=result.debitNote; showMessage(`${result.debitNote.debit_note_no} saved. Stock and supplier balance updated.`, 'success');
+      renderPrint(result.debitNote); window.print(); await loadHistory(); clearForm();
+    } catch(error) { showMessage(error.message,'error'); }
+    finally { $('saveBtn').disabled=false; $('saveBtn').textContent='Save & Generate PDF'; }
+  }
+  function renderPrint(note) {
+    const rows=note.items.map((i,n)=>`<tr><td>${n+1}</td><td>${escapeHtml(i.barcode)}</td><td>${escapeHtml(i.description)}</td><td>${escapeHtml(i.hsn_code)}</td><td>${i.qty}</td><td>${money(i.rate)}</td><td>${i.gst_rate}%</td><td>${money(i.taxable_amount)}</td><td>${money(i.gst_amount)}</td><td>${money(i.amount)}</td></tr>`).join('');
+    $('printArea').innerHTML=`<div class="brand">RAJASTANI SAREE</div><div style="text-align:center;font-size:10px">DEBIT NOTE · GOODS RETURN TO SUPPLIER</div><h1>DEBIT NOTE</h1><div class="meta"><div><b>Debit Note No:</b> ${escapeHtml(note.debit_note_no)}<br><b>Date:</b> ${new Date(note.date).toLocaleDateString('en-IN')}<br><b>Reference Bill:</b> ${escapeHtml(note.reference_purchase_bill||'—')}</div><div><b>Supplier:</b> ${escapeHtml(note.supplier)}<br><b>GSTIN:</b> ${escapeHtml(note.supplier_gst||'—')}<br><b>Phone / City:</b> ${escapeHtml([note.supplier_phone,note.supplier_city].filter(Boolean).join(' / ')||'—')}</div></div><table><thead><tr><th>#</th><th>Barcode</th><th>Product</th><th>HSN</th><th>Qty</th><th>Rate</th><th>GST</th><th>Taxable</th><th>GST Amt</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table><div class="totals"><div><span>Taxable Total</span><b>${money(note.taxable_total)}</b></div><div><span>GST Total</span><b>${money(note.gst_total)}</b></div><div style="border-top:1px solid #333;margin-top:5px;padding-top:8px;font-size:13px"><span><b>Debit Note Total</b></span><b>${money(note.grand_total)}</b></div></div><div style="margin-top:12px;font-size:10px"><b>Reason:</b> ${escapeHtml(note.reason||'Return to supplier')}<br><b>Remarks:</b> ${escapeHtml(note.remarks||'—')}</div><div class="terms">The above goods have been returned to the supplier. Please adjust the debit note value in the supplier account.</div><div class="foot"><div>Receiver's Signature</div><div>For Rajastani Saree<br><br>Authorised Signature</div></div>`;
+  }
+  async function loadHistory() {
+    try {
+      const data=await request(API); const rows=data.debitNotes||[];
+      $('historyBody').innerHTML=rows.length?rows.map(n=>`<tr><td><strong>${escapeHtml(n.debit_note_no)}</strong></td><td>${new Date(n.date).toLocaleDateString('en-IN')}</td><td>${escapeHtml(n.supplier)}</td><td>${(n.items||[]).reduce((s,i)=>s+Number(i.qty||0),0)}</td><td><strong>${money(n.grand_total)}</strong></td><td><span class="pill ${n.status==='cancelled'?'cancelled':''}">${escapeHtml(n.status||'issued')}</span></td><td><button class="btn secondary" data-print="${escapeHtml(n._id)}">PDF</button> ${n.status==='issued'?`<button class="remove" data-cancel="${escapeHtml(n._id)}">Cancel</button>`:''}</td></tr>`).join(''):'<tr><td colspan="7" class="muted">No debit notes found.</td></tr>';
+    } catch(error) { showMessage(`History: ${error.message}`,'error'); }
+  }
+  async function printExisting(id) { try { const note=await request(`${API}/${id}`); renderPrint(note); window.print(); } catch(e) { showMessage(e.message,'error'); } }
+  async function cancelNote(id) { if(!confirm('Cancel this debit note? Stock will be added back and supplier balance adjustment reversed.')) return; try { const r=await request(`${API}/${id}`,{method:'DELETE'}); showMessage(r.message||'Debit note cancelled.'); await loadHistory(); } catch(e) { showMessage(e.message,'error'); } }
+  $('lookupBtn').addEventListener('click',()=>addByBarcode($('barcodeInput').value));
+  $('barcodeInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addByBarcode(e.target.value);}});
+  $('itemsBody').addEventListener('change',e=>{const index=e.target.dataset.qty;if(index===undefined)return;const item=state.items[Number(index)];const qty=Number(e.target.value);if(!(qty>0)||qty>item.stock_qty){showMessage(`Quantity must be between 1 and ${item.stock_qty}.`,'error');e.target.value=item.qty;return;}item.qty=qty;renderItems();});
+  $('itemsBody').addEventListener('click',e=>{const index=e.target.dataset.remove;if(index!==undefined){state.items.splice(Number(index),1);renderItems();}});
+  $('saveBtn').addEventListener('click',saveDebitNote); $('clearBtn').addEventListener('click',()=>{if(confirm('Clear this debit note form?'))clearForm();});
+  $('historyBody').addEventListener('click',e=>{if(e.target.dataset.print)printExisting(e.target.dataset.print);if(e.target.dataset.cancel)cancelNote(e.target.dataset.cancel);});
+  $('returnDate').value=dateISO();
+  Promise.all([loadSuppliers(),loadHistory()]).then(()=>{$('barcodeInput').focus();}).catch(e=>showMessage(e.message,'error'));
+})();
+
+</script>
 </body></html>

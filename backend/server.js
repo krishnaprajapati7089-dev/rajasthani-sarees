@@ -20,6 +20,7 @@ const reportsRouter = require('./routes/reports');
 const caRouter = require('./routes/accounts');
 const supplierLedgerRouter = require('./routes/supplierLedger');
 const suppliersRouter = require('./routes/suppliers');
+const debitNotesRouter = require('./routes/debitNotes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -365,6 +366,7 @@ app.use('/api/shop', requireAuth, shopRouter);
 app.use('/api/dashboard', requireAuth, dashboardRouter);
 app.use('/api/reports', requireAuth, reportsRouter);
 app.use('/api/ca', requireAuth, caRouter);
+app.use('/api/debit-notes', requireAuth, debitNotesRouter);
 
 // Existing supplier ledger route — unchanged
 app.use('/api/supplier-ledger', requireAuth, supplierLedgerRouter);

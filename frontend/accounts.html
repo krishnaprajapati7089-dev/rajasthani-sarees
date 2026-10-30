@@ -815,6 +815,34 @@ tr:hover td{
       </button>
     </div>
 
+    <div class="card no-print" style="padding:16px;margin-bottom:16px">
+      <div class="panel-title" style="margin-bottom:12px">Sales Filters</div>
+      <div class="filters" style="align-items:center">
+        <select id="salesPartyFilter" class="field" style="min-width:190px"><option value="">All Parties</option></select>
+        <label style="font-size:11px;color:var(--muted);font-weight:700">From</label>
+        <input id="salesFromDate" class="field" type="date">
+        <label style="font-size:11px;color:var(--muted);font-weight:700">To</label>
+        <input id="salesToDate" class="field" type="date">
+        <select id="salesAmountFilter" class="field">
+          <option value="all">All Amounts</option><option value="above">Above ₹2,000</option><option value="below">Below ₹2,000</option>
+        </select>
+        <input id="salesAmountValue" class="field" type="number" min="0" value="2000" placeholder="Amount ₹" style="width:125px">
+        <button class="btn btn-primary" type="button" onclick="renderSales()">Apply Filters</button>
+        <button class="btn btn-light" type="button" onclick="resetSalesFilters()">Reset</button>
+      </div>
+      <div id="salesFilterStatus" class="panel-sub" style="margin-top:12px">Showing all sales in the selected CA date period.</div>
+    </div>
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div class="panel-head" style="margin-bottom:10px">
+        <div><div class="panel-title">Party-wise Sales Summary</div><div class="panel-sub">Total bill amount and invoice count for each party after filters</div></div>
+      </div>
+      <div class="table-wrap">
+        <table style="min-width:500px">
+          <thead><tr><th>Party / Customer</th><th>Invoices</th><th>Total Sales</th></tr></thead>
+          <tbody id="salesPartySummary"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -1617,67 +1645,81 @@ function renderAll() {
 // SALES
 // ============================================================
 
-function renderSales() {
+let SALES_FILTERED_ROWS = [];
 
-  const rows =
-    CA_DATA.sales || [];
-
-
-  const html =
-    rows.map(bill => {
-
-      return `
-        <tr>
-          <td>${dateOnly(bill.createdAt || bill.bill_date)}</td>
-
-          <td>
-            <strong>${escapeHTML(bill.invoice_no)}</strong>
-          </td>
-
-          <td>
-            ${escapeHTML(bill.customer_name || "Walk-in Customer")}
-          </td>
-
-          <td>
-            ${escapeHTML(bill.customer_gstin || "-")}
-          </td>
-
-          <td>${money(bill.taxable_value)}</td>
-
-          <td>${money(bill.cgst_amount)}</td>
-
-          <td>${money(bill.sgst_amount)}</td>
-
-          <td>${money(bill.igst_amount)}</td>
-
-          <td>
-            <strong>${money(bill.grand_total)}</strong>
-          </td>
-
-          <td>
-            ${escapeHTML(bill.payment_mode || "-")}
-          </td>
-        </tr>
-      `;
-
-    }).join("");
-
-
-  document.getElementById(
-    "salesTable"
-  ).innerHTML =
-    html ||
-    `<tr>
-      <td colspan="10" class="empty">
-        No sales found.
-      </td>
-    </tr>`;
+function salesDateValue(bill) {
+  const value = bill.createdAt || bill.bill_date;
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 
+function resetSalesFilters() {
+  ["salesPartyFilter", "salesFromDate", "salesToDate"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("salesAmountFilter").value = "all";
+  document.getElementById("salesAmountValue").value = "2000";
+  renderSales();
+}
 
-// ============================================================
-// PURCHASES
-// ============================================================
+function renderSales() {
+  const rows = CA_DATA?.sales || [];
+  const partySelect = document.getElementById("salesPartyFilter");
+  const currentParty = partySelect.value;
+  const parties = [...new Set(rows.map(b => String(b.customer_name || "Walk-in Customer").trim()))]
+    .filter(Boolean).sort((a, b) => a.localeCompare(b));
+
+  partySelect.innerHTML = '<option value="">All Parties</option>' +
+    parties.map(name => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join("");
+  if (parties.includes(currentParty)) partySelect.value = currentParty;
+
+  const party = partySelect.value;
+  const fromValue = document.getElementById("salesFromDate").value;
+  const toValue = document.getElementById("salesToDate").value;
+  const amountMode = document.getElementById("salesAmountFilter").value;
+  const threshold = Math.max(0, number(document.getElementById("salesAmountValue").value));
+
+  SALES_FILTERED_ROWS = rows.filter(bill => {
+    const customer = String(bill.customer_name || "Walk-in Customer").trim();
+    const total = number(bill.grand_total);
+    const d = salesDateValue(bill);
+    if (party && customer !== party) return false;
+    if (fromValue && (!d || d < new Date(fromValue + "T00:00:00"))) return false;
+    if (toValue && (!d || d > new Date(toValue + "T23:59:59"))) return false;
+    if (amountMode === "above" && !(total > threshold)) return false;
+    if (amountMode === "below" && !(total < threshold)) return false;
+    return true;
+  });
+
+  document.getElementById("salesTable").innerHTML = SALES_FILTERED_ROWS.map(bill => `
+    <tr>
+      <td>${dateOnly(bill.createdAt || bill.bill_date)}</td>
+      <td><strong>${escapeHTML(bill.invoice_no || "-")}</strong></td>
+      <td>${escapeHTML(bill.customer_name || "Walk-in Customer")}</td>
+      <td>${escapeHTML(bill.customer_gstin || "-")}</td>
+      <td>${money(bill.taxable_value)}</td><td>${money(bill.cgst_amount)}</td>
+      <td>${money(bill.sgst_amount)}</td><td>${money(bill.igst_amount)}</td>
+      <td><strong>${money(bill.grand_total)}</strong></td>
+      <td>${escapeHTML(bill.payment_mode || "-")}</td>
+    </tr>`).join("") || '<tr><td colspan="10" class="empty">No sales match the selected filters.</td></tr>';
+
+  const grouped = {};
+  SALES_FILTERED_ROWS.forEach(bill => {
+    const name = String(bill.customer_name || "Walk-in Customer").trim();
+    if (!grouped[name]) grouped[name] = { count: 0, total: 0 };
+    grouped[name].count += 1;
+    grouped[name].total += number(bill.grand_total);
+  });
+  document.getElementById("salesPartySummary").innerHTML =
+    Object.entries(grouped).sort((a, b) => b[1].total - a[1].total).map(([name, value]) => `
+      <tr><td><strong>${escapeHTML(name)}</strong></td><td>${value.count}</td><td><strong>${money(value.total)}</strong></td></tr>
+    `).join("") || '<tr><td colspan="3" class="empty">No party sales found.</td></tr>';
+
+  const total = SALES_FILTERED_ROWS.reduce((sum, bill) => sum + number(bill.grand_total), 0);
+  document.getElementById("salesFilterStatus").textContent =
+    `Showing ${SALES_FILTERED_ROWS.length} invoice(s) • Filtered sales total: ${money(total)}`;
+}
 
 function renderPurchases() {
 
@@ -2112,6 +2154,13 @@ document
   );
 
 
+// Sales filters update the register and party summary immediately.
+["salesPartyFilter", "salesFromDate", "salesToDate", "salesAmountFilter", "salesAmountValue"].forEach(id => {
+  document.getElementById(id).addEventListener("change", renderSales);
+});
+document.getElementById("salesAmountValue").addEventListener("input", renderSales);
+
+
 // ============================================================
 // CSV EXPORT
 // ============================================================
@@ -2228,7 +2277,7 @@ function exportCSV(type) {
     ]);
 
 
-    CA_DATA.sales.forEach(
+    SALES_FILTERED_ROWS.forEach(
       b => {
 
         rows.push([

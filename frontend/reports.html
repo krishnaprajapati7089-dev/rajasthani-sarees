@@ -2556,13 +2556,11 @@ function renderKpis(
   bills
 ){
 
-  const sales =
-    bills.reduce(
-      (s,b) =>
-        s +
-        num(b.grand_total),
-      0
-    );
+  // Sales in Selection = full invoice value for bills whose BILL DATE
+  // falls in the selected report period (pending amounts are included).
+  const sales = round2(
+    bills.reduce((sum, bill) => sum + getBillTotalAmount(bill), 0)
+  );
 
 
   const qty =
@@ -2631,6 +2629,23 @@ function renderKpis(
     document.getElementById(
       "toDate"
     ).value;
+
+  // Net Sale = actual money received during the MAIN report date range.
+  // Use payment-entry dates so later collections of old pending bills are
+  // counted on the date money was received, not on the original bill date.
+  // The separate UPI table date filter must not overwrite this KPI.
+  const receivedInSelection = round2(
+    (allBills || [])
+      .filter(bill => !isCancelled(bill))
+      .flatMap(bill => getPaymentEntriesForBill(bill))
+      .filter(payment => {
+        const paymentDate = localDateKey(payment.date);
+        return paymentDate && (!from || paymentDate >= from) && (!to || paymentDate <= to);
+      })
+      .reduce((sum, payment) => sum + num(payment.amount), 0)
+  );
+  const netSaleEl = document.getElementById("kpiNetSale");
+  if(netSaleEl) netSaleEl.textContent = money(receivedInSelection);
 
 
   document.getElementById(
@@ -4251,8 +4266,6 @@ function renderUpiPayments(){
   document.getElementById("upiAverageAmount").textContent = money(upiRows.length ? upiTotal / upiRows.length : 0);
   const netCashEl = document.getElementById("netCashSaleAmount");
   if(netCashEl) netCashEl.textContent = money(netCashSale);
-  const topNetSaleEl = document.getElementById("kpiNetSale");
-  if(topNetSaleEl) topNetSaleEl.textContent = money(receivedTotal);
   document.getElementById("upiPeriodLabel").textContent =
     `${from || "Beginning"} → ${to || "Today onward"} • ${matches.length} matching UPI payment(s)`;
 

@@ -2630,19 +2630,15 @@ function renderKpis(
       "toDate"
     ).value;
 
-  // Net Sale = actual money received during the MAIN report date range.
-  // Use payment-entry dates so later collections of old pending bills are
-  // counted on the date money was received, not on the original bill date.
-  // The separate UPI table date filter must not overwrite this KPI.
+  // Net Sale = money received against the bills in the current MAIN
+  // report selection. Never sum allBills here: that displays lifetime
+  // collections even when only today's bills are selected.
+  // The independent UPI report must never overwrite this KPI.
   const receivedInSelection = round2(
-    (allBills || [])
-      .filter(bill => !isCancelled(bill))
-      .flatMap(bill => getPaymentEntriesForBill(bill))
-      .filter(payment => {
-        const paymentDate = localDateKey(payment.date);
-        return paymentDate && (!from || paymentDate >= from) && (!to || paymentDate <= to);
-      })
-      .reduce((sum, payment) => sum + num(payment.amount), 0)
+    (bills || []).reduce((sum, bill) => {
+      if(isCancelled(bill)) return sum;
+      return sum + getBillPaidAmount(bill);
+    }, 0)
   );
   const netSaleEl = document.getElementById("kpiNetSale");
   if(netSaleEl) netSaleEl.textContent = money(receivedInSelection);

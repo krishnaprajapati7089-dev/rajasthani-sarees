@@ -1179,7 +1179,7 @@ td strong{ color:var(--emerald); }
     <div class="upi-stat">
       <div class="label">Net Cash Sale</div>
       <div class="value" id="netCashSaleAmount">₹0</div>
-      <div class="note">Payments received − UPI payments</div>
+      <div class="note">Recorded cash payments only</div>
     </div>
   </div>
   <div class="quick-filters upi-period-buttons" aria-label="UPI sale date filters">
@@ -1223,7 +1223,7 @@ td strong{ color:var(--emerald); }
       </tbody>
     </table>
   </div>
-  <p class="note">Net Sale counts only amounts actually received; pending balances are excluded. When collecting pending borrowing, choose the collection date so the backend can attribute the payment to that day's sale. Net Cash Sale = payments received minus UPI payments for the selected date range. For bills paid partly by cash and partly by UPI, billing must save the separate UPI amount or payment history; otherwise the exact UPI portion cannot be inferred reliably.</p>
+  <p class="note">Net Sale counts only amounts actually received; pending balances are excluded. When collecting pending borrowing, choose the collection date so the backend can attribute the payment to that day's sale. Net Cash Sale = separately recorded cash payments for the selected payment date range. UPI payments are counted separately. Mixed Cash + UPI entries without a saved split are excluded from Net Cash Sale because their exact cash portion cannot be inferred reliably.</p>
 </section>
 
 
@@ -2785,8 +2785,19 @@ function renderUpiPayments(){
       .map(v => String(v ?? "")).join(" ").toLowerCase();
     return haystack.includes(q);
   });
-  const upiTotal = upiRows.reduce((sum, row) => sum + row.amount, 0);
-  const netCashSale = round2(Math.max(0, receivedTotal - upiTotal));
+  const upiTotal = round2(upiRows.reduce((sum, row) => sum + row.amount, 0));
+
+  // Net Cash Sale must include only payments explicitly recorded as cash.
+  // Do not calculate it as receivedTotal - upiTotal: legacy combined
+  // "Cash + UPI" entries may not contain the actual split and would otherwise
+  // be incorrectly counted as 100% cash.
+  const cashRows = paymentRows.filter(row => {
+    const method = String(row.method || "").toLowerCase().replace(/[\\s_-]+/g, "");
+    return method.includes("cash") && !methodMentionsUpi(method);
+  });
+  const netCashSale = round2(
+    cashRows.reduce((sum, row) => sum + row.amount, 0)
+  );
 
   document.getElementById("upiTotalAmount").textContent = money(upiTotal);
   document.getElementById("upiTransactionCount").textContent = upiRows.length.toLocaleString("en-IN");

@@ -2568,8 +2568,20 @@ function applyUpiDateFilter(){
 }
 
 function paymentEntryDate(entry, bill){
-  return entry?.date || entry?.payment_date || entry?.paymentDate ||
-    entry?.createdAt || entry?.created_at || billDateValue(bill);
+  // A pending-balance collection can belong to an older bill. Its collection
+  // timestamp must win over a generic `date` field that may still contain the
+  // original bill date.
+  const actualPaymentDate = entry?.payment_date || entry?.paymentDate ||
+    entry?.createdAt || entry?.created_at || entry?.date;
+  if(actualPaymentDate) return actualPaymentDate;
+
+  // Never silently back-date a pending collection to the invoice date when
+  // the collection itself has no timestamp.
+  const note = String(entry?.note || entry?.description || "").toLowerCase();
+  if(/pending|balance collection|outstanding collection/.test(note)) return "";
+
+  // Legacy initial bill payments without their own timestamp belong to bill day.
+  return billDateValue(bill);
 }
 
 // Safe money rounding helper used by the payment report calculations.

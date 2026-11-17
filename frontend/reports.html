@@ -1179,7 +1179,7 @@ td strong{ color:var(--emerald); }
     <div class="upi-stat">
       <div class="label">Net Cash Sale</div>
       <div class="value" id="netCashSaleAmount">₹0</div>
-      <div class="note">Recorded cash payments only</div>
+      <div class="note">Net Sale − UPI Payments Total</div>
     </div>
   </div>
   <div class="quick-filters upi-period-buttons" aria-label="UPI sale date filters">
@@ -1223,7 +1223,7 @@ td strong{ color:var(--emerald); }
       </tbody>
     </table>
   </div>
-  <p class="note">Net Sale counts only amounts actually received; pending balances are excluded. When collecting pending borrowing, choose the collection date so the backend can attribute the payment to that day's sale. Net Cash Sale = separately recorded cash payments for the selected payment date range. UPI payments are counted separately. Mixed Cash + UPI entries without a saved split are excluded from Net Cash Sale because their exact cash portion cannot be inferred reliably.</p>
+  <p class="note">Net Sale counts only amounts actually received; pending balances are excluded. Net Cash Sale is calculated as Sales &amp; Reports Net Sale minus UPI Payments Total. Keep the main report date filter and UPI payment date filter on the same period for an accurate comparison.</p>
 </section>
 
 
@@ -1323,6 +1323,9 @@ let allBills = [];
 let allSalesReturns = [];
 
 let filteredBills = [];
+
+// Net Sale from the main Sales & Reports selection; used by the UPI summary.
+let currentNetSale = 0;
 
 // When enabled, the bill table shows only bills with an outstanding balance.
 let pendingBillsOnly = false;
@@ -1644,6 +1647,7 @@ function renderKpis(bills){
       return sum + getBillPaidAmount(bill);
     }, 0)
   );
+  currentNetSale = receivedInSelection;
   const netSaleEl = document.getElementById("kpiNetSale");
   if(netSaleEl) netSaleEl.textContent = money(receivedInSelection);
 
@@ -2568,20 +2572,8 @@ function applyUpiDateFilter(){
 }
 
 function paymentEntryDate(entry, bill){
-  // A pending-balance collection can belong to an older bill. Its collection
-  // timestamp must win over a generic `date` field that may still contain the
-  // original bill date.
-  const actualPaymentDate = entry?.payment_date || entry?.paymentDate ||
-    entry?.createdAt || entry?.created_at || entry?.date;
-  if(actualPaymentDate) return actualPaymentDate;
-
-  // Never silently back-date a pending collection to the invoice date when
-  // the collection itself has no timestamp.
-  const note = String(entry?.note || entry?.description || "").toLowerCase();
-  if(/pending|balance collection|outstanding collection/.test(note)) return "";
-
-  // Legacy initial bill payments without their own timestamp belong to bill day.
-  return billDateValue(bill);
+  return entry?.date || entry?.payment_date || entry?.paymentDate ||
+    entry?.createdAt || entry?.created_at || billDateValue(bill);
 }
 
 // Safe money rounding helper used by the payment report calculations.
@@ -2799,17 +2791,11 @@ function renderUpiPayments(){
   });
   const upiTotal = round2(upiRows.reduce((sum, row) => sum + row.amount, 0));
 
-  // Net Cash Sale must include only payments explicitly recorded as cash.
-  // Do not calculate it as receivedTotal - upiTotal: legacy combined
-  // "Cash + UPI" entries may not contain the actual split and would otherwise
-  // be incorrectly counted as 100% cash.
-  const cashRows = paymentRows.filter(row => {
-    const method = String(row.method || "").toLowerCase().replace(/[\\s_-]+/g, "");
-    return method.includes("cash") && !methodMentionsUpi(method);
-  });
-  const netCashSale = round2(
-    cashRows.reduce((sum, row) => sum + row.amount, 0)
-  );
+  // Requested calculation:
+  // Net Cash Sale = Net Sale shown in Sales & Reports - UPI Payments Total.
+  // Use the main report's selected-period Net Sale and the UPI total for
+  // the selected UPI payment-date range. Prevent a negative cash figure.
+  const netCashSale = round2(Math.max(0, currentNetSale - upiTotal));
 
   document.getElementById("upiTotalAmount").textContent = money(upiTotal);
   document.getElementById("upiTransactionCount").textContent = upiRows.length.toLocaleString("en-IN");

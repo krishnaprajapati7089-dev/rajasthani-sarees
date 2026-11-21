@@ -364,7 +364,12 @@ app.use('/api/bills', requireAuth, billsRouter);
 app.use('/api/purchases', requireAuth, purchasesRouter);
 app.use('/api/shop', requireAuth, shopRouter);
 app.use('/api/dashboard', requireAuth, dashboardRouter);
+
+// Reports routes:
+// GET /api/reports/supplier-sales
+// The reports router is mounted here and protected by requireAuth.
 app.use('/api/reports', requireAuth, reportsRouter);
+
 app.use('/api/ca', requireAuth, caRouter);
 app.use('/api/debit-notes', requireAuth, debitNotesRouter);
 

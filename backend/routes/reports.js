@@ -37,7 +37,8 @@ function indiaDayRange(dateStr) {
   const [year, month, day] = dateStr.split('-').map(Number);
 
   // Reject impossible calendar dates such as 2026-02-31 or 2026-13-01.
-  const check = new Date(Date.UTC(year, month - 1, day));
+  const check = new Date(0);
+  check.setUTCFullYear(year, month - 1, day);
   if (
     check.getUTCFullYear() !== year ||
     check.getUTCMonth() !== month - 1 ||
@@ -1232,10 +1233,14 @@ router.get('/supplier-sales', async (req, res) => {
     ]);
 
     // Compare dates using India calendar days, not raw UTC timestamps.
+    const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+    const DAY_MS = 24 * 60 * 60 * 1000;
     const indiaEventDate = value => {
-      let parsed = new Date(value || 0);
-      if (Number.isNaN(parsed.getTime())) parsed = new Date(0); // unreadable date -> oldest
-      return indiaDayRange(getIndiaDateString(parsed)).start;
+      let time = new Date(value || 0).getTime();
+      if (Number.isNaN(time)) time = 0; // unreadable date -> treated as oldest
+      // Start of that India calendar day, as a UTC Date. Pure arithmetic, so a
+      // mistyped year in old data can never throw.
+      return new Date(Math.floor((time + IST_OFFSET_MS) / DAY_MS) * DAY_MS - IST_OFFSET_MS);
     };
 
     const events = [];

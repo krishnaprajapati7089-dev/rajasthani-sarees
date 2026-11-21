@@ -28,11 +28,25 @@ const INDIA_TIMEZONE = 'Asia/Kolkata';
  * 2026-09-30T18:29:59.999Z
  */
 function indiaDayRange(dateStr) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    throw new Error('Invalid date format. Expected YYYY-MM-DD');
+  if (typeof dateStr !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const err = new Error('Invalid date format. Expected YYYY-MM-DD');
+    err.statusCode = 400; // client error, not a server crash
+    throw err;
   }
 
   const [year, month, day] = dateStr.split('-').map(Number);
+
+  // Reject impossible calendar dates such as 2026-02-31 or 2026-13-01.
+  const check = new Date(Date.UTC(year, month - 1, day));
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day
+  ) {
+    const err = new Error('Invalid date. Expected a real calendar date in YYYY-MM-DD');
+    err.statusCode = 400;
+    throw err;
+  }
 
   // India is UTC+05:30
   const start = new Date(
@@ -51,12 +65,39 @@ function indiaDayRange(dateStr) {
  * Get current date in India as YYYY-MM-DD
  */
 function getIndiaDateString(date = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: INDIA_TIMEZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(date);
+  // India has no daylight saving: always UTC+05:30.
+  // Plain arithmetic always returns YYYY-MM-DD. The earlier
+  // Intl.DateTimeFormat('en-CA') output depends on the Node/ICU version on the
+  // server and can return another format (e.g. MM/DD/YYYY), which then fails
+  // the YYYY-MM-DD check in indiaDayRange().
+  const time = date instanceof Date ? date.getTime() : new Date(date).getTime();
+  if (Number.isNaN(time)) {
+    throw new RangeError('Invalid date value');
+  }
+  return new Date(time + (5.5 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+}
+
+
+/**
+ * Clean a date query parameter.
+ * Accepts YYYY-MM-DD (also with a time part), DD-MM-YYYY and DD/MM/YYYY.
+ * Returns '' when the value is empty/undefined/null so no filter is applied.
+ * Anything else is returned unchanged so indiaDayRange() reports it as a 400.
+ */
+function normalizeDateParam(value) {
+  if (Array.isArray(value)) value = value[0];
+  const text = String(value ?? '').trim();
+  if (!text || text === 'undefined' || text === 'null') return '';
+
+  const iso = text.match(/^(\d{4}-\d{2}-\d{2})(?:[T\s].*)?$/);
+  if (iso) return iso[1];
+
+  const dmy = text.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) {
+    return `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+  }
+
+  return text;
 }
 
 
@@ -351,8 +392,8 @@ router.get('/daily', async (req, res) => {
       err
     );
 
-    res.status(500).json({
-      error: 'Failed to generate daily report',
+    res.status(err.statusCode || 500).json({
+      error: err.statusCode ? err.message : 'Failed to generate daily report',
       message: err.message
     });
   }
@@ -1100,7 +1141,10 @@ router.get('/returns', async (req, res) => {
     res.json({ returns, summary });
   } catch (err) {
     console.error('Sales returns report error:', err);
-    res.status(500).json({ error: 'Failed to load sales returns', message: err.message });
+    res.status(err.statusCode || 500).json({
+      error: err.statusCode ? err.message : 'Failed to load sales returns',
+      message: err.message
+    });
   }
 });
 
@@ -1175,10 +1219,11 @@ router.post('/returns', async (req, res) => {
  */
 router.get('/supplier-sales', async (req, res) => {
   try {
-    const from = req.query.from ? indiaDayRange(String(req.query.from)).start : null;
-    const to = req.query.to ? indiaDayRange(String(req.query.to)).end : null;
-    if (req.query.from && !from) return res.status(400).json({ error: 'Invalid from date' });
-    if (req.query.to && !to) return res.status(400).json({ error: 'Invalid to date' });
+    // Empty / missing dates mean "no filter". Other formats are cleaned first.
+    const fromParam = normalizeDateParam(req.query.from);
+    const toParam = normalizeDateParam(req.query.to);
+    const from = fromParam ? indiaDayRange(fromParam).start : null;
+    const to = toParam ? indiaDayRange(toParam).end : null;
     if (from && to && from > to) return res.status(400).json({ error: 'From date cannot be after To date' });
 
     const [purchases, bills] = await Promise.all([
@@ -1188,7 +1233,8 @@ router.get('/supplier-sales', async (req, res) => {
 
     // Compare dates using India calendar days, not raw UTC timestamps.
     const indiaEventDate = value => {
-      const parsed = new Date(value || 0);
+      let parsed = new Date(value || 0);
+      if (Number.isNaN(parsed.getTime())) parsed = new Date(0); // unreadable date -> oldest
       return indiaDayRange(getIndiaDateString(parsed)).start;
     };
 
@@ -1312,13 +1358,13 @@ router.get('/supplier-sales', async (req, res) => {
 
     res.json({
       rows, suppliers, summary,
-      date_filter: { from: req.query.from || '', to: req.query.to || '' },
+      date_filter: { from: fromParam, to: toParam },
       allocation_method: 'FIFO estimate based on purchase date and bill date',
       note: 'Older bills do not store supplier/batch allocation. Supplier-wise sold quantities are reconstructed using FIFO; unmatched/opening stock is shown separately.'
     });
   } catch (err) {
     console.error('Supplier-wise sales report error:', err);
-    res.status(500).json({ error: err.message || 'Could not generate supplier-wise sales report' });
+    res.status(err.statusCode || 500).json({ error: err.message || 'Could not generate supplier-wise sales report' });
   }
 });
 

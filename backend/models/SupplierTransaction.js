@@ -9,27 +9,52 @@ const SupplierTransactionSchema = new mongoose.Schema(
       required: true,
       index: true
     },
+
     type: {
       type: String,
       enum: ['payment'],
       default: 'payment',
       required: true
     },
-    date: { type: Date, default: Date.now, required: true },
-    amount: { type: Number, required: true, min: 0.01 },
+
+    date: {
+      type: Date,
+      default: Date.now,
+      required: true
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+      min: 0.01
+    },
+
     paymentKind: {
       type: String,
-      enum: ['advance', 'against_bill', 'settlement'],
+      enum: ['advance', 'against_bill', 'settlement', 'debit_note'],
       default: 'against_bill'
     },
+
     mode: {
       type: String,
       enum: ['online', 'upi', 'cash', 'cheque', 'other'],
-      default: 'cash'
+      default: undefined
     },
-    reference: { type: String, default: '' },
-    chequeDate: { type: Date, default: null },
-    note: { type: String, default: '' }
+
+    reference: {
+      type: String,
+      default: ''
+    },
+
+    chequeDate: {
+      type: Date,
+      default: null
+    },
+
+    note: {
+      type: String,
+      default: ''
+    }
   },
   { timestamps: true }
 );

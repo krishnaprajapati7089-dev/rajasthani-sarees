@@ -1847,60 +1847,44 @@ td strong{
 </section>
 
 <!-- ========================================================
-     PARTY-WISE SALES
+     SUPPLIER-WISE STOCK & SALES
      ======================================================== -->
-<section class="panel" id="partyWiseSalesPanel">
+<section class="panel" id="supplierWiseSalesPanel">
   <div class="panel-title">
-    <h2>Party-Wise Sales</h2>
-    <span class="page-info" id="partyWisePeriod">Based on selected bill date range</span>
+    <h2>Supplier-Wise Stock &amp; Sales</h2>
+    <span class="page-info" id="supplierWisePeriod">Purchase history + sales in selected bill date range</span>
   </div>
-
   <div class="upi-summary">
-    <div class="upi-stat">
-      <div class="label">Total Parties</div>
-      <div class="value" id="partyCount">0</div>
-    </div>
-    <div class="upi-stat">
-      <div class="label">Party-Wise Sale</div>
-      <div class="value" id="partySalesTotal">₹0</div>
-    </div>
-    <div class="upi-stat">
-      <div class="label">Received</div>
-      <div class="value" id="partyReceivedTotal">₹0</div>
-    </div>
-    <div class="upi-stat">
-      <div class="label">Pending</div>
-      <div class="value" id="partyPendingTotal">₹0</div>
-    </div>
+    <div class="upi-stat"><div class="label">Total Suppliers</div><div class="value" id="supplierCount">0</div></div>
+    <div class="upi-stat"><div class="label">Total Goods Received</div><div class="value" id="supplierPurchasedQty">0</div></div>
+    <div class="upi-stat"><div class="label">Goods Sold</div><div class="value" id="supplierSoldQty">0</div></div>
+    <div class="upi-stat"><div class="label">Sale Value</div><div class="value" id="supplierSoldValue">₹0</div></div>
+    <div class="upi-stat"><div class="label">Stock Remaining</div><div class="value" id="supplierRemainingQty">0</div></div>
   </div>
-
   <div class="upi-controls">
     <div class="filter-group upi-search-group">
-      <label for="partyWiseSearch">Search Party</label>
-      <input type="search" id="partyWiseSearch" placeholder="Party name or mobile number" autocomplete="off">
+      <label for="supplierWiseSearch">Search Supplier / Product</label>
+      <input type="search" id="supplierWiseSearch" placeholder="Enter supplier or product name" autocomplete="off">
     </div>
-    <button class="btn btn-ghost" type="button" onclick="clearPartyWiseSearch()">Clear Search</button>
+    <button class="btn btn-ghost" type="button" onclick="clearSupplierWiseSearch()">Clear Search</button>
+    <button class="btn btn-ghost" type="button" onclick="loadSupplierWiseSales(true)">Refresh Report</button>
   </div>
-
+  <div class="table-message" id="supplierWiseMessage" style="display:none"></div>
+  <h3 style="color:var(--emerald);font-size:15px;margin:18px 0 10px">Supplier Summary</h3>
   <div class="table-wrapper">
     <table>
-      <thead>
-        <tr>
-          <th>Party / Customer</th>
-          <th>Mobile</th>
-          <th>Bills</th>
-          <th>Quantity</th>
-          <th>Total Sale</th>
-          <th>Received</th>
-          <th>Pending</th>
-        </tr>
-      </thead>
-      <tbody id="partyWiseSalesTable">
-        <tr class="empty-row"><td colspan="7">Loading party-wise sales…</td></tr>
-      </tbody>
+      <thead><tr><th>Supplier / Party</th><th>Products</th><th>Total Goods Received</th><th>Total Goods Sold</th><th>Sale Value</th><th>Current Stock</th></tr></thead>
+      <tbody id="supplierWiseSummaryTable"><tr class="empty-row"><td colspan="6">Loading supplier report…</td></tr></tbody>
     </table>
   </div>
-  <p class="note">Party-wise sale is grouped by customer name and mobile number from active bills in the selected Bill Filters date range. Received and Pending show the current payment position of those bills.</p>
+  <h3 style="color:var(--emerald);font-size:15px;margin:22px 0 10px">Product Details (Supplier-Wise)</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Supplier / Party</th><th>Product</th><th>Goods Received</th><th>Goods Sold</th><th>Sale Value</th><th>Current Stock</th></tr></thead>
+      <tbody id="supplierWiseProductTable"><tr class="empty-row"><td colspan="6">Loading product details…</td></tr></tbody>
+    </table>
+  </div>
+  <p class="note">Goods received and current stock are lifetime totals. Goods sold and sale value follow the selected From Date / To Date filters above. For older bills, supplier attribution is reconstructed using FIFO (oldest purchase first), because historical bills do not record the exact supplier lot sold. Any sales that cannot be matched to a purchase are shown as Opening / Unmatched Stock.</p>
 </section>
 
 
@@ -2599,7 +2583,7 @@ function renderAll(){
   );
 
   renderBills();
-  renderPartyWiseSales();
+  loadSupplierWiseSales();
   renderUpiPayments();
   renderSalesReturns();
 
@@ -3778,90 +3762,107 @@ async function loadReports(){
 
 
 /* =========================================================
-   PARTY-WISE SALES
+   SUPPLIER-WISE STOCK & SALES
    ========================================================= */
+let supplierWiseRows = [];
+let supplierWiseRequestKey = '';
+let supplierWiseLoading = false;
 
-function renderPartyWiseSales(){
-  const body = document.getElementById("partyWiseSalesTable");
-  if(!body) return;
+function supplierQty(value){
+  return Number(value || 0).toLocaleString('en-IN', {maximumFractionDigits:3});
+}
 
-  const q = (document.getElementById("partyWiseSearch")?.value || "").trim().toLowerCase();
-  const from = document.getElementById("fromDate")?.value || "";
-  const to = document.getElementById("toDate")?.value || "";
-
-  const parties = new Map();
-
-  (allBills || [])
-    .filter(bill => !isCancelled(bill))
-    .filter(bill => isInRange(bill, from, to))
-    .forEach(bill => {
-      const name = String(bill.customer_name || bill.customer || "Walk-in Customer").trim() || "Walk-in Customer";
-      const phone = String(bill.customer_phone || bill.phone || "").trim();
-      const key = `${name.toLowerCase()}|${phone}`;
-      if(!parties.has(key)){
-        parties.set(key, {
-          name,
-          phone,
-          bills: 0,
-          quantity: 0,
-          sale: 0,
-          received: 0,
-          pending: 0
-        });
-      }
-
-      const party = parties.get(key);
-      party.bills += 1;
-      party.quantity += billQty(bill);
-      party.sale += getBillTotalAmount(bill);
-      party.received += getBillPaidAmount(bill);
-      party.pending += getBillOutstandingAmount(bill);
-    });
-
-  const allRows = Array.from(parties.values());
-  const totalSale = allRows.reduce((sum, party) => sum + party.sale, 0);
-  const totalReceived = allRows.reduce((sum, party) => sum + party.received, 0);
-  const totalPending = allRows.reduce((sum, party) => sum + party.pending, 0);
-
-  document.getElementById("partyCount").textContent = allRows.length.toLocaleString("en-IN");
-  document.getElementById("partySalesTotal").textContent = money(totalSale);
-  document.getElementById("partyReceivedTotal").textContent = money(totalReceived);
-  document.getElementById("partyPendingTotal").textContent = money(totalPending);
-  document.getElementById("partyWisePeriod").textContent =
-    `${from || "Beginning"} → ${to || "Today onward"} • ${allRows.length} party/parties`;
-
-  const rows = allRows
-    .filter(party => !q || `${party.name} ${party.phone}`.toLowerCase().includes(q))
-    .sort((a,b) => b.sale - a.sale);
-
-  if(!rows.length){
-    body.innerHTML = `<tr class="empty-row"><td colspan="7">${allRows.length ? "No matching party found." : "No party-wise sales found for this date range."}</td></tr>`;
+async function loadSupplierWiseSales(force = false){
+  const summaryBody = document.getElementById('supplierWiseSummaryTable');
+  const productBody = document.getElementById('supplierWiseProductTable');
+  if(!summaryBody || !productBody) return;
+  const from = document.getElementById('fromDate')?.value || '';
+  const to = document.getElementById('toDate')?.value || '';
+  const key = `${from}|${to}`;
+  if(supplierWiseLoading && !force) return;
+  if(key === supplierWiseRequestKey && !force && supplierWiseRows.length) {
+    renderSupplierWiseSales();
     return;
   }
-
-  body.innerHTML = rows.map(party => `
-    <tr>
-      <td><strong>${escapeHtml(party.name)}</strong></td>
-      <td>${escapeHtml(party.phone || "—")}</td>
-      <td>${party.bills.toLocaleString("en-IN")}</td>
-      <td>${party.quantity.toLocaleString("en-IN")}</td>
-      <td><strong>${money(party.sale)}</strong></td>
-      <td>${money(party.received)}</td>
-      <td>${money(party.pending)}</td>
-    </tr>
-  `).join("");
+  supplierWiseLoading = true;
+  supplierWiseRequestKey = key;
+  summaryBody.innerHTML = '<tr class="empty-row"><td colspan="6">Loading supplier report…</td></tr>';
+  productBody.innerHTML = '<tr class="empty-row"><td colspan="6">Loading product details…</td></tr>';
+  const message = document.getElementById('supplierWiseMessage');
+  if(message) message.style.display = 'none';
+  try{
+    const params = new URLSearchParams();
+    if(from) params.set('from', from);
+    if(to) params.set('to', to);
+    const response = await fetch(`${API_BASE_URL}/api/reports/supplier-sales?${params.toString()}`, {
+      headers:{Accept:'application/json'}, cache:'no-store'
+    });
+    const raw = await response.text();
+    let data = {};
+    try{ data = raw ? JSON.parse(raw) : {}; }
+    catch{ throw new Error(`Invalid JSON from supplier report (HTTP ${response.status})`); }
+    if(!response.ok) throw new Error(data.error || data.message || `Server error ${response.status}`);
+    supplierWiseRows = Array.isArray(data.rows) ? data.rows : [];
+    renderSupplierWiseSales(data);
+    if(message && data.note){ message.textContent = data.note; message.className = 'table-message'; message.style.display = 'block'; }
+  }catch(error){
+    console.error('Supplier-wise report error:', error);
+    supplierWiseRows = [];
+    summaryBody.innerHTML = `<tr class="empty-row"><td colspan="6">Could not load supplier report: ${escapeHtml(error.message)}</td></tr>`;
+    productBody.innerHTML = '<tr class="empty-row"><td colspan="6">Supplier product details unavailable.</td></tr>';
+    if(message){ message.textContent = 'Check that your backend has GET /api/reports/supplier-sales and that the reports route is mounted.'; message.className = 'table-message error'; message.style.display = 'block'; }
+    ['supplierCount','supplierPurchasedQty','supplierSoldQty','supplierSoldValue','supplierRemainingQty'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=id==='supplierSoldValue'?'₹0':'0';});
+  }finally{ supplierWiseLoading = false; }
 }
 
-function clearPartyWiseSearch(){
-  const input = document.getElementById("partyWiseSearch");
-  if(input) input.value = "";
-  renderPartyWiseSales();
+function renderSupplierWiseSales(){
+  const summaryBody = document.getElementById('supplierWiseSummaryTable');
+  const productBody = document.getElementById('supplierWiseProductTable');
+  if(!summaryBody || !productBody) return;
+  const query = (document.getElementById('supplierWiseSearch')?.value || '').trim().toLowerCase();
+  const filtered = supplierWiseRows.filter(row => !query || `${row.supplier} ${row.product_name}`.toLowerCase().includes(query));
+  const groups = new Map();
+  filtered.forEach(row=>{
+    const name = row.supplier || 'Unknown Supplier';
+    if(!groups.has(name)) groups.set(name,{supplier:name,products:new Set(),purchased:0,sold:0,sale:0,remaining:0});
+    const group=groups.get(name);
+    group.products.add(row.product_id || row.product_name);
+    group.purchased += Number(row.purchased_qty)||0;
+    group.sold += Number(row.sold_qty)||0;
+    group.sale += Number(row.sold_value)||0;
+    group.remaining += Number(row.remaining_qty)||0;
+  });
+  const summaries=Array.from(groups.values()).sort((a,b)=>b.sale-a.sale || a.supplier.localeCompare(b.supplier));
+  const sum=(field)=>filtered.reduce((total,row)=>total+(Number(row[field])||0),0);
+  const supplierCount=new Set(supplierWiseRows.map(row=>row.supplier)).size;
+  document.getElementById('supplierCount').textContent=supplierCount.toLocaleString('en-IN');
+  document.getElementById('supplierPurchasedQty').textContent=supplierQty(sum('purchased_qty'));
+  document.getElementById('supplierSoldQty').textContent=supplierQty(sum('sold_qty'));
+  document.getElementById('supplierSoldValue').textContent=money(sum('sold_value'));
+  document.getElementById('supplierRemainingQty').textContent=supplierQty(sum('remaining_qty'));
+  const from=document.getElementById('fromDate')?.value||'Beginning';
+  const to=document.getElementById('toDate')?.value||'Today onward';
+  document.getElementById('supplierWisePeriod').textContent=`Sales: ${from} → ${to} • ${summaries.length} supplier(s)`;
+  if(!summaries.length){
+    summaryBody.innerHTML=`<tr class="empty-row"><td colspan="6">${supplierWiseRows.length?'No matching supplier or product found.':'No supplier purchase records found.'}</td></tr>`;
+  }else{
+    summaryBody.innerHTML=summaries.map(group=>`<tr><td><strong>${escapeHtml(group.supplier)}</strong></td><td>${group.products.size.toLocaleString('en-IN')}</td><td>${supplierQty(group.purchased)}</td><td>${supplierQty(group.sold)}</td><td><strong>${money(group.sale)}</strong></td><td>${supplierQty(group.remaining)}</td></tr>`).join('');
+  }
+  const productRows=filtered.slice().sort((a,b)=>a.supplier.localeCompare(b.supplier)||a.product_name.localeCompare(b.product_name));
+  if(!productRows.length){
+    productBody.innerHTML='<tr class="empty-row"><td colspan="6">No product details available.</td></tr>';
+  }else{
+    productBody.innerHTML=productRows.map(row=>`<tr><td>${escapeHtml(row.supplier)}</td><td><strong>${escapeHtml(row.product_name)}</strong></td><td>${supplierQty(row.purchased_qty)}</td><td>${supplierQty(row.sold_qty)}</td><td>${money(row.sold_value)}</td><td>${supplierQty(row.remaining_qty)}</td></tr>`).join('');
+  }
 }
 
-const partyWiseSearchEl = document.getElementById("partyWiseSearch");
-if(partyWiseSearchEl){
-  partyWiseSearchEl.addEventListener("input", renderPartyWiseSales);
+function clearSupplierWiseSearch(){
+  const input=document.getElementById('supplierWiseSearch');
+  if(input) input.value='';
+  renderSupplierWiseSales();
 }
+const supplierWiseSearchEl=document.getElementById('supplierWiseSearch');
+if(supplierWiseSearchEl) supplierWiseSearchEl.addEventListener('input',renderSupplierWiseSales);
 
 
 /* =========================================================

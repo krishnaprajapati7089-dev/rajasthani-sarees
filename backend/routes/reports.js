@@ -1,11 +1,11 @@
 // routes/reports.js
 // MongoDB / Mongoose reports
-// Daily Sales + Sales Trend + GST Reports + Sales Returns & Exchanges
+// Daily Sales + Sales Trend + GST Reports
 // India timezone: Asia/Kolkata
 
 const express = require('express');
-const mongoose = require('mongoose');
 const Bill = require('../models/Bill');
+const Purchase = require('../models/Purchase');
 
 const router = express.Router();
 
@@ -1048,598 +1048,277 @@ router.get('/gst', async (req, res) => {
 });
 
 
+
 /* =========================================================
-   SALES RETURNS & EXCHANGES  (NEW)
-
-   Returns are stored in their own collection (salesreturns).
-   The original Bill document is never read-modified or written:
-   its bill_date, totals and payments stay exactly as billed.
-
-   GET  /api/reports/returns
-        optional: ?from=YYYY-MM-DD&to=YYYY-MM-DD   (on return date)
-                  ?invoice_no=INV-000123
-                  ?bill_id=<Bill _id>
-                  ?limit=2000   (max 5000)
+   SALES RETURNS / EXCHANGES
+   GET  /api/reports/returns?from=YYYY-MM-DD&to=YYYY-MM-DD
    POST /api/reports/returns
-        body: {
-          invoice_no,            // original invoice number
-          return_type,           // 'EXCHANGE' | 'CASH REFUND'
-          return_amount,         // value of the returned saree(s)
-          refund_amount,         // cash actually paid back (0 for exchange)
-          notes,                 // optional
-          client_request_id      // optional, prevents double submits
-        }
-
-   Inventory is NOT touched here. A return records a value only,
-   not which products/quantities came back, so stock cannot be
-   restored safely from this data alone.
+   Records returns independently from the original sale so
+   original bill dates are never rewritten.
 ========================================================= */
 
-const salesReturnSchema = new mongoose.Schema(
-  {
-    original_bill_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Bill',
-      required: true,
-      index: true
-    },
+const mongoose = require('mongoose');
 
-    original_invoice_no: {
-      type: String,
-      required: true,
-      index: true
-    },
+const salesReturnSchema = new mongoose.Schema({
+  original_bill_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', required: true },
+  original_invoice_no: { type: String, default: '' },
+  original_bill_date: { type: Date, default: null },
+  customer_name: { type: String, default: 'Walk-in Customer' },
+  customer_phone: { type: String, default: '' },
+  return_date: { type: Date, default: Date.now, index: true },
+  return_amount: { type: Number, required: true, min: 0 },
+  refund_amount: { type: Number, default: 0, min: 0 },
+  return_type: { type: String, enum: ['EXCHANGE', 'CASH REFUND'], required: true },
+  notes: { type: String, default: '' },
+  status: { type: String, default: 'ACTIVE', index: true }
+}, { timestamps: true });
 
-    // Copied from the original bill. Never edited afterwards.
-    original_bill_date: {
-      type: Date,
-      required: true
-    },
-
-    // When the return actually happened.
-    return_date: {
-      type: Date,
-      default: Date.now,
-      index: true
-    },
-
-    customer_name: {
-      type: String,
-      default: 'Walk-in Customer'
-    },
-
-    customer_phone: {
-      type: String,
-      default: ''
-    },
-
-    // Value of the saree(s) returned (what is credited back).
-    return_amount: {
-      type: Number,
-      required: true,
-      min: 0.01
-    },
-
-    return_type: {
-      type: String,
-      enum: ['EXCHANGE', 'CASH REFUND'],
-      required: true
-    },
-
-    // Real cash handed back to the customer.
-    refund_amount: {
-      type: Number,
-      default: 0,
-      min: 0
-    },
-
-    notes: {
-      type: String,
-      default: '',
-      maxlength: 300
-    },
-
-    status: {
-      type: String,
-      enum: ['ACTIVE', 'CANCELLED'],
-      default: 'ACTIVE',
-      index: true
-    },
-
-    // Optional token sent by the browser to stop double submissions.
-    client_request_id: {
-      type: String
-    }
-  },
-  {
-    timestamps: true
-  }
-);
-
-salesReturnSchema.index(
-  { client_request_id: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      client_request_id: { $type: 'string' }
-    }
-  }
-);
-
-// Guard against "OverwriteModelError" if the model is loaded twice.
-const SalesReturn =
-  mongoose.models.SalesReturn ||
+const SalesReturn = mongoose.models.SalesReturn ||
   mongoose.model('SalesReturn', salesReturnSchema);
-
-
-/* -----------------------------------------
-   RETURN HELPERS
------------------------------------------ */
-
-function roundMoney(value) {
-  return Math.round(
-    (Number(value) + Number.EPSILON) * 100
-  ) / 100;
-}
-
-
-function escapeRegex(text) {
-  return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-
-/**
- * Find the original bill from what the user typed.
- * Accepts "INV-000123", "inv-000123", "#INV-000123"
- * or just the number "123".
- */
-async function findBillByInvoiceInput(input) {
-  const raw = String(input || '')
-    .trim()
-    .replace(/^#/, '')
-    .trim();
-
-  if (!raw) {
-    return null;
-  }
-
-  let bill = await Bill.findOne({
-    invoice_no: new RegExp(`^${escapeRegex(raw)}$`, 'i')
-  });
-
-  if (!bill && /^\d+$/.test(raw)) {
-    bill = await Bill.findOne({
-      invoice_no: `INV-${raw.padStart(6, '0')}`
-    });
-  }
-
-  return bill;
-}
-
-
-/**
- * Total value already returned (ACTIVE returns only) for one bill.
- */
-async function sumReturnedForBill(billId) {
-  const [row] = await SalesReturn.aggregate([
-    {
-      $match: {
-        original_bill_id: new mongoose.Types.ObjectId(String(billId)),
-        status: 'ACTIVE'
-      }
-    },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: '$return_amount' }
-      }
-    }
-  ]);
-
-  return roundMoney(row ? row.total : 0);
-}
-
-
-/* =========================================================
-   RETURNS LIST
-   GET /api/reports/returns
-========================================================= */
 
 router.get('/returns', async (req, res) => {
   try {
-    const query = {
-      status: 'ACTIVE'
-    };
-
-    const from = String(req.query.from || '').trim();
-    const to = String(req.query.to || '').trim();
-
-    if (
-      (from && !/^\d{4}-\d{2}-\d{2}$/.test(from)) ||
-      (to && !/^\d{4}-\d{2}-\d{2}$/.test(to))
-    ) {
-      return res.status(400).json({
-        error: 'Invalid date. Use YYYY-MM-DD for from and to.'
-      });
+    const filter = { status: 'ACTIVE' };
+    if (req.query.from || req.query.to) {
+      filter.return_date = {};
+      if (req.query.from) filter.return_date.$gte = indiaDayRange(req.query.from).start;
+      if (req.query.to) filter.return_date.$lte = indiaDayRange(req.query.to).end;
     }
-
-    if (from || to) {
-      query.return_date = {};
-
-      if (from) {
-        query.return_date.$gte = indiaDayRange(from).start;
-      }
-
-      if (to) {
-        query.return_date.$lte = indiaDayRange(to).end;
-      }
-    }
-
-    const invoiceNo = String(req.query.invoice_no || '')
-      .trim()
-      .replace(/^#/, '');
-
-    if (invoiceNo) {
-      query.original_invoice_no = new RegExp(
-        `^${escapeRegex(invoiceNo)}$`,
-        'i'
-      );
-    }
-
-    if (req.query.bill_id) {
-      if (!mongoose.Types.ObjectId.isValid(String(req.query.bill_id))) {
-        return res.status(400).json({
-          error: 'Invalid bill_id'
-        });
-      }
-
-      query.original_bill_id = new mongoose.Types.ObjectId(
-        String(req.query.bill_id)
-      );
-    }
-
-    const limit = Math.max(
-      1,
-      Math.min(parseInt(req.query.limit, 10) || 2000, 5000)
-    );
-
-    const returns = await SalesReturn.find(query)
-      .sort({
-        return_date: -1,
-        createdAt: -1
-      })
-      .limit(limit)
+    const returns = await SalesReturn.find(filter)
+      .sort({ return_date: -1, createdAt: -1 })
       .lean();
 
-    const [summaryAgg] = await SalesReturn.aggregate([
-      {
-        $match: query
-      },
-      {
-        $group: {
-          _id: null,
+    const summary = returns.reduce((s, r) => {
+      s.return_count += 1;
+      s.return_amount += num(r.return_amount);
+      s.refund_amount += num(r.refund_amount);
+      if (r.return_type === 'EXCHANGE') s.exchange_count += 1;
+      if (r.return_type === 'CASH REFUND') s.cash_refund_count += 1;
+      return s;
+    }, { return_count: 0, return_amount: 0, refund_amount: 0, exchange_count: 0, cash_refund_count: 0 });
 
-          return_count: {
-            $sum: 1
-          },
-
-          total_returned_value: {
-            $sum: {
-              $ifNull: ['$return_amount', 0]
-            }
-          },
-
-          total_cash_refunds: {
-            $sum: {
-              $ifNull: ['$refund_amount', 0]
-            }
-          },
-
-          exchange_count: {
-            $sum: {
-              $cond: [{ $eq: ['$return_type', 'EXCHANGE'] }, 1, 0]
-            }
-          },
-
-          cash_refund_count: {
-            $sum: {
-              $cond: [{ $eq: ['$return_type', 'CASH REFUND'] }, 1, 0]
-            }
-          },
-
-          exchange_value: {
-            $sum: {
-              $cond: [
-                { $eq: ['$return_type', 'EXCHANGE'] },
-                { $ifNull: ['$return_amount', 0] },
-                0
-              ]
-            }
-          }
-        }
-      }
-    ]);
-
-    res.json({
-      returns,
-
-      summary: {
-        return_count: summaryAgg ? summaryAgg.return_count : 0,
-        total_returned_value: roundMoney(summaryAgg ? summaryAgg.total_returned_value : 0),
-        total_cash_refunds: roundMoney(summaryAgg ? summaryAgg.total_cash_refunds : 0),
-        exchange_count: summaryAgg ? summaryAgg.exchange_count : 0,
-        cash_refund_count: summaryAgg ? summaryAgg.cash_refund_count : 0,
-        exchange_value: roundMoney(summaryAgg ? summaryAgg.exchange_value : 0)
-      }
-    });
-
+    res.json({ returns, summary });
   } catch (err) {
+    console.error('Sales returns report error:', err);
+    res.status(500).json({ error: 'Failed to load sales returns', message: err.message });
+  }
+});
 
-    console.error(
-      'Returns list error:',
-      err
-    );
+router.post('/returns', async (req, res) => {
+  try {
+    const invoice = String(req.body.invoice_no || req.body.invoice || '').trim();
+    const returnAmount = Number(req.body.return_amount);
+    const refundAmount = Number(req.body.refund_amount || 0);
+    const returnType = String(req.body.return_type || '').toUpperCase();
+    const notes = String(req.body.notes || '').trim();
 
-    res.status(500).json({
-      error: 'Failed to load returns',
-      message: err.message
+    if (!invoice) return res.status(400).json({ error: 'Enter the original invoice number.' });
+    if (!Number.isFinite(returnAmount) || returnAmount <= 0) {
+      return res.status(400).json({ error: 'Return amount must be greater than zero.' });
+    }
+    if (!['EXCHANGE', 'CASH REFUND'].includes(returnType)) {
+      return res.status(400).json({ error: 'Choose Exchange or Cash Refund.' });
+    }
+    if (!Number.isFinite(refundAmount) || refundAmount < 0 || refundAmount > returnAmount) {
+      return res.status(400).json({ error: 'Refund amount must be between ₹0 and the return amount.' });
+    }
+    if (returnType === 'EXCHANGE' && refundAmount > 0) {
+      return res.status(400).json({ error: 'For an exchange, refund amount must be ₹0. Record any extra payment on the new bill.' });
+    }
+    if (returnType === 'CASH REFUND' && refundAmount <= 0) {
+      return res.status(400).json({ error: 'Enter the cash amount actually refunded to the customer.' });
+    }
+
+    const query = mongoose.isValidObjectId(invoice)
+      ? { $or: [{ invoice_no: invoice }, { _id: invoice }] }
+      : { invoice_no: invoice };
+    const bill = await Bill.findOne(query).lean();
+
+    if (!bill) return res.status(404).json({ error: 'Original bill not found. Check the invoice number.' });
+    if (String(bill.status || 'ACTIVE').toUpperCase() !== 'ACTIVE') {
+      return res.status(400).json({ error: 'Cannot return against a cancelled bill.' });
+    }
+
+    const originalTotal = num(bill.grand_total || bill.total);
+    if (returnAmount > originalTotal) {
+      return res.status(400).json({ error: `Return amount cannot exceed original bill total ${originalTotal}.` });
+    }
+
+    const record = await SalesReturn.create({
+      original_bill_id: bill._id,
+      original_invoice_no: String(bill.invoice_no || invoice),
+      original_bill_date: bill.bill_date || bill.createdAt || null,
+      customer_name: bill.customer_name || bill.customer || 'Walk-in Customer',
+      customer_phone: bill.customer_phone || bill.phone || '',
+      return_date: new Date(),
+      return_amount: Math.round(returnAmount * 100) / 100,
+      refund_amount: Math.round(refundAmount * 100) / 100,
+      return_type: returnType,
+      notes
     });
+
+    res.status(201).json({ message: 'Sales return recorded successfully.', return: record });
+  } catch (err) {
+    console.error('Create sales return error:', err);
+    res.status(500).json({ error: 'Failed to record sales return', message: err.message });
   }
 });
 
 
-/* =========================================================
-   RECORD A RETURN / EXCHANGE
-   POST /api/reports/returns
-========================================================= */
-
-router.post('/returns', async (req, res) => {
+/**
+ * GET /api/reports/supplier-sales?from=YYYY-MM-DD&to=YYYY-MM-DD&supplier=...
+ *
+ * Reconstructs supplier-wise sales with FIFO because historical bills store
+ * product IDs but do not store the purchase lot/supplier from which each unit
+ * was sold. This is an estimate for old data, not a claim of exact batch-level
+ * traceability. New and old bills are treated consistently by FIFO chronology.
+ */
+router.get('/supplier-sales', async (req, res) => {
   try {
-    const body = req.body || {};
+    const from = req.query.from ? indiaDayRange(String(req.query.from)).start : null;
+    const to = req.query.to ? indiaDayRange(String(req.query.to)).end : null;
+    if (req.query.from && !from) return res.status(400).json({ error: 'Invalid from date' });
+    if (req.query.to && !to) return res.status(400).json({ error: 'Invalid to date' });
+    if (from && to && from > to) return res.status(400).json({ error: 'From date cannot be after To date' });
 
-    /* -----------------------------------------
-       VALIDATE INPUT
-    ----------------------------------------- */
+    const [purchases, bills] = await Promise.all([
+      Purchase.find({}).lean(),
+      Bill.find({ status: 'ACTIVE' }).lean()
+    ]);
 
-    const invoiceInput =
-      body.invoice_no ??
-      body.original_invoice_no;
+    // Compare dates using India calendar days, not raw UTC timestamps.
+    const indiaEventDate = value => {
+      const parsed = new Date(value || 0);
+      return indiaDayRange(getIndiaDateString(parsed)).start;
+    };
 
-    if (!String(invoiceInput || '').trim()) {
-      return res.status(400).json({
-        error: 'Original invoice number is required'
-      });
-    }
-
-    const returnType = String(body.return_type || '')
-      .trim()
-      .toUpperCase()
-      .replace(/[_-]+/g, ' ');
-
-    if (!['EXCHANGE', 'CASH REFUND'].includes(returnType)) {
-      return res.status(400).json({
-        error: 'Return type must be EXCHANGE or CASH REFUND'
-      });
-    }
-
-    const returnAmountRaw = Number(body.return_amount);
-
-    if (!Number.isFinite(returnAmountRaw) || returnAmountRaw <= 0) {
-      return res.status(400).json({
-        error: 'Returned saree value must be greater than ₹0'
-      });
-    }
-
-    const returnAmount = roundMoney(returnAmountRaw);
-
-    const refundRaw =
-      body.refund_amount === undefined ||
-      body.refund_amount === null ||
-      body.refund_amount === ''
-        ? 0
-        : Number(body.refund_amount);
-
-    if (!Number.isFinite(refundRaw) || refundRaw < 0) {
-      return res.status(400).json({
-        error: 'Cash refund must be a valid amount of ₹0 or more'
-      });
-    }
-
-    const refundAmount = roundMoney(refundRaw);
-
-    if (returnType === 'EXCHANGE' && refundAmount > 0) {
-      return res.status(400).json({
-        error: 'An exchange cannot have a cash refund. Choose Cash Refund to pay money back.'
-      });
-    }
-
-    if (returnType === 'CASH REFUND' && refundAmount <= 0) {
-      return res.status(400).json({
-        error: 'Enter the actual cash refunded for a cash refund'
-      });
-    }
-
-    if (refundAmount > returnAmount + 0.001) {
-      return res.status(400).json({
-        error: 'Cash refund cannot be greater than the returned saree value'
-      });
-    }
-
-    const notes = String(body.notes ?? '')
-      .trim()
-      .slice(0, 300);
-
-    const clientRequestId = String(body.client_request_id ?? '')
-      .trim()
-      .slice(0, 100);
-
-
-    /* -----------------------------------------
-       DUPLICATE SUBMISSION (same browser token)
-    ----------------------------------------- */
-
-    if (clientRequestId) {
-      const existing = await SalesReturn.findOne({
-        client_request_id: clientRequestId
-      }).lean();
-
-      if (existing) {
-        return res.json({
-          message: 'This return was already recorded.',
-          duplicate: true,
-          return: existing
+    const events = [];
+    for (const purchase of purchases) {
+      const date = indiaEventDate(purchase.invoice_date || purchase.createdAt || 0);
+      for (const item of (purchase.items || [])) {
+        const productId = String(item.product_id || '').trim();
+        const qty = Math.max(0, Number(item.qty) || 0);
+        if (!productId || !qty) continue;
+        events.push({
+          type: 'purchase', date, productId,
+          supplier: String(purchase.supplier || 'Unknown Supplier').trim() || 'Unknown Supplier',
+          productName: String(item.description || 'Product'),
+          qty
         });
       }
     }
 
-
-    /* -----------------------------------------
-       ORIGINAL BILL
-    ----------------------------------------- */
-
-    const bill = await findBillByInvoiceInput(invoiceInput);
-
-    if (!bill) {
-      return res.status(404).json({
-        error: `Original invoice not found: ${String(invoiceInput).trim()}`
-      });
-    }
-
-    if (String(bill.status || 'ACTIVE').toUpperCase() === 'CANCELLED') {
-      return res.status(400).json({
-        error: `Invoice ${bill.invoice_no} is cancelled and cannot be returned`
-      });
-    }
-
-    const billTotal = roundMoney(bill.grand_total);
-
-    if (!(billTotal > 0)) {
-      return res.status(400).json({
-        error: `Invoice ${bill.invoice_no} has no billed value to return`
-      });
-    }
-
-
-    /* -----------------------------------------
-       CUMULATIVE LIMIT
-    ----------------------------------------- */
-
-    const alreadyReturned = await sumReturnedForBill(bill._id);
-    const remaining = roundMoney(billTotal - alreadyReturned);
-
-    if (returnAmount > remaining + 0.001) {
-      return res.status(400).json({
-        error:
-          `Return value ₹${returnAmount.toFixed(2)} exceeds what can still be returned ` +
-          `on ${bill.invoice_no}. Bill total ₹${billTotal.toFixed(2)}, ` +
-          `already returned ₹${alreadyReturned.toFixed(2)}, ` +
-          `remaining ₹${Math.max(0, remaining).toFixed(2)}.`
-      });
-    }
-
-
-    /* -----------------------------------------
-       ACCIDENTAL DOUBLE CLICK (no token sent)
-    ----------------------------------------- */
-
-    const recentDuplicate = await SalesReturn.findOne({
-      original_bill_id: bill._id,
-      return_type: returnType,
-      return_amount: returnAmount,
-      refund_amount: refundAmount,
-      status: 'ACTIVE',
-      createdAt: {
-        $gte: new Date(Date.now() - 30 * 1000)
-      }
-    }).lean();
-
-    if (recentDuplicate) {
-      return res.status(409).json({
-        error: 'An identical return was recorded for this invoice a few seconds ago. Not saved again.'
-      });
-    }
-
-
-    /* -----------------------------------------
-       SAVE  (original bill is only read, never changed)
-    ----------------------------------------- */
-
-    let saved;
-
-    try {
-      saved = await SalesReturn.create({
-        original_bill_id: bill._id,
-        original_invoice_no: bill.invoice_no,
-        original_bill_date: bill.bill_date || bill.createdAt || new Date(),
-        return_date: new Date(),
-        customer_name: bill.customer_name || 'Walk-in Customer',
-        customer_phone: bill.customer_phone || '',
-        return_amount: returnAmount,
-        return_type: returnType,
-        refund_amount: refundAmount,
-        notes,
-        status: 'ACTIVE',
-        ...(clientRequestId ? { client_request_id: clientRequestId } : {})
-      });
-    } catch (saveErr) {
-      if (saveErr && saveErr.code === 11000 && clientRequestId) {
-        const existing = await SalesReturn.findOne({
-          client_request_id: clientRequestId
-        }).lean();
-
-        return res.json({
-          message: 'This return was already recorded.',
-          duplicate: true,
-          return: existing
+    for (const bill of bills) {
+      const date = indiaEventDate(bill.bill_date || bill.createdAt || 0);
+      for (const item of (bill.items || [])) {
+        const productId = String(item.product_id || '').trim();
+        const qty = Math.max(0, Number(item.qty) || 0);
+        if (!productId || !qty) continue;
+        events.push({
+          type: 'sale', date, productId,
+          productName: String(item.product_name || 'Product'),
+          qty,
+          revenue: Math.max(0, Number(item.line_total) || (Number(item.rate) || 0) * qty)
         });
       }
-
-      throw saveErr;
     }
 
+    // Chronological replay: purchases are available before sales on the same timestamp.
+    events.sort((a, b) => a.date - b.date || (a.type === b.type ? 0 : a.type === 'purchase' ? -1 : 1));
 
-    /*
-      Re-check the cumulative total after saving. If two requests raced
-      past the check above, undo this one instead of over-returning.
-    */
-
-    const totalAfter = await sumReturnedForBill(bill._id);
-
-    if (totalAfter > billTotal + 0.005) {
-      await SalesReturn.deleteOne({ _id: saved._id });
-
-      return res.status(409).json({
-        error: 'Another return was saved at the same moment and the bill value would be exceeded. Please check the history and try again.'
+    const lotsByProduct = new Map();
+    const aggregate = new Map();
+    const addRow = (supplier, productId, productName) => {
+      const key = `${supplier.toLowerCase()}::${productId}`;
+      if (!aggregate.has(key)) aggregate.set(key, {
+        supplier, product_id: productId, product_name: productName,
+        purchased_qty: 0, sold_qty: 0, sold_value: 0, remaining_qty: 0
       });
+      const row = aggregate.get(key);
+      if (!row.product_name || row.product_name === 'Product') row.product_name = productName;
+      return row;
+    };
+
+    for (const event of events) {
+      if (event.type === 'purchase') {
+        const lot = {
+          supplier: event.supplier,
+          productId: event.productId,
+          productName: event.productName,
+          originalQty: event.qty,
+          remainingQty: event.qty
+        };
+        if (!lotsByProduct.has(event.productId)) lotsByProduct.set(event.productId, []);
+        lotsByProduct.get(event.productId).push(lot);
+        addRow(event.supplier, event.productId, event.productName).purchased_qty += event.qty;
+        continue;
+      }
+
+      let qtyLeft = event.qty;
+      const lots = lotsByProduct.get(event.productId) || [];
+      while (qtyLeft > 0.000001) {
+        const lot = lots.find(x => x.remainingQty > 0.000001);
+        const take = lot ? Math.min(qtyLeft, lot.remainingQty) : qtyLeft;
+        const supplier = lot ? lot.supplier : 'Opening / Unmatched Stock';
+        const productName = lot ? lot.productName : event.productName;
+        const row = addRow(supplier, event.productId, productName);
+        const inRange = (!from || event.date >= from) && (!to || event.date <= to);
+        if (inRange) {
+          row.sold_qty += take;
+          row.sold_value += event.revenue * (take / event.qty);
+        }
+        if (lot) lot.remainingQty -= take;
+        else {
+          // Remaining units without a matching purchase are deliberately not attributed to a party.
+          // Consume the unmatched remainder in one pass to avoid an infinite loop.
+          qtyLeft -= take;
+          break;
+        }
+        qtyLeft -= take;
+      }
     }
 
+    // Current remaining stock is independent of the selected sales date range.
+    for (const lots of lotsByProduct.values()) {
+      for (const lot of lots) {
+        addRow(lot.supplier, lot.productId, lot.productName).remaining_qty += lot.remainingQty;
+      }
+    }
 
-    /* -----------------------------------------
-       RESPONSE
-    ----------------------------------------- */
+    const supplierFilter = String(req.query.supplier || '').trim().toLowerCase();
+    let rows = Array.from(aggregate.values()).map(row => ({
+      ...row,
+      purchased_qty: Number(row.purchased_qty.toFixed(3)),
+      sold_qty: Number(row.sold_qty.toFixed(3)),
+      sold_value: Number(row.sold_value.toFixed(2)),
+      remaining_qty: Number(row.remaining_qty.toFixed(3))
+    }));
+    if (supplierFilter) rows = rows.filter(row => row.supplier.toLowerCase() === supplierFilter);
+    rows.sort((a, b) => a.supplier.localeCompare(b.supplier) || a.product_name.localeCompare(b.product_name));
 
-    res.status(201).json({
-      message:
-        returnType === 'EXCHANGE'
-          ? `Exchange recorded for ${bill.invoice_no}.`
-          : `Cash refund recorded for ${bill.invoice_no}.`,
+    const suppliers = [...new Set(Array.from(aggregate.values()).map(row => row.supplier))]
+      .sort((a, b) => a.localeCompare(b));
+    const summary = rows.reduce((out, row) => {
+      out.purchased_qty += row.purchased_qty;
+      out.sold_qty += row.sold_qty;
+      out.sold_value += row.sold_value;
+      out.remaining_qty += row.remaining_qty;
+      return out;
+    }, { party_count: new Set(rows.map(row => row.supplier)).size, product_count: rows.length, purchased_qty: 0, sold_qty: 0, sold_value: 0, remaining_qty: 0 });
+    summary.sold_value = Number(summary.sold_value.toFixed(2));
+    summary.purchased_qty = Number(summary.purchased_qty.toFixed(3));
+    summary.sold_qty = Number(summary.sold_qty.toFixed(3));
+    summary.remaining_qty = Number(summary.remaining_qty.toFixed(3));
 
-      return: saved,
-
-      remaining_returnable: roundMoney(billTotal - totalAfter)
+    res.json({
+      rows, suppliers, summary,
+      date_filter: { from: req.query.from || '', to: req.query.to || '' },
+      allocation_method: 'FIFO estimate based on purchase date and bill date',
+      note: 'Older bills do not store supplier/batch allocation. Supplier-wise sold quantities are reconstructed using FIFO; unmatched/opening stock is shown separately.'
     });
-
   } catch (err) {
-
-    console.error(
-      'Record return error:',
-      err
-    );
-
-    res.status(500).json({
-      error: 'Failed to record return',
-      message: err.message
-    });
+    console.error('Supplier-wise sales report error:', err);
+    res.status(500).json({ error: err.message || 'Could not generate supplier-wise sales report' });
   }
 });
 

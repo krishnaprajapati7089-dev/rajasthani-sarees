@@ -1846,6 +1846,63 @@ td strong{
 
 </section>
 
+<!-- ========================================================
+     PARTY-WISE SALES
+     ======================================================== -->
+<section class="panel" id="partyWiseSalesPanel">
+  <div class="panel-title">
+    <h2>Party-Wise Sales</h2>
+    <span class="page-info" id="partyWisePeriod">Based on selected bill date range</span>
+  </div>
+
+  <div class="upi-summary">
+    <div class="upi-stat">
+      <div class="label">Total Parties</div>
+      <div class="value" id="partyCount">0</div>
+    </div>
+    <div class="upi-stat">
+      <div class="label">Party-Wise Sale</div>
+      <div class="value" id="partySalesTotal">₹0</div>
+    </div>
+    <div class="upi-stat">
+      <div class="label">Received</div>
+      <div class="value" id="partyReceivedTotal">₹0</div>
+    </div>
+    <div class="upi-stat">
+      <div class="label">Pending</div>
+      <div class="value" id="partyPendingTotal">₹0</div>
+    </div>
+  </div>
+
+  <div class="upi-controls">
+    <div class="filter-group upi-search-group">
+      <label for="partyWiseSearch">Search Party</label>
+      <input type="search" id="partyWiseSearch" placeholder="Party name or mobile number" autocomplete="off">
+    </div>
+    <button class="btn btn-ghost" type="button" onclick="clearPartyWiseSearch()">Clear Search</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Party / Customer</th>
+          <th>Mobile</th>
+          <th>Bills</th>
+          <th>Quantity</th>
+          <th>Total Sale</th>
+          <th>Received</th>
+          <th>Pending</th>
+        </tr>
+      </thead>
+      <tbody id="partyWiseSalesTable">
+        <tr class="empty-row"><td colspan="7">Loading party-wise sales…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Party-wise sale is grouped by customer name and mobile number from active bills in the selected Bill Filters date range. Received and Pending show the current payment position of those bills.</p>
+</section>
+
 
 <!-- ========================================================
      ONLINE UPI PAYMENTS
@@ -2542,6 +2599,7 @@ function renderAll(){
   );
 
   renderBills();
+  renderPartyWiseSales();
   renderUpiPayments();
   renderSalesReturns();
 
@@ -3716,6 +3774,93 @@ async function loadReports(){
 
   }
 
+}
+
+
+/* =========================================================
+   PARTY-WISE SALES
+   ========================================================= */
+
+function renderPartyWiseSales(){
+  const body = document.getElementById("partyWiseSalesTable");
+  if(!body) return;
+
+  const q = (document.getElementById("partyWiseSearch")?.value || "").trim().toLowerCase();
+  const from = document.getElementById("fromDate")?.value || "";
+  const to = document.getElementById("toDate")?.value || "";
+
+  const parties = new Map();
+
+  (allBills || [])
+    .filter(bill => !isCancelled(bill))
+    .filter(bill => isInRange(bill, from, to))
+    .forEach(bill => {
+      const name = String(bill.customer_name || bill.customer || "Walk-in Customer").trim() || "Walk-in Customer";
+      const phone = String(bill.customer_phone || bill.phone || "").trim();
+      const key = `${name.toLowerCase()}|${phone}`;
+      if(!parties.has(key)){
+        parties.set(key, {
+          name,
+          phone,
+          bills: 0,
+          quantity: 0,
+          sale: 0,
+          received: 0,
+          pending: 0
+        });
+      }
+
+      const party = parties.get(key);
+      party.bills += 1;
+      party.quantity += billQty(bill);
+      party.sale += getBillTotalAmount(bill);
+      party.received += getBillPaidAmount(bill);
+      party.pending += getBillOutstandingAmount(bill);
+    });
+
+  const allRows = Array.from(parties.values());
+  const totalSale = allRows.reduce((sum, party) => sum + party.sale, 0);
+  const totalReceived = allRows.reduce((sum, party) => sum + party.received, 0);
+  const totalPending = allRows.reduce((sum, party) => sum + party.pending, 0);
+
+  document.getElementById("partyCount").textContent = allRows.length.toLocaleString("en-IN");
+  document.getElementById("partySalesTotal").textContent = money(totalSale);
+  document.getElementById("partyReceivedTotal").textContent = money(totalReceived);
+  document.getElementById("partyPendingTotal").textContent = money(totalPending);
+  document.getElementById("partyWisePeriod").textContent =
+    `${from || "Beginning"} → ${to || "Today onward"} • ${allRows.length} party/parties`;
+
+  const rows = allRows
+    .filter(party => !q || `${party.name} ${party.phone}`.toLowerCase().includes(q))
+    .sort((a,b) => b.sale - a.sale);
+
+  if(!rows.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="7">${allRows.length ? "No matching party found." : "No party-wise sales found for this date range."}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(party => `
+    <tr>
+      <td><strong>${escapeHtml(party.name)}</strong></td>
+      <td>${escapeHtml(party.phone || "—")}</td>
+      <td>${party.bills.toLocaleString("en-IN")}</td>
+      <td>${party.quantity.toLocaleString("en-IN")}</td>
+      <td><strong>${money(party.sale)}</strong></td>
+      <td>${money(party.received)}</td>
+      <td>${money(party.pending)}</td>
+    </tr>
+  `).join("");
+}
+
+function clearPartyWiseSearch(){
+  const input = document.getElementById("partyWiseSearch");
+  if(input) input.value = "";
+  renderPartyWiseSales();
+}
+
+const partyWiseSearchEl = document.getElementById("partyWiseSearch");
+if(partyWiseSearchEl){
+  partyWiseSearchEl.addEventListener("input", renderPartyWiseSales);
 }
 
 

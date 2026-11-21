@@ -1395,7 +1395,7 @@ td strong{
    </a>
  <a
      href="accounts.html"
-     class="nav-link is-active"
+     class="nav-link"
    >
      Accounts
    </a>
@@ -2275,15 +2275,10 @@ function localDateKey(value){
   )
     return "";
 
-  return new Intl.DateTimeFormat(
-    "en-CA",
-    {
-      timeZone:"Asia/Kolkata",
-      year:"numeric",
-      month:"2-digit",
-      day:"2-digit"
-    }
-  ).format(d);
+  // IST = UTC+05:30 (no daylight saving). Always returns YYYY-MM-DD.
+  return new Date(
+    d.getTime() + 19800000
+  ).toISOString().slice(0,10);
 
 }
 
@@ -2710,16 +2705,8 @@ function renderKpis(
 
 function indiaToday(){
 
-  return new Intl.DateTimeFormat(
-    "en-CA",
-    {
-      timeZone:"Asia/Kolkata",
-      year:"numeric",
-      month:"2-digit",
-      day:"2-digit"
-    }
-  ).format(
-    new Date()
+  return localDateKey(
+    Date.now()
   );
 
 }
@@ -2730,21 +2717,12 @@ function addDays(
   n
 ){
 
-  const d =
-    new Date(
-      key +
-      "T00:00:00+05:30"
-    );
+  const [y, m, d] =
+    String(key).split("-").map(Number);
 
-
-  d.setDate(
-    d.getDate() + n
-  );
-
-
-  return d.toLocaleDateString(
-    "en-CA"
-  );
+  return new Date(
+    Date.UTC(y, m - 1, d + n)
+  ).toISOString().slice(0,10);
 
 }
 
@@ -3367,30 +3345,20 @@ function setPeriod(
     type === "lastmonth"
   ){
 
-    const first =
+    const y = Number(today.slice(0,4));
+
+    const m = Number(today.slice(5,7));
+
+    // First and last day of the previous calendar month.
+    f =
       new Date(
-        today.slice(
-          0,
-          7
-        ) +
-        "-01T00:00:00+05:30"
-      );
-
-
-    first.setDate(0);
+        Date.UTC(y, m - 2, 1)
+      ).toISOString().slice(0,10);
 
     t =
-      first.toLocaleDateString(
-        "en-CA"
-      );
-
-
-    first.setDate(1);
-
-    f =
-      first.toLocaleDateString(
-        "en-CA"
-      );
+      new Date(
+        Date.UTC(y, m - 1, 0)
+      ).toISOString().slice(0,10);
 
   }
 
@@ -3792,8 +3760,9 @@ async function loadSupplierWiseSales(force = false){
   if(message) message.style.display = 'none';
   try{
     const params = new URLSearchParams();
-    if(from) params.set('from', from);
-    if(to) params.set('to', to);
+    const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+    if(isoDate.test(from)) params.set('from', from);
+    if(isoDate.test(to)) params.set('to', to);
     const response = await fetch(`${API_BASE_URL}/api/reports/supplier-sales?${params.toString()}`, {
       headers:{Accept:'application/json'}, cache:'no-store'
     });
@@ -3810,7 +3779,14 @@ async function loadSupplierWiseSales(force = false){
     supplierWiseRows = [];
     summaryBody.innerHTML = `<tr class="empty-row"><td colspan="6">Could not load supplier report: ${escapeHtml(error.message)}</td></tr>`;
     productBody.innerHTML = '<tr class="empty-row"><td colspan="6">Supplier product details unavailable.</td></tr>';
-    if(message){ message.textContent = 'Check that your backend has GET /api/reports/supplier-sales and that the reports route is mounted.'; message.className = 'table-message error'; message.style.display = 'block'; }
+    supplierWiseRequestKey = '';
+    if(message){
+      message.textContent = /HTTP 404|Server error 404/.test(error.message)
+        ? 'Supplier report not found on the server (404). Deploy the latest routes/reports.js and make sure it is mounted at /api/reports.'
+        : 'Could not load supplier report: ' + error.message;
+      message.className = 'table-message error';
+      message.style.display = 'block';
+    }
     ['supplierCount','supplierPurchasedQty','supplierSoldQty','supplierSoldValue','supplierRemainingQty'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=id==='supplierSoldValue'?'₹0':'0';});
   }finally{ supplierWiseLoading = false; }
 }

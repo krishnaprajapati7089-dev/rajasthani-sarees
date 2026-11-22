@@ -7,7 +7,7 @@ const debitNoteItemSchema = new mongoose.Schema({
   category: { type: String, default: '' },
   hsn_code: { type: String, default: '5407' },
   qty: { type: Number, required: true, min: 0.001 },
-  rate: { type: Number, required: true, min: 0 }, // original purchase rate
+  rate: { type: Number, required: true, min: 0 },
   gst_rate: { type: Number, default: 0, min: 0 },
   taxable_amount: { type: Number, required: true, min: 0 },
   gst_amount: { type: Number, default: 0, min: 0 },

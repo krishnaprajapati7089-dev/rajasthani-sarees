@@ -42,7 +42,7 @@
   const API = `${API_BASE}/api/debit-notes`;
   const SUPPLIER_API = `${API_BASE}/api/suppliers`;
   const $ = id => document.getElementById(id);
-  const state = { suppliers: [], items: [], lastSaved: null };
+  const state = { suppliers: [], items: [], lastSaved: null, editingId: null, originalQty: {} };
   const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(Number(value) || 0);
   const round2 = value => Math.round(((Number(value) || 0) + Number.EPSILON) * 100) / 100;
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -66,12 +66,13 @@
       const data=await request(`${API}/search-product/${encodeURIComponent(barcode)}`);
       const p=data.product;
       const existing=state.items.find(x=>String(x.product_id)===String(p._id));
+      const available=Number(p.stock_qty||0)+Number(state.originalQty[String(p._id)]||0);
       if(existing) {
         if(existing.qty + 1 > existing.stock_qty) throw new Error(`Only ${existing.stock_qty} pieces are available for ${existing.description}.`);
         existing.qty += 1;
       } else {
-        if(Number(p.stock_qty)<=0) throw new Error(`${p.name} has zero available stock.`);
-        state.items.push({ product_id:p._id, barcode:p.barcode||barcode, description:p.name, category:p.category||'', hsn_code:p.hsn_code||'5407', stock_qty:Number(p.stock_qty)||0, qty:1, rate:Number(p.purchase_price)||0, gst_rate:Number(p.gst_rate)||0 });
+        if(available<=0) throw new Error(`${p.name} has zero available stock.`);
+        state.items.push({ product_id:p._id, barcode:p.barcode||barcode, description:p.name, category:p.category||'', hsn_code:p.hsn_code||'5407', stock_qty:available, qty:1, rate:Number(p.purchase_price)||0, gst_rate:Number(p.gst_rate)||0 });
       }
       renderItems(); $('barcodeInput').value=''; $('barcodeInput').focus();
       showMessage(`${p.name} added to return list.`, 'success');
@@ -89,7 +90,7 @@
     }).join('');
     const t=totals(); $('productCount').textContent=state.items.length; $('qtyTotal').textContent=t.qty; $('taxableTotal').textContent=money(t.taxable); $('gstTotal').textContent=money(t.gst); $('grandTotal').textContent=money(t.taxable+t.gst);
   }
-  function clearForm() { state.items=[]; $('supplier').value=''; $('purchaseRef').value=''; $('reason').value='Return to supplier'; $('remarks').value=''; $('returnDate').value=dateISO(); $('barcodeInput').value=''; renderItems(); }
+  function clearForm() { state.items=[]; state.editingId=null; state.originalQty={}; $('saveBtn').textContent='Save & Generate PDF'; $('supplier').value=''; $('purchaseRef').value=''; $('reason').value='Return to supplier'; $('remarks').value=''; $('returnDate').value=dateISO(); $('barcodeInput').value=''; renderItems(); }
   async function saveDebitNote() {
     const supplier=selectedSupplier();
     if(!supplier) return showMessage('Please select a supplier.','error');
@@ -97,13 +98,14 @@
     const invalid=state.items.find(i=>!(Number(i.qty)>0)||Number(i.qty)>Number(i.stock_qty));
     if(invalid) return showMessage(`Check return quantity for ${invalid.description}.`,'error');
     const payload={ supplier_id:supplier._id, supplier:supplier.name, supplier_gst:supplier.gst||'', supplier_phone:supplier.phone||'', supplier_city:supplier.city||'', date:$('returnDate').value, reference_purchase_bill:$('purchaseRef').value.trim(), reason:$('reason').value, remarks:$('remarks').value.trim(), items:state.items.map(i=>({product_id:i.product_id,qty:Number(i.qty)})) };
-    $('saveBtn').disabled=true; $('saveBtn').textContent='Saving...';
+    $('saveBtn').disabled=true; $('saveBtn').textContent=state.editingId?'Updating...':'Saving...';
     try {
-      const result=await request(API,{method:'POST',body:JSON.stringify(payload)});
-      state.lastSaved=result.debitNote; showMessage(`${result.debitNote.debit_note_no} saved. Stock and supplier balance updated.`, 'success');
+      const wasEditing=Boolean(state.editingId);
+      const result=await request(wasEditing ? `${API}/${state.editingId}` : API,{method:wasEditing?'PUT':'POST',body:JSON.stringify(payload)});
+      state.lastSaved=result.debitNote; showMessage(`${result.debitNote.debit_note_no} ${wasEditing?'updated':'saved'}. Stock and supplier balance adjusted.`, 'success');
       renderPrint(result.debitNote); window.print(); await loadHistory(); clearForm();
     } catch(error) { showMessage(error.message,'error'); }
-    finally { $('saveBtn').disabled=false; $('saveBtn').textContent='Save & Generate PDF'; }
+    finally { $('saveBtn').disabled=false; $('saveBtn').textContent=state.editingId?'Update Debit Note':'Save & Generate PDF'; }
   }
   function renderPrint(note) {
     const rows=note.items.map((i,n)=>`<tr><td>${n+1}</td><td>${escapeHtml(i.barcode)}</td><td>${escapeHtml(i.category || '—')}</td><td>${escapeHtml(i.hsn_code)}</td><td>${i.qty}</td><td>${money(i.rate)}</td><td>${i.gst_rate}%</td><td>${money(i.taxable_amount)}</td><td>${money(i.gst_amount)}</td><td>${money(i.amount)}</td></tr>`).join('');
@@ -112,8 +114,54 @@
   async function loadHistory() {
     try {
       const data=await request(API); const rows=data.debitNotes||[];
-      $('historyBody').innerHTML=rows.length?rows.map(n=>`<tr><td><strong>${escapeHtml(n.debit_note_no)}</strong></td><td>${new Date(n.date).toLocaleDateString('en-IN')}</td><td>${escapeHtml(n.supplier)}</td><td>${(n.items||[]).reduce((s,i)=>s+Number(i.qty||0),0)}</td><td><strong>${money(n.grand_total)}</strong></td><td><span class="pill ${n.status==='cancelled'?'cancelled':''}">${escapeHtml(n.status||'issued')}</span></td><td><button class="btn secondary" data-print="${escapeHtml(n._id)}">PDF</button> ${n.status==='issued'?`<button class="remove" data-cancel="${escapeHtml(n._id)}">Cancel</button>`:''}</td></tr>`).join(''):'<tr><td colspan="7" class="muted">No debit notes found.</td></tr>';
+      $('historyBody').innerHTML=rows.length?rows.map(n=>`<tr><td><strong>${escapeHtml(n.debit_note_no)}</strong></td><td>${new Date(n.date).toLocaleDateString('en-IN')}</td><td>${escapeHtml(n.supplier)}</td><td>${(n.items||[]).reduce((s,i)=>s+Number(i.qty||0),0)}</td><td><strong>${money(n.grand_total)}</strong></td><td><span class="pill ${n.status==='cancelled'?'cancelled':''}">${escapeHtml(n.status||'issued')}</span></td><td><button class="btn secondary" data-print="${escapeHtml(n._id)}">PDF</button> ${n.status==='issued'?`<button class="btn secondary" data-edit="${escapeHtml(n._id)}">Edit</button> <button class="remove" data-cancel="${escapeHtml(n._id)}">Cancel</button>`:''}</td></tr>`).join(''):'<tr><td colspan="7" class="muted">No debit notes found.</td></tr>';
     } catch(error) { showMessage(`History: ${error.message}`,'error'); }
+  }
+  async function editExisting(id) {
+    try {
+      const note = await request(`${API}/${id}`);
+      if (note.status !== 'issued') throw new Error('Cancelled debit notes cannot be edited.');
+      const supplierExists = state.suppliers.some(s => String(s._id) === String(note.supplier_id));
+      if (!supplierExists) throw new Error('The original supplier is no longer available.');
+
+      state.items = [];
+      state.originalQty = {};
+      state.editingId = id;
+      $('supplier').value = String(note.supplier_id);
+      const d = new Date(note.date);
+      $('returnDate').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      $('purchaseRef').value = note.reference_purchase_bill || '';
+      $('reason').value = note.reason || 'Return to supplier';
+      $('remarks').value = note.remarks || '';
+
+      for (const item of (note.items || [])) {
+        const productData = await request(`${API}/product/${encodeURIComponent(item.product_id)}`);
+        const product = productData.product;
+        const qty = Number(item.qty) || 0;
+        state.originalQty[String(item.product_id)] = qty;
+        state.items.push({
+          product_id: item.product_id,
+          barcode: item.barcode || product.barcode || '',
+          description: item.description || product.name || '',
+          category: item.category || product.category || '',
+          hsn_code: item.hsn_code || product.hsn_code || '5407',
+          stock_qty: Number(product.stock_qty || 0) + qty,
+          qty,
+          rate: Number(item.rate) || 0,
+          gst_rate: Number(item.gst_rate) || 0
+        });
+      }
+
+      $('saveBtn').textContent = 'Update Debit Note';
+      renderItems();
+      showMessage(`Editing ${note.debit_note_no}. Add or remove sarees, change quantities, then click Update Debit Note.`);
+      $('barcodeInput').focus();
+      window.scrollTo({top:0, behavior:'smooth'});
+    } catch (error) {
+      state.editingId = null;
+      state.originalQty = {};
+      showMessage(error.message, 'error');
+    }
   }
   async function printExisting(id) { try { const note=await request(`${API}/${id}`); renderPrint(note); window.print(); } catch(e) { showMessage(e.message,'error'); } }
   async function cancelNote(id) { if(!confirm('Cancel this debit note? Stock will be added back and supplier balance adjustment reversed.')) return; try { const r=await request(`${API}/${id}`,{method:'DELETE'}); showMessage(r.message||'Debit note cancelled.'); await loadHistory(); } catch(e) { showMessage(e.message,'error'); } }
@@ -122,10 +170,9 @@
   $('itemsBody').addEventListener('change',e=>{const index=e.target.dataset.qty;if(index===undefined)return;const item=state.items[Number(index)];const qty=Number(e.target.value);if(!(qty>0)||qty>item.stock_qty){showMessage(`Quantity must be between 1 and ${item.stock_qty}.`,'error');e.target.value=item.qty;return;}item.qty=qty;renderItems();});
   $('itemsBody').addEventListener('click',e=>{const index=e.target.dataset.remove;if(index!==undefined){state.items.splice(Number(index),1);renderItems();}});
   $('saveBtn').addEventListener('click',saveDebitNote); $('clearBtn').addEventListener('click',()=>{if(confirm('Clear this debit note form?'))clearForm();});
-  $('historyBody').addEventListener('click',e=>{if(e.target.dataset.print)printExisting(e.target.dataset.print);if(e.target.dataset.cancel)cancelNote(e.target.dataset.cancel);});
+  $('historyBody').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.print)printExisting(button.dataset.print);if(button.dataset.edit)editExisting(button.dataset.edit);if(button.dataset.cancel)cancelNote(button.dataset.cancel);});
   $('returnDate').value=dateISO();
   Promise.all([loadSuppliers(),loadHistory()]).then(()=>{$('barcodeInput').focus();}).catch(e=>showMessage(e.message,'error'));
 })();
-
 </script>
 </body></html>

@@ -373,30 +373,54 @@ router.put('/:id', async (req, res) => {
 });
 
 // Cancel a note only when its stock and ledger effects can be reversed.
+// Every product is verified; if any stock restore fails, everything already restored is undone and an error is returned.
 router.delete('/:id', async (req, res) => {
+  const restored = [];   // { productId, qty, name, stockNow }
   try {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: 'Invalid debit note ID.' });
     const note = await DebitNote.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Debit note not found.' });
     if (note.status === 'cancelled') return res.status(400).json({ message: 'Debit note is already cancelled.' });
 
+    const lines = new Map();
     for (const item of note.items) {
-      await Product.updateOne({ _id: item.product_id }, { $inc: { stock_qty: num(item.qty) } });
+      const key = String(item.product_id);
+      const cur = lines.get(key) || { qty: 0, name: item.description || item.barcode || key };
+      cur.qty = round2(cur.qty + num(item.qty));
+      lines.set(key, cur);
     }
+
+    try {
+      for (const [productId, line] of lines) {
+        const updated = await Product.findOneAndUpdate(
+          { _id: productId },
+          { $inc: { stock_qty: line.qty } },
+          { new: true, strict: false }
+        );
+        if (!updated) throw new Error(`Could not restore stock: product "${line.name}" no longer exists.`);
+        restored.push({ productId, qty: line.qty, name: line.name, stockNow: num(updated.stock_qty) });
+      }
+      note.status = 'cancelled';
+      await note.save();
+    } catch (inner) {
+      for (const r of restored) await Product.updateOne({ _id: r.productId }, { $inc: { stock_qty: -r.qty } }, { strict: false }).catch(() => {});
+      throw inner;
+    }
+
     if (note.supplier_id) {
       await SupplierTransaction.findOneAndDelete({
         supplier: note.supplier_id,
         type: 'payment',
         reference: note.debit_note_no,
         paymentKind: 'debit_note'
-      });
+      }).catch(err => console.error('Cancel debit note ledger cleanup:', err));
     }
-    note.status = 'cancelled';
-    await note.save();
-    res.json({ success: true, message: 'Debit note cancelled; stock and supplier balance reversed.' });
+
+    const detail = restored.map(r => `${r.name} +${r.qty} (stock now ${r.stockNow})`).join('; ');
+    res.json({ success: true, message: `Debit note cancelled; supplier balance reversed. Stock restored: ${detail}`, restored });
   } catch (error) {
     console.error('Cancel debit note error:', error);
-    res.status(500).json({ message: 'Could not cancel debit note.' });
+    res.status(500).json({ message: error.message || 'Could not cancel debit note.' });
   }
 });
 

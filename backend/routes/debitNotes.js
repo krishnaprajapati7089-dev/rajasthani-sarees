@@ -1,591 +1,220 @@
-
-const express = require('express');
-const mongoose = require('mongoose');
-
-const Product = require('../models/Product');
-const Supplier = require('../models/Supplier');
-const DebitNote = require('../models/DebitNote');
-const SupplierTransaction = require('../models/SupplierTransaction');
-
-const router = express.Router();
-
-const num = value =>
-  Number.isFinite(Number(value)) ? Number(value) : 0;
-
-const round2 = value =>
-  Math.round((num(value) + Number.EPSILON) * 100) / 100;
-
-const escapeRegex = value =>
-  String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
+// Add these routes to the existing debit-note router.
+// Place GET /product/:id near the existing SEARCH PRODUCT BY BARCODE route.
+// Place PUT /:id after CREATE DEBIT NOTE and before CANCEL DEBIT NOTE.
 
 // ==========================================
-// SEARCH PRODUCT BY BARCODE
+// GET PRODUCT BY ID (used when editing older notes)
 // ==========================================
-
-router.get('/search-product/:barcode', async (req, res) => {
-  try {
-    const barcode = String(req.params.barcode || '').trim();
-
-    if (!barcode) {
-      return res.status(400).json({
-        message: 'Barcode is required.'
-      });
-    }
-
-    const product = await Product.findOne({
-      barcode,
-      active: { $ne: false }
-    }).select(
-      'name barcode category hsn_code purchase_price gst_rate stock_qty'
-    );
-
-    if (!product) {
-      return res.status(404).json({
-        message: `No product found for barcode ${barcode}.`
-      });
-    }
-
-    res.json({
-      product: {
-        _id: product._id,
-        name: product.name,
-        barcode: product.barcode,
-        category: product.category || '',
-        hsn_code: product.hsn_code || '5407',
-        purchase_price: num(product.purchase_price),
-        gst_rate: num(product.gst_rate),
-        stock_qty: num(product.stock_qty)
-      }
-    });
-
-  } catch (error) {
-    console.error('Debit note product lookup:', error);
-
-    res.status(500).json({
-      message: 'Could not find product.'
-    });
-  }
-});
-
-
-// ==========================================
-// GET SUPPLIERS
-// ==========================================
-
-router.get('/suppliers', async (req, res) => {
-  try {
-    const suppliers = await Supplier.find()
-      .select('name phone city gst')
-      .sort({ name: 1 })
-      .lean();
-
-    res.json({ suppliers });
-
-  } catch (error) {
-    console.error('Debit note suppliers:', error);
-
-    res.status(500).json({
-      message: 'Could not load suppliers.'
-    });
-  }
-});
-
-
-// ==========================================
-// GET ALL DEBIT NOTES
-// ==========================================
-
-router.get('/', async (req, res) => {
-  try {
-    const filter = {};
-
-    if (req.query.supplier) {
-      filter.supplier = new RegExp(
-        `^${escapeRegex(req.query.supplier)}$`,
-        'i'
-      );
-    }
-
-    if (req.query.from || req.query.to) {
-      filter.date = {};
-
-      if (req.query.from) {
-        filter.date.$gte = new Date(
-          `${req.query.from}T00:00:00.000`
-        );
-      }
-
-      if (req.query.to) {
-        filter.date.$lte = new Date(
-          `${req.query.to}T23:59:59.999`
-        );
-      }
-    }
-
-    if (req.query.status) {
-      filter.status = req.query.status;
-    }
-
-    const notes = await DebitNote.find(filter)
-      .sort({ date: -1, createdAt: -1 })
-      .limit(300)
-      .lean();
-
-    res.json({ debitNotes: notes });
-
-  } catch (error) {
-    console.error('Debit note list:', error);
-
-    res.status(500).json({
-      message: 'Could not load debit notes.'
-    });
-  }
-});
-
-
-// ==========================================
-// GET SINGLE DEBIT NOTE
-// ==========================================
-
-router.get('/:id', async (req, res) => {
+router.get('/product/:id', async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        message: 'Invalid debit note ID.'
-      });
+      return res.status(400).json({ message: 'Invalid product ID.' });
     }
-
-    const note = await DebitNote.findById(
-      req.params.id
-    ).lean();
-
-    if (!note) {
-      return res.status(404).json({
-        message: 'Debit note not found.'
-      });
+    const product = await Product.findById(req.params.id)
+      .select('name barcode category hsn_code purchase_price gst_rate stock_qty active')
+      .lean();
+    if (!product || product.active === false) {
+      return res.status(404).json({ message: 'Product not found.' });
     }
-
-    res.json(note);
-
+    res.json({ product: {
+      _id: product._id, name: product.name, barcode: product.barcode || '',
+      category: product.category || '', hsn_code: product.hsn_code || '5407',
+      purchase_price: num(product.purchase_price), gst_rate: num(product.gst_rate),
+      stock_qty: num(product.stock_qty)
+    }});
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not load debit note.'
-    });
+    console.error('Debit note product by ID:', error);
+    res.status(500).json({ message: 'Could not load product.' });
   }
 });
 
-
 // ==========================================
-// CREATE DEBIT NOTE
+// UPDATE EXISTING DEBIT NOTE
+// PUT /api/debit-notes/:id
 // ==========================================
-
-router.post('/', async (req, res) => {
-
-  const changedStock = [];
-
-  let createdNote = null;
-  let createdTxn = null;
+router.put('/:id', async (req, res) => {
+  const stockChanges = [];
+  let note = null;
+  let oldNoteSnapshot = null;
+  let ledgerTxn = null;
+  let ledgerSnapshot = null;
+  let ledgerWasCreated = false;
 
   try {
-    const body = req.body || {};
-
-    const supplierId =
-      body.supplier_id &&
-      mongoose.isValidObjectId(body.supplier_id)
-        ? body.supplier_id
-        : null;
-
-    const supplierDoc = supplierId
-      ? await Supplier.findById(supplierId).lean()
-      : null;
-
-    const supplierName = String(
-      body.supplier || supplierDoc?.name || ''
-    ).trim();
-
-    if (!supplierName) {
-      return res.status(400).json({
-        message: 'Please select a supplier.'
-      });
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid debit note ID.' });
     }
 
-    if (supplierId && !supplierDoc) {
-      return res.status(404).json({
-        message: 'Selected supplier was not found.'
-      });
+    note = await DebitNote.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: 'Debit note not found.' });
+    if (note.status !== 'issued') {
+      return res.status(400).json({ message: 'Cancelled debit notes cannot be edited.' });
+    }
+    if (!Array.isArray(req.body?.items) || req.body.items.length === 0) {
+      return res.status(400).json({ message: 'At least one saree is required.' });
     }
 
-    if (!Array.isArray(body.items) || body.items.length === 0) {
-      return res.status(400).json({
-        message: 'Scan at least one saree.'
-      });
+    const supplierId = req.body.supplier_id;
+    if (!supplierId || !mongoose.isValidObjectId(supplierId)) {
+      return res.status(400).json({ message: 'Please select a valid supplier.' });
+    }
+    const supplierDoc = await Supplier.findById(supplierId);
+    if (!supplierDoc) return res.status(404).json({ message: 'Supplier not found.' });
+
+    const newDate = req.body.date ? new Date(req.body.date) : note.date;
+    if (Number.isNaN(newDate.getTime())) throw new Error('Invalid debit note date.');
+
+    oldNoteSnapshot = note.toObject();
+    const oldItems = new Map();
+    for (const item of note.items) {
+      const plain = item.toObject ? item.toObject() : item;
+      oldItems.set(String(item.product_id), plain);
     }
 
+    const quantities = new Map();
+    for (const line of req.body.items) {
+      const productId = String(line.product_id || '');
+      const qty = num(line.qty);
+      if (!mongoose.isValidObjectId(productId) || !(qty > 0)) {
+        throw new Error('One of the products or return quantities is invalid.');
+      }
+      quantities.set(productId, (quantities.get(productId) || 0) + qty);
+    }
 
-    // ======================================
-    // CALCULATE ITEMS
-    // ======================================
-
-    const noteItems = [];
-
+    const newItems = [];
     let taxableTotal = 0;
     let gstTotal = 0;
 
-    const seen = new Map();
-
-    for (const line of body.items) {
-
-      const productId = String(line.product_id || '');
-
-      if (!mongoose.isValidObjectId(productId)) {
-        throw new Error(
-          'One of the scanned products is invalid.'
-        );
-      }
-
-      const qty = num(line.qty);
-
-      if (!(qty > 0)) {
-        throw new Error(
-          `Invalid return quantity for ${line.description || 'product'}.`
-        );
-      }
-
-      const product = await Product.findById(
-        productId
-      ).select(
-        'name barcode category hsn_code purchase_price gst_rate stock_qty active'
-      );
-
+    for (const [productId, qty] of quantities) {
+      const product = await Product.findById(productId)
+        .select('name barcode category hsn_code purchase_price gst_rate stock_qty active');
       if (!product || product.active === false) {
-        throw new Error(
-          `Product not found: ${line.description || productId}`
-        );
+        throw new Error(`Product not found: ${productId}`);
       }
 
-      if (seen.has(productId)) {
-        seen.get(productId).qty += qty;
-        continue;
-      }
-
-      // Original purchase rate, not selling price.
-      const rate = num(product.purchase_price);
-
-      const gstRate = num(product.gst_rate);
-
+      const oldItem = oldItems.get(productId);
+      // Preserve the original purchase rate/GST for items already on this note.
+      const rate = oldItem ? num(oldItem.rate) : num(product.purchase_price);
+      const gstRate = oldItem ? num(oldItem.gst_rate) : num(product.gst_rate);
       const taxable = round2(qty * rate);
+      const gst = round2(taxable * gstRate / 100);
 
-      const gst = round2(
-        taxable * gstRate / 100
-      );
-
-      const item = {
+      newItems.push({
         product_id: product._id,
-        barcode: product.barcode || '',
+        barcode: product.barcode || oldItem?.barcode || '',
         description: product.name,
-        category: product.category || '',
-        hsn_code: product.hsn_code || '5407',
-        qty,
-        rate,
-        gst_rate: gstRate,
+        category: product.category || oldItem?.category || '',
+        hsn_code: product.hsn_code || oldItem?.hsn_code || '5407',
+        qty, rate, gst_rate: gstRate,
         taxable_amount: taxable,
         gst_amount: gst,
         amount: round2(taxable + gst)
-      };
-
-      seen.set(productId, item);
+      });
+      taxableTotal += taxable;
+      gstTotal += gst;
     }
 
+    // Only adjust the difference between the previous and new quantities.
+    const allIds = new Set([...oldItems.keys(), ...quantities.keys()]);
+    for (const productId of allIds) {
+      const oldQty = num(oldItems.get(productId)?.qty);
+      const newQty = num(quantities.get(productId));
+      const delta = round2(newQty - oldQty);
+      if (!delta) continue;
 
-    // ======================================
-    // FINAL ITEM TOTALS
-    // ======================================
-
-    for (const item of seen.values()) {
-
-      item.taxable_amount = round2(
-        item.qty * item.rate
-      );
-
-      item.gst_amount = round2(
-        item.taxable_amount * item.gst_rate / 100
-      );
-
-      item.amount = round2(
-        item.taxable_amount + item.gst_amount
-      );
-
-      taxableTotal += item.taxable_amount;
-      gstTotal += item.gst_amount;
-
-      noteItems.push(item);
-    }
-
-
-    // ======================================
-    // REDUCE STOCK
-    // ======================================
-
-    for (const item of noteItems) {
-
-      const updated = await Product.findOneAndUpdate(
-        {
-          _id: item.product_id,
-          stock_qty: { $gte: item.qty },
-          active: { $ne: false }
-        },
-        {
-          $inc: {
-            stock_qty: -item.qty
-          }
-        },
-        {
-          new: true
-        }
-      );
-
-      if (!updated) {
-        throw new Error(
-          `Insufficient stock for ${item.description} (${item.barcode}). Available stock may have changed; refresh and try again.`
+      let updated;
+      if (delta > 0) {
+        updated = await Product.findOneAndUpdate(
+          { _id: productId, stock_qty: { $gte: delta }, active: { $ne: false } },
+          { $inc: { stock_qty: -delta } },
+          { new: true }
         );
-      }
-
-      changedStock.push({
-        productId: item.product_id,
-        qty: item.qty
-      });
-    }
-
-
-    // ======================================
-    // SAVE DEBIT NOTE
-    // ======================================
-
-    const debitNoteNo = `DN-${Date.now()}`;
-
-    createdNote = await DebitNote.create({
-
-      debit_note_no: debitNoteNo,
-
-      date: body.date
-        ? new Date(body.date)
-        : new Date(),
-
-      supplier_id: supplierDoc?._id || null,
-
-      supplier: supplierName,
-
-      supplier_gst: String(
-        body.supplier_gst || supplierDoc?.gst || ''
-      ).trim(),
-
-      supplier_phone: String(
-        body.supplier_phone || supplierDoc?.phone || ''
-      ).trim(),
-
-      supplier_city: String(
-        body.supplier_city || supplierDoc?.city || ''
-      ).trim(),
-
-      reference_purchase_bill: String(
-        body.reference_purchase_bill || ''
-      ).trim(),
-
-      reason: String(
-        body.reason || 'Return to supplier'
-      ).trim(),
-
-      remarks: String(
-        body.remarks || ''
-      ).trim(),
-
-      items: noteItems,
-
-      taxable_total: round2(taxableTotal),
-
-      gst_total: round2(gstTotal),
-
-      grand_total: round2(
-        taxableTotal + gstTotal
-      ),
-
-      created_by: req.user?._id || null
-    });
-
-
-    // ======================================
-    // SUPPLIER LEDGER ADJUSTMENT
-    // ======================================
-
-    // Debit Note reduces supplier payable.
-    // It is NOT a cash, UPI or cheque payment.
-
-    if (supplierDoc?._id) {
-
-      createdTxn = await SupplierTransaction.create({
-
-        supplier: supplierDoc._id,
-
-        type: 'payment',
-
-        date: createdNote.date,
-
-        amount: createdNote.grand_total,
-
-        paymentKind: 'debit_note',
-
-        // No payment mode for debit note.
-
-        reference: debitNoteNo,
-
-        note: `Saree return / Debit Note ${debitNoteNo}`
-
-      });
-    }
-
-
-    // ======================================
-    // SUCCESS RESPONSE
-    // ======================================
-
-    res.status(201).json({
-
-      success: true,
-
-      message: 'Debit note saved and stock updated.',
-
-      debitNote: createdNote,
-
-      ledgerTransactionId: createdTxn?._id || null
-
-    });
-
-  } catch (error) {
-
-    console.error('Create debit note error:', error);
-
-    // Rollback transaction if saving failed.
-
-    if (createdTxn?._id) {
-      await SupplierTransaction
-        .findByIdAndDelete(createdTxn._id)
-        .catch(() => {});
-    }
-
-    if (createdNote?._id) {
-      await DebitNote
-        .findByIdAndDelete(createdNote._id)
-        .catch(() => {});
-    }
-
-    for (const entry of changedStock) {
-
-      await Product.updateOne(
-        { _id: entry.productId },
-        { $inc: { stock_qty: entry.qty } }
-      ).catch(() => {});
-
-    }
-
-    res.status(400).json({
-
-      message:
-        error.message || 'Could not save debit note.'
-
-    });
-  }
-});
-
-
-// ==========================================
-// CANCEL DEBIT NOTE
-// ==========================================
-
-router.delete('/:id', async (req, res) => {
-  try {
-
-    if (!mongoose.isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        message: 'Invalid debit note ID.'
-      });
-    }
-
-    const note = await DebitNote.findById(
-      req.params.id
-    );
-
-    if (!note) {
-      return res.status(404).json({
-        message: 'Debit note not found.'
-      });
-    }
-
-    if (note.status === 'cancelled') {
-      return res.status(400).json({
-        message: 'Debit note is already cancelled.'
-      });
-    }
-
-
-    // Restore returned products to stock.
-
-    for (const item of note.items) {
-
-      await Product.updateOne(
-        { _id: item.product_id },
-        {
-          $inc: {
-            stock_qty: num(item.qty)
-          }
+        if (!updated) {
+          const p = await Product.findById(productId).select('name');
+          throw new Error(`Insufficient stock for ${p?.name || productId}. Refresh and try again.`);
         }
-      );
-
+      } else {
+        updated = await Product.findByIdAndUpdate(
+          productId, { $inc: { stock_qty: -delta } }, { new: true }
+        );
+        if (!updated) throw new Error(`Could not restore stock for product ${productId}.`);
+      }
+      stockChanges.push({ productId, delta });
     }
 
-
-    // Remove corresponding supplier ledger adjustment.
-
-    if (note.supplier_id) {
-
-      await SupplierTransaction.findOneAndDelete({
-
-        supplier: note.supplier_id,
-
-        type: 'payment',
-
-        reference: note.debit_note_no,
-
-        paymentKind: 'debit_note'
-
-      });
-
-    }
-
-
-    note.status = 'cancelled';
-
+    note.supplier_id = supplierDoc._id;
+    note.supplier = supplierDoc.name;
+    note.supplier_gst = supplierDoc.gst || '';
+    note.supplier_phone = supplierDoc.phone || '';
+    note.supplier_city = supplierDoc.city || '';
+    note.date = newDate;
+    note.reference_purchase_bill = String(req.body.reference_purchase_bill || '').trim();
+    note.reason = String(req.body.reason || 'Return to supplier').trim();
+    note.remarks = String(req.body.remarks || '').trim();
+    note.items = newItems;
+    note.taxable_total = round2(taxableTotal);
+    note.gst_total = round2(gstTotal);
+    note.grand_total = round2(taxableTotal + gstTotal);
     await note.save();
 
-    res.json({
+    // Update the existing debit-note ledger row; do not create a cash payment.
+    ledgerTxn = await SupplierTransaction.findOne({
+      reference: oldNoteSnapshot.debit_note_no,
+      type: 'payment',
+      paymentKind: 'debit_note'
+    });
 
+    if (ledgerTxn) {
+      ledgerSnapshot = ledgerTxn.toObject();
+      ledgerTxn.supplier = supplierDoc._id;
+      ledgerTxn.date = note.date;
+      ledgerTxn.amount = note.grand_total;
+      ledgerTxn.reference = note.debit_note_no;
+      ledgerTxn.note = `Saree return / Debit Note ${note.debit_note_no}`;
+      await ledgerTxn.save();
+    } else {
+      ledgerTxn = await SupplierTransaction.create({
+        supplier: supplierDoc._id,
+        type: 'payment',
+        date: note.date,
+        amount: note.grand_total,
+        paymentKind: 'debit_note',
+        reference: note.debit_note_no,
+        note: `Saree return / Debit Note ${note.debit_note_no}`
+      });
+      ledgerWasCreated = true;
+    }
+
+    return res.json({
       success: true,
-
-      message: 'Debit note cancelled; stock and supplier balance reversed.'
-
+      message: 'Debit note updated; stock and supplier ledger adjusted.',
+      debitNote: note,
+      ledgerTransactionId: ledgerTxn?._id || null
     });
-
   } catch (error) {
+    console.error('Update debit note error:', error);
 
-    console.error('Cancel debit note error:', error);
+    // Best-effort compensation if any later write fails.
+    for (const change of stockChanges.reverse()) {
+      await Product.updateOne(
+        { _id: change.productId }, { $inc: { stock_qty: -change.delta } }
+      ).catch(rollbackError => console.error('Stock rollback:', rollbackError));
+    }
 
-    res.status(500).json({
+    if (note && oldNoteSnapshot) {
+      try { note.set(oldNoteSnapshot); await note.save(); }
+      catch (rollbackError) { console.error('Debit note rollback:', rollbackError); }
+    }
 
-      message: 'Could not cancel debit note.'
+    if (ledgerWasCreated && ledgerTxn?._id) {
+      await SupplierTransaction.findByIdAndDelete(ledgerTxn._id)
+        .catch(rollbackError => console.error('Ledger rollback:', rollbackError));
+    } else if (ledgerSnapshot?._id) {
+      await SupplierTransaction.findByIdAndUpdate(
+        ledgerSnapshot._id, { $set: ledgerSnapshot }
+      ).catch(rollbackError => console.error('Ledger rollback:', rollbackError));
+    }
 
-    });
+    return res.status(400).json({ message: error.message || 'Could not update debit note.' });
   }
 });
-
-
-module.exports = router;
